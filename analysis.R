@@ -14,24 +14,25 @@ if(!require(Maaslin2)) {BiocManager::install("Maaslin2")}
 if(!require(microbiomeutilities)) {remotes::install_github("microsud/microbiomeutilities")}
 if(!require(msa)) {BiocManager::install("msa")}
 if(!require(phangorn)) {BiocManager::install("phangorn")}
+if(!require(Biostrings)) {BiocManager::install("Biostrings")}
+if(!require(ShortRead)) {BiocManager::install("ShortRead")}
 
-# Rscript ~/PSF_MBIOME/analysis.R --raw_soil ~/test/reads/raw/soil_reads/ --raw_root ~/test/read/raw/endo_reads/ --soil_metadata ~/test/metadata/soil_metadata.csv --root_metadata ~/test/metadata/endo_metadata.csv --pheno ~/test/nodnbio.csv #
+
+# Rscript ~/PSF_MBIOME/analysis.R --raw_soil ~/test/reads/raw/soil_reads --soil_metadata ~/test/metadata/soil_metadata.csv --pheno ~/test/nodnbio.csv --reference ~/test/reference/rdp_19_toGenus_trainset.fa.gz | cat > PSF_log.txt #
 
 #### Argument Parsing ####
-library(optparse)
+library(optparse); packageVersion("optparse")
 option_list <- list(
             make_option("--raw_soil", type = "character", help = "filepath containing the raw, untrimmed reads for the reads generated from the v4 primers (bulk soil, rhizosphere, and some nodule samples)"),
-            make_option("--raw_root", type = "character", help = "filepath containing the raw, untrimmed reads for the reads generated from the v5-v7 primers( root endosphere and some nodule samples)"),
             make_option("--soil_metadata", type = "character", help = "filepath that contains the Comma Separated Values (csv) file of the soil metadata"),
-            make_option("--root_metadata", type = "character", help = "filepath that contains the Comma Separated Values (csv) file of the root metadata"),
-            make_option("--pheno", type = "character", help = "filepath that contains the Comma Separated Values (csv) file of the phenotype data (biomass and nodule counts)"))
+            make_option("--pheno", type = "character", help = "filepath that contains the Comma Separated Values (csv) file of the phenotype data (biomass and nodule counts)"),
+            make_option("--reference", type = "character", help = "filepath that contains the reference database to assign taxonomy to the reads"))
 
 opt <- parse_args(OptionParser(option_list=option_list))
 soil.dir <- opt$raw_soil
-root.dir <- opt$raw_root
-metadata <- opt$metadata
+soil.met <- opt$soil_metadata
 nodnbio <- opt$pheno
-cutadapt <- opt$cutadapt
+reference <- opt$reference
 
 #### Nodule Count and Biomass Data Visualization ####
 # Read in the phenotypic data and clean it for analysis #
@@ -226,15 +227,120 @@ nodnbio.plot <- (nod.plot) /
   plot_layout(guides = 'keep') &
   theme(plot.tag = element_text(size = 20))
 
-#### FastQC on the reads ####
-# Call fastqc to do quality control from the command line #
-system('mkdir QC')
-system('mkdir ./QC/raw_qc')
-system('mkdir ./QC/raw_qc/raw_soil_qc')
-system(paste0("fastqc --noextract ",soil.dir, "*fastq.gz -o ./QC/raw_qc/raw_soil_qc"))
-system('mkdir ./QC/raw_qc/raw_root_qc')
-system(paste0("fastqc --noextract ",soil.dir, "*fastq.gz -o ./QC/raw_qc/raw_root_qc"))
-system("rm ./QC/raw_qc/raw_soil_qc/*.zip")
-system("rm ./QC/raw_qc/raw_root_qc/*.zip")
-
 save.image("./test.RData")
+
+#### Primer Removal ####
+### Soils First ###
+list.files(soil.dir)
+
+# Create a list of the files that are correspodning to the forward and reverse reads #
+raw_soil.ffp <- sort(list.files(soil.dir, pattern = "_R1_001.fastq.gz", full.names = TRUE))
+raw_soil.rfp <- sort(list.files(soil.dir, pattern = "_R2_001.fastq.gz", full.names = TRUE))
+
+# Save the names based on the file names #
+soil.names <- strsplit(basename(raw_soil.ffp), "_L001_R1_001.fastq.gz")
+soil.names <- as.character(soil.names)
+
+# Find all orientations of each primer for primer trimming #
+library(Biostrings); packageVersion('Biostrings')
+allOrients <- function(primer) {
+  # Create all orientations of the input sequence #
+  require(Biostrings)
+  dna <- DNAString(primer)  # The Biostrings works w/ DNAString objects rather than character vectors
+  orients <- c(Forward = dna, Complement = Biostrings::complement(dna), Reverse = Biostrings::reverse(dna),
+               RevComp = Biostrings::reverseComplement(dna))
+  return(sapply(orients, toString))  # Convert back to character vector
+}
+
+soil.fprimer <- "GTGCCAGCMGCCGCGGTAA"
+soil.rprimer <- "GGACTACHVGGGTWTCTAAT"
+
+soil.fori <- allOrients(soil.fprimer)
+soil.rori <- allOrients(soil.fprimer)
+
+# Make filepaths for pretrimmed fastqs #
+system('mkdir ./reads/pretrim')
+system('mkdir ./reads/pretrim/soil_pretrim')
+pre_soil.ffp <- file.path('./reads/pretrim/soil_pretrim', paste0(soil.names, '_pretrim_R1.fastq.gz'))
+pre_soil.rfp <- file.path('./reads/pretrim/soil_pretrim', paste0(soil.names, '_pretrim_R2.fastq.gz'))
+
+# Filter reads less than 75 bp and save the filtered fastqs to the pretrim filepaths #
+library(dada2); packageVersion('dada2')
+soil_prefilt.track <- filterAndTrim(raw_soil.ffp, pre_soil.ffp, raw_soil.rfp, pre_soil.rfp, minLen = 75,
+                               compress = TRUE, multithread = FALSE)
+
+# Take reverse complements of the forward and reverse primers #
+soil_fprim.rc <- dada2::rc(soil.fprimer)
+soil_rprim.rc <- dada2::rc(soil.fprimer)
+
+# Create filepaths for the forward and reverse fastqs with primers trimmed #
+system('mkdir ./reads/ptrimmed')
+system('mkdir ./reads/ptrimmed/soil_ptrimmed')
+pt_soil.ffp <- file.path("./reads/ptrimmed/soil_ptrimmed", paste0(soil.names, "_ptrimmed_R1.fastq.gz"))
+pt_soil.rfp <- file.path("./reads/ptrimmed/soil_ptrimmed", paste0(soil.names, "_ptrimmed_R2.fastq.gz"))
+
+# Perform primmer trimming using cutadapt #
+for(i in seq_along(pre_soil.ffp)){
+  system(paste0('cutadapt -g ', soil.fprimer, ' -a ', soil_rprim.rc, ' -G ', soil.rprimer, ' -A ', soil_fprim.rc, ' --pair-filter=any -m 50:50 -o ', pt_soil.ffp[i], ' -p ', pt_soil.rfp[i], ' ', pre_soil.ffp[i], ' ', pre_soil.rfp[i]))
+}
+
+# Perform additional filtering prior to dada2 algorithm #
+system('mkdir ./reads/postfilt')
+system('mkdir ./reads/postfilt/soil_postfilt')
+post_soil.ffp <- file.path('./reads/postfilt/soil_postfilt', paste0(soil.names, '_filt_R1.fastq.gz'))
+post_soil.rfp <- file.path('./reads/postfilt/soil_postfilt', paste0(soil.names, '_filt_R2.fastq.gz'))
+
+soil_postfilt.track <- filterAndTrim(pt_soil.ffp, post_soil.ffp, pt_soil.rfp, post_soil.rfp, truncLen=c(230,230),
+                                maxN=0, maxEE=c(2,2), truncQ=2, rm.phix=TRUE,
+                                compress=TRUE, multithread=FALSE)
+
+save.image("~/test.RData")
+
+#### dada2 Implementation for the Soil Samples ####
+# Learn the error rates that are specific to your data #
+soil_for.er <- learnErrors(post_soil.ffp, multithread=FALSE, verbose = TRUE)
+soil_rev.er <- learnErrors(post_soil.rfp, multithread=FALSE, verbose = TRUE)
+
+# Plot the learned errors #
+plotErrors(soil_for.er, nominalQ=TRUE)
+plotErrors(soil_rev.er, nominalQ=TRUE)
+
+# Dereplicate the reads #
+soil.fderep <- derepFastq(post_soil.ffp, verbose=TRUE)
+soil.rderep <- derepFastq(post_soil.rfp, verbose=TRUE)
+
+# Construct the dada-class object #
+soil.fdada <- dada(soil.fderep, err=soil_for.er, multithread=FALSE, verbose = TRUE)
+soil.rdada <- dada(soil.rderep, err=soil_rev.er, multithread=FALSE, verbose = TRUE)
+
+# Merge the denoised forward and reversed reads #
+soil.remerged <- mergePairs(soil.fdada, post_soil.ffp, soil.rdada, post_soil.rfp, verbose=TRUE)
+
+# Construct Sequence (ASV) Table #
+soil.st <- makeSequenceTable(soil.remerged)
+dim(soil.st)
+table(nchar(getSequences(soil.st)))
+
+# Remove chimeras #
+soil_nochim.st <- removeBimeraDenovo(soil.st, method="consensus", multithread=FALSE, verbose=TRUE)
+dim(soil_nochim.st)
+
+# Determine the ratio of non-chimeras to all reads #
+sum(soil_nochim.st)/sum(soil.st)
+soil_nochim.st <- t(soil_nochim.st)
+
+# track reads through the pipeline #
+getN <- function(x) sum(getUniques(x))
+soil_final.track <- cbind(soil_prefilt.track[,1], soil_prefilt.track[,2], soil_postfilt.track[,2], sapply(soil.fdada, getN), sapply(soil.rdada, getN), sapply(soil.remerged, getN), rowSums(soil_nochim.st))
+colnames(soil_final.track) <- c("pre-cutadapt", "post-cutadapt", "filtered", "denoisedF", "denoisedR", "merged", "nonchim")
+rownames(soil_final.track) <- soil.names
+soil_final.track <- as.data.frame(soil_final.track)
+
+# Assign Taxonomy #
+soil_rdp.taxa <- assignTaxonomy(rownames(soil_nochim.st), refFasta = reference, verbose = TRUE)
+soil_rdp.taxa <- as.matrix(soil_rdp.taxa)
+
+# Load the metadata #
+soil_raw.met <- read.csv2(soil_metadata, sep = ',')
+
+save.image("~/test.RData")
