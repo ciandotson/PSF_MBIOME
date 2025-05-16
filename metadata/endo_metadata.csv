@@ -1,80 +1,145 @@
 ,Sample.Name,Plant.Species,Soil.Origin,Compartment
-CcCSno_1,CcCSno_1,C. fasciculata,Common Soil,Nodule
-CcCSrt_1,CcCSrt_1,C. fasciculata,Common Soil,Root
-CcCSrt_2,CcCSrt_2,C. fasciculata,Common Soil,Root
-CcCSrt_3,CcCSrt_3,C. fasciculata,Common Soil,Root
-CcCSrt_4,CcCSrt_4,C. fasciculata,Common Soil,Root
-CcNPno_1,CcNPno_1,C. fasciculata,Non-PSF Soil,Nodule
-CcNPrt_1,CcNPrt_1,C. fasciculata,Non-PSF Soil,Root
-CcNPrt_2,CcNPrt_2,C. fasciculata,Non-PSF Soil,Root
-CcNPrt_3,CcNPrt_3,C. fasciculata,Non-PSF Soil,Root
-CcNPrt_4,CcNPrt_4,C. fasciculata,Non-PSF Soil,Root
-CcRHno_1,CcRHno_1,C. fasciculata,PSF Soil,Nodule
-CcRHrt_1,CcRHrt_1,C. fasciculata,PSF Soil,Root
-CcRHrt_2,CcRHrt_2,C. fasciculata,PSF Soil,Root
-CcRHrt_3,CcRHrt_3,C. fasciculata,PSF Soil,Root
-CcRHrt_4,CcRHrt_4,C. fasciculata,PSF Soil,Root
-ClCSno_1,ClCSno_1,T. repens,Common Soil,Nodule
-ClCSrt_1,ClCSrt_1,T. repens,Common Soil,Root
-ClCSrt_2,ClCSrt_2,T. repens,Common Soil,Root
-ClCSrt_3,ClCSrt_3,T. repens,Common Soil,Root
-ClNPno_1,ClNPno_1,T. repens,Non-PSF Soil,Nodule
-ClNPrt_1,ClNPrt_1,T. repens,Non-PSF Soil,Root
-ClNPrt_2,ClNPrt_2,T. repens,Non-PSF Soil,Root
-ClNPrt_3,ClNPrt_3,T. repens,Non-PSF Soil,Root
-ClRHno_1,ClRHno_1,T. repens,PSF Soil,Nodule
-ClRHrt_1,ClRHrt_1,T. repens,PSF Soil,Root
-ClRHrt_2,ClRHrt_2,T. repens,PSF Soil,Root
-ClRHrt_3,ClRHrt_3,T. repens,PSF Soil,Root
-DsCSno_1,DsCSno_1,D. illinoense,Common Soil,Nodule
-DsCSrt_1,DsCSrt_1,D. illinoense,Common Soil,Root
-DsCSrt_2,DsCSrt_2,D. illinoense,Common Soil,Root
-DsCSrt_3,DsCSrt_3,D. illinoense,Common Soil,Root
-DsCSrt_4,DsCSrt_4,D. illinoense,Common Soil,Root
-DsNPno_1,DsNPno_1,D. illinoense,Non-PSF Soil,Nodule
-DsNPrt_1,DsNPrt_1,D. illinoense,Non-PSF Soil,Root
-DsNPrt_2,DsNPrt_2,D. illinoense,Non-PSF Soil,Root
-DsNPrt_3,DsNPrt_3,D. illinoense,Non-PSF Soil,Root
-DsNPrt_4,DsNPrt_4,D. illinoense,Non-PSF Soil,Root
-DsRHno_1,DsRHno_1,D. illinoense,PSF Soil,Nodule
-DsRHrt_1,DsRHrt_1,D. illinoense,PSF Soil,Root
-DsRHrt_2,DsRHrt_2,D. illinoense,PSF Soil,Root
-DsRHrt_3,DsRHrt_3,D. illinoense,PSF Soil,Root
-DsRHrt_4,DsRHrt_4,D. illinoense,PSF Soil,Root
-FbCSno_1,FbCSno_1,S. helvola,Common Soil,Nodule
-FbCSrt_1,FbCSrt_1,S. helvola,Common Soil,Root
-FbCSrt_2,FbCSrt_2,S. helvola,Common Soil,Root
-FbCSrt_3,FbCSrt_3,S. helvola,Common Soil,Root
-FbCSrt_4,FbCSrt_4,S. helvola,Common Soil,Root
-FbNPno_1,FbNPno_1,S. helvola,Non-PSF Soil,Nodule
-FbNPrt_1,FbNPrt_1,S. helvola,Non-PSF Soil,Root
-FbNPrt_2,FbNPrt_2,S. helvola,Non-PSF Soil,Root
-FbNPrt_3,FbNPrt_3,S. helvola,Non-PSF Soil,Root
-FbNPrt_4,FbNPrt_4,S. helvola,Non-PSF Soil,Root
-FbRHno_1,FbRHno_1,S. helvola,PSF Soil,Nodule
-FbRHrt_1,FbRHrt_1,S. helvola,PSF Soil,Root
-FbRHrt_2,FbRHrt_2,S. helvola,PSF Soil,Root
-FbRHrt_3,FbRHrt_3,S. helvola,PSF Soil,Root
-FbRHrt_4,FbRHrt_4,S. helvola,PSF Soil,Root
-HpCSrt_1,HpCSrt_1,A. bracteata,Common Soil,Root
-HpCSrt_2,HpCSrt_2,A. bracteata,Common Soil,Root
-HpCSrt_3,HpCSrt_3,A. bracteata,Common Soil,Root
-HpNPrt_1,HpNPrt_1,A. bracteata,Non-PSF Soil,Root
-HpNPrt_2,HpNPrt_2,A. bracteata,Non-PSF Soil,Root
-HpNPrt_3,HpNPrt_3,A. bracteata,Non-PSF Soil,Root
-HpRHno_1,HpRHno_1,A. bracteata,PSF Soil,Nodule
-HpRHrt_1,HpRHrt_1,A. bracteata,PSF Soil,Root
-HpRHrt_2,HpRHrt_2,A. bracteata,PSF Soil,Root
-HpRHrt_3,HpRHrt_3,A. bracteata,PSF Soil,Root
-MdCSno_1,MdCSno_1,M. truncatula,Common Soil,Nodule
-MdCSrt_1,MdCSrt_1,M. truncatula,Common Soil,Root
-MdCSrt_2,MdCSrt_2,M. truncatula,Common Soil,Root
-MdCSrt_3,MdCSrt_3,M. truncatula,Common Soil,Root
-MdNPno_1,MdNPno_1,M. truncatula,Non-PSF Soil,Nodule
-MdNPrt_1,MdNPrt_1,M. truncatula,Non-PSF Soil,Root
-MdNPrt_2,MdNPrt_2,M. truncatula,Non-PSF Soil,Root
-MdNPrt_3,MdNPrt_3,M. truncatula,Non-PSF Soil,Root
-MdRHno_1,MdRHno_1,M. truncatula,PSF Soil,Nodule
-MdRHrt_1,MdRHrt_1,M. truncatula,PSF Soil,Root
-MdRHrt_2,MdRHrt_2,M. truncatula,PSF Soil,Root
-MdRHrt_3,MdRHrt_3,M. truncatula,PSF Soil,Root
+CcCSlf_1_S46,CcCSlf_1_S46,C. fasciculata,Common Soil,Leaf Endosphere
+CcCSlf_2_S47,CcCSlf_2_S47,C. fasciculata,Common Soil,Leaf Endosphere
+CcCSlf_3_S48,CcCSlf_3_S48,C. fasciculata,Common Soil,Leaf Endosphere
+CcCSlf_4_S49,CcCSlf_4_S49,C. fasciculata,Common Soil,Leaf Endosphere
+CcCSno_1_S54,CcCSno_1_S54,C. fasciculata,Common Soil,Nodule
+CcCSrt_1_S50,CcCSrt_1_S50,C. fasciculata,Common Soil,Root Endosphere
+CcCSrt_2_S51,CcCSrt_2_S51,C. fasciculata,Common Soil,Root Endosphere
+CcCSrt_3_S52,CcCSrt_3_S52,C. fasciculata,Common Soil,Root Endosphere
+CcCSrt_4_S53,CcCSrt_4_S53,C. fasciculata,Common Soil,Root Endosphere
+CcNPlf_1_S37,CcNPlf_1_S37,C. fasciculata,Non-PSF Soil,Leaf Endosphere
+CcNPlf_2_S38,CcNPlf_2_S38,C. fasciculata,Non-PSF Soil,Leaf Endosphere
+CcNPlf_3_S39,CcNPlf_3_S39,C. fasciculata,Non-PSF Soil,Leaf Endosphere
+CcNPlf_4_S40,CcNPlf_4_S40,C. fasciculata,Non-PSF Soil,Leaf Endosphere
+CcNPno_1_S45,CcNPno_1_S45,C. fasciculata,Non-PSF Soil,Nodule
+CcNPrt_1_S41,CcNPrt_1_S41,C. fasciculata,Non-PSF Soil,Root Endosphere
+CcNPrt_2_S42,CcNPrt_2_S42,C. fasciculata,Non-PSF Soil,Root Endosphere
+CcNPrt_3_S43,CcNPrt_3_S43,C. fasciculata,Non-PSF Soil,Root Endosphere
+CcNPrt_4_S44,CcNPrt_4_S44,C. fasciculata,Non-PSF Soil,Root Endosphere
+CcRHlf_1_S28,CcRHlf_1_S28,C. fasciculata,Common Soil,Leaf Endosphere
+CcRHlf_2_S29,CcRHlf_2_S29,C. fasciculata,PSF Soil,Leaf Endosphere
+CcRHlf_3_S30,CcRHlf_3_S30,C. fasciculata,PSF Soil,Leaf Endosphere
+CcRHlf_4_S31,CcRHlf_4_S31,C. fasciculata,PSF Soil,Leaf Endosphere
+CcRHno_1_S36,CcRHno_1_S36,C. fasciculata,PSF Soil,Nodule
+CcRHrt_1_S32,CcRHrt_1_S32,C. fasciculata,PSF Soil,Root Endosphere
+CcRHrt_2_S33,CcRHrt_2_S33,C. fasciculata,PSF Soil,Root Endosphere
+CcRHrt_3_S34,CcRHrt_3_S34,C. fasciculata,PSF Soil,Root Endosphere
+CcRHrt_4_S35,CcRHrt_4_S35,C. fasciculata,PSF Soil,Root Endosphere
+ClCSlf_1_S116,ClCSlf_1_S116,T. repens,Common Soil,Leaf Endosphere
+ClCSlf_2_S117,ClCSlf_2_S117,T. repens,Common Soil,Leaf Endosphere
+ClCSlf_3_S118,ClCSlf_3_S118,T. repens,Common Soil,Leaf Endosphere
+ClCSno_1_S122,ClCSno_1_S122,T. repens,Common Soil,Nodule
+ClCSrt_1_S119,ClCSrt_1_S119,T. repens,Common Soil,Root Endosphere
+ClCSrt_2_S120,ClCSrt_2_S120,T. repens,Common Soil,Root Endosphere
+ClCSrt_3_S121,ClCSrt_3_S121,T. repens,Common Soil,Root Endosphere
+ClNPlf_1_S109,ClNPlf_1_S109,T. repens,Non-PSF Soil,Leaf Endosphere
+ClNPlf_2_S110,ClNPlf_2_S110,T. repens,Non-PSF Soil,Leaf Endosphere
+ClNPlf_3_S111,ClNPlf_3_S111,T. repens,Non-PSF Soil,Leaf Endosphere
+ClNPno_1_S115,ClNPno_1_S115,T. repens,Non-PSF Soil,Nodule
+ClNPrt_1_S112,ClNPrt_1_S112,T. repens,Non-PSF Soil,Root Endosphere
+ClNPrt_2_S113,ClNPrt_2_S113,T. repens,Non-PSF Soil,Root Endosphere
+ClNPrt_3_S114,ClNPrt_3_S114,T. repens,Non-PSF Soil,Root Endosphere
+ClRHlf_1_S102,ClRHlf_1_S102,T. repens,PSF Soil,Leaf Endosphere
+ClRHlf_2_S103,ClRHlf_2_S103,T. repens,PSF Soil,Leaf Endosphere
+ClRHlf_3_S104,ClRHlf_3_S104,T. repens,PSF Soil,Leaf Endosphere
+ClRHno_1_S108,ClRHno_1_S108,T. repens,PSF Soil,Nodule
+ClRHrt_1_S105,ClRHrt_1_S105,T. repens,PSF Soil,Root Endosphere
+ClRHrt_2_S106,ClRHrt_2_S106,T. repens,PSF Soil,Root Endosphere
+ClRHrt_3_S107,ClRHrt_3_S107,T. repens,PSF Soil,Root Endosphere
+DsCSlf_1_S73,DsCSlf_1_S73,D. illinoense,Common Soil,Leaf Endosphere
+DsCSlf_2_S74,DsCSlf_2_S74,D. illinoense,Common Soil,Leaf Endosphere
+DsCSlf_3_S75,DsCSlf_3_S75,D. illinoense,Common Soil,Leaf Endosphere
+DsCSlf_4_S76,DsCSlf_4_S76,D. illinoense,Common Soil,Leaf Endosphere
+DsCSno_1_S81,DsCSno_1_S81,D. illinoense,Common Soil,Nodule
+DsCSrt_1_S77,DsCSrt_1_S77,D. illinoense,Common Soil,Root Endosphere
+DsCSrt_2_S78,DsCSrt_2_S78,D. illinoense,Common Soil,Root Endosphere
+DsCSrt_3_S79,DsCSrt_3_S79,D. illinoense,Common Soil,Root Endosphere
+DsCSrt_4_S80,DsCSrt_4_S80,D. illinoense,Common Soil,Root Endosphere
+DsNPlf_1_S64,DsNPlf_1_S64,D. illinoense,Non-PSF Soil,Leaf Endosphere
+DsNPlf_2_S65,DsNPlf_2_S65,D. illinoense,Non-PSF Soil,Leaf Endosphere
+DsNPlf_3_S66,DsNPlf_3_S66,D. illinoense,Non-PSF Soil,Leaf Endosphere
+DsNPlf_4_S67,DsNPlf_4_S67,D. illinoense,Non-PSF Soil,Leaf Endosphere
+DsNPno_1_S72,DsNPno_1_S72,D. illinoense,Non-PSF Soil,Nodule
+DsNPrt_1_S68,DsNPrt_1_S68,D. illinoense,Non-PSF Soil,Root Endosphere
+DsNPrt_2_S69,DsNPrt_2_S69,D. illinoense,Non-PSF Soil,Root Endosphere
+DsNPrt_3_S70,DsNPrt_3_S70,D. illinoense,Non-PSF Soil,Root Endosphere
+DsNPrt_4_S71,DsNPrt_4_S71,D. illinoense,Non-PSF Soil,Root Endosphere
+DsRHlf_1_S55,DsRHlf_1_S55,D. illinoense,PSF Soil,Leaf Endosphere
+DsRHlf_2_S56,DsRHlf_2_S56,D. illinoense,PSF Soil,Leaf Endosphere
+DsRHlf_3_S57,DsRHlf_3_S57,D. illinoense,PSF Soil,Leaf Endosphere
+DsRHlf_4_S58,DsRHlf_4_S58,D. illinoense,PSF Soil,Leaf Endosphere
+DsRHno_1_S63,DsRHno_1_S63,D. illinoense,PSF Soil,Nodule
+DsRHrt_1_S59,DsRHrt_1_S59,D. illinoense,PSF Soil,Root Endosphere
+DsRHrt_2_S60,DsRHrt_2_S60,D. illinoense,PSF Soil,Root Endosphere
+DsRHrt_3_S61,DsRHrt_3_S61,D. illinoense,PSF Soil,Root Endosphere
+DsRHrt_4_S62,DsRHrt_4_S62,D. illinoense,PSF Soil,Root Endosphere
+FbCSlf_1_S19,FbCSlf_1_S19,S. helvola,Common Soil,Leaf Endosphere
+FbCSlf_2_S20,FbCSlf_2_S20,S. helvola,Common Soil,Leaf Endosphere
+FbCSlf_3_S21,FbCSlf_3_S21,S. helvola,Common Soil,Leaf Endosphere
+FbCSlf_4_S22,FbCSlf_4_S22,S. helvola,Common Soil,Leaf Endosphere
+FbCSno_1_S27,FbCSno_1_S27,S. helvola,Common Soil,Nodule
+FbCSrt_1_S23,FbCSrt_1_S23,S. helvola,Common Soil,Root Endosphere
+FbCSrt_2_S24,FbCSrt_2_S24,S. helvola,Common Soil,Root Endosphere
+FbCSrt_3_S25,FbCSrt_3_S25,S. helvola,Common Soil,Root Endosphere
+FbCSrt_4_S26,FbCSrt_4_S26,S. helvola,Common Soil,Root Endosphere
+FbNPlf_1_S10,FbNPlf_1_S10,S. helvola,Non-PSF Soil,Leaf Endosphere
+FbNPlf_2_S11,FbNPlf_2_S11,S. helvola,Non-PSF Soil,Leaf Endosphere
+FbNPlf_3_S12,FbNPlf_3_S12,S. helvola,Non-PSF Soil,Leaf Endosphere
+FbNPlf_4_S13,FbNPlf_4_S13,S. helvola,Non-PSF Soil,Leaf Endosphere
+FbNPno_1_S18,FbNPno_1_S18,S. helvola,Non-PSF Soil,Nodule
+FbNPrt_1_S14,FbNPrt_1_S14,S. helvola,Non-PSF Soil,Root Endosphere
+FbNPrt_2_S15,FbNPrt_2_S15,S. helvola,Non-PSF Soil,Root Endosphere
+FbNPrt_3_S16,FbNPrt_3_S16,S. helvola,Non-PSF Soil,Root Endosphere
+FbNPrt_4_S17,FbNPrt_4_S17,S. helvola,Non-PSF Soil,Root Endosphere
+FbRHlf_1_S1,FbRHlf_1_S1,S. helvola,PSF Soil,Leaf Endosphere
+FbRHlf_2_S2,FbRHlf_2_S2,S. helvola,PSF Soil,Leaf Endosphere
+FbRHlf_3_S3,FbRHlf_3_S3,S. helvola,PSF Soil,Leaf Endosphere
+FbRHlf_4_S4,FbRHlf_4_S4,S. helvola,PSF Soil,Leaf Endosphere
+FbRHno_1_S9,FbRHno_1_S9,S. helvola,PSF Soil,Nodule
+FbRHrt_1_S5,FbRHrt_1_S5,S. helvola,PSF Soil,Root Endosphere
+FbRHrt_2_S6,FbRHrt_2_S6,S. helvola,PSF Soil,Root Endosphere
+FbRHrt_3_S7,FbRHrt_3_S7,S. helvola,PSF Soil,Root Endosphere
+FbRHrt_4_S8,FbRHrt_4_S8,S. helvola,PSF Soil,Root Endosphere
+HpCSlf_1_S95,HpCSlf_1_S95,A. bracteata,Common Soil,Leaf Endosphere
+HpCSlf_2_S97,HpCSlf_2_S97,A. bracteata,Common Soil,Leaf Endosphere
+HpCSlf_3_S98,HpCSlf_3_S98,A. bracteata,Common Soil,Leaf Endosphere
+HpCSrt_1_S99,HpCSrt_1_S99,A. bracteata,Common Soil,Root Endosphere
+HpCSrt_2_S100,HpCSrt_2_S100,A. bracteata,Common Soil,Root Endosphere
+HpCSrt_3_S101,HpCSrt_3_S101,A. bracteata,Common Soil,Root Endosphere
+HpNPlf_1_S89,HpNPlf_1_S89,A. bracteata,Non-PSF Soil,Leaf Endosphere
+HpNPlf_2_S90,HpNPlf_2_S90,A. bracteata,Non-PSF Soil,Leaf Endosphere
+HpNPlf_3_S91,HpNPlf_3_S91,A. bracteata,Non-PSF Soil,Leaf Endosphere
+HpNPrt_1_S92,HpNPrt_1_S92,A. bracteata,Non-PSF Soil,Root Endosphere
+HpNPrt_2_S93,HpNPrt_2_S93,A. bracteata,Non-PSF Soil,Root Endosphere
+HpNPrt_3_S94,HpNPrt_3_S94,A. bracteata,Non-PSF Soil,Root Endosphere
+HpRHlf_1_S82,HpRHlf_1_S82,A. bracteata,PSF Soil,Leaf Endosphere
+HpRHlf_2_S83,HpRHlf_2_S83,A. bracteata,PSF Soil,Leaf Endosphere
+HpRHlf_3_S84,HpRHlf_3_S84,A. bracteata,PSF Soil,Leaf Endosphere
+HpRHno_1_S88,HpRHno_1_S88,A. bracteata,PSF Soil,Nodule
+HpRHrt_1_S85,HpRHrt_1_S85,A. bracteata,PSF Soil,Root Endosphere
+HpRHrt_2_S86,HpRHrt_2_S86,A. bracteata,PSF Soil,Root Endosphere
+HpRHrt_3_S87,HpRHrt_3_S87,A. bracteata,PSF Soil,Root Endosphere
+MdCSlf_1_S130,MdCSlf_1_S130,M. truncatula,Common Soil,Leaf Endosphere
+MdCSlf_2_S131,MdCSlf_2_S131,M. truncatula,Common Soil,Leaf Endosphere
+MdCSlf_3_S132,MdCSlf_3_S132,M. truncatula,Common Soil,Leaf Endosphere
+MdCSno_1_S136,MdCSno_1_S136,M. truncatula,Common Soil,Nodule
+MdCSrt_1_S133,MdCSrt_1_S133,M. truncatula,Common Soil,Root Endosphere
+MdCSrt_2_S134,MdCSrt_2_S134,M. truncatula,Common Soil,Root Endosphere
+MdCSrt_3_S135,MdCSrt_3_S135,M. truncatula,Common Soil,Root Endosphere
+MdNPlf_1_S137,MdNPlf_1_S137,M. truncatula,Non-PSF Soil,Leaf Endosphere
+MdNPlf_2_S138,MdNPlf_2_S138,M. truncatula,Non-PSF Soil,Leaf Endosphere
+MdNPlf_3_S139,MdNPlf_3_S139,M. truncatula,Non-PSF Soil,Leaf Endosphere
+MdNPno_1_S143,MdNPno_1_S143,M. truncatula,Non-PSF Soil,Nodule
+MdNPrt_1_S140,MdNPrt_1_S140,M. truncatula,Non-PSF Soil,Root Endosphere
+MdNPrt_2_S141,MdNPrt_2_S141,M. truncatula,Non-PSF Soil,Root Endosphere
+MdNPrt_3_S142,MdNPrt_3_S142,M. truncatula,Non-PSF Soil,Root Endosphere
+MdRHlf_1_S123,MdRHlf_1_S123,M. truncatula,PSF Soil,Leaf Endosphere
+MdRHlf_2_S124,MdRHlf_2_S124,M. truncatula,PSF Soil,Leaf Endosphere
+MdRHlf_3_S125,MdRHlf_3_S125,M. truncatula,PSF Soil,Leaf Endosphere
+MdRHno_1_S129,MdRHno_1_S129,M. truncatula,PSF Soil,Nodule
+MdRHrt_1_S126,MdRHrt_1_S126,M. truncatula,PSF Soil,Root Endosphere
+MdRHrt_2_S127,MdRHrt_2_S127,M. truncatula,PSF Soil,Root Endosphere
+MdRHrt_3_S128,MdRHrt_3_S128,M. truncatula,PSF Soil,Root Endosphere
+RTSF_NTC_2621_S96,RTSF_NTC_2621_S96,N/A,N/A,N/A
+RTSF_NTC_2622_S144,RTSF_NTC_2622_S144,N/A,N/A,N/A
