@@ -1,0 +1,143 @@
+,Sample,Plant,Soil_Treatment,Compartment
+1158,1158,Hog Peanut,No Plant,Leaf
+3008,3008,S. helvola,PSF Soil,Rhizosphere
+3015,3015,S. helvola,PSF Soil,Rhizosphere
+3017,3017,S. helvola,PSF Soil,Rhizosphere
+3018,3018,S. helvola,PSF Soil,Rhizosphere
+3026,3026,S. helvola,Non-PSF Soil,Rhizosphere
+3027,3027,S. helvola,Non-PSF Soil,Rhizosphere
+3033-1,3033-1,S. helvola,Non-PSF Soil,Rhizosphere
+3033-2,3033-2,S. helvola,Non-PSF Soil,Rhizosphere
+3041,3041,S. helvola,Common Soil,Rhizosphere
+3042,3042,S. helvola,Common Soil,Rhizosphere
+3043,3043,S. helvola,Common Soil,Rhizosphere
+3044,3044,S. helvola,Common Soil,Rhizosphere
+3067-1,3067-1,C. fasciculata,PSF Soil,Rhizosphere
+3067-2,3067-2,C. fasciculata,PSF Soil,Rhizosphere
+3070-1,3070-1,C. fasciculata,PSF Soil,Rhizosphere
+3070-2,3070-2,C. fasciculata,PSF Soil,Rhizosphere
+3083-1,3083-1,C. fasciculata,Non-PSF Soil,Rhizosphere
+3083-2,3083-2,C. fasciculata,Non-PSF Soil,Rhizosphere
+3084,3084,C. fasciculata,Non-PSF Soil,Rhizosphere
+3090,3090,C. fasciculata,Common Soil,Rhizosphere
+3091,3091,C. fasciculata,Common Soil,Rhizosphere
+3099,3099,C. fasciculata,Common Soil,Rhizosphere
+3100,3100,C. fasciculata,Common Soil,Rhizosphere
+3108,3108,D. illinoense,PSF Soil,Rhizosphere
+3109,3109,D. illinoense,PSF Soil,Rhizosphere
+3116,3116,D. illinoense,PSF Soil,Rhizosphere
+3118,3118,D. illinoense,PSF Soil,Rhizosphere
+3124,3124,D. illinoense,Non-PSF Soil,Rhizosphere
+3125,3125,D. illinoense,Non-PSF Soil,Rhizosphere
+3127,3127,D. illinoense,Non-PSF Soil,Rhizosphere
+3134,3134,D. illinoense,Non-PSF Soil,Rhizosphere
+3141,3141,D. illinoense,Common Soil,Rhizosphere
+3142,3142,D. illinoense,Common Soil,Rhizosphere
+3150,3150,D. illinoense,Common Soil,Rhizosphere
+3151,3151,D. illinoense,Common Soil,Rhizosphere
+3158-1,3158-1,A. bracteata,PSF Soil,Rhizosphere
+3158-2,3158-2,A. bracteata,PSF Soil,Rhizosphere
+3158-3,3158-3,A. bracteata,PSF Soil,Rhizosphere
+3158-4,3158-4,A. bracteata,PSF Soil,Rhizosphere
+3160,3160,A. bracteata,Non-PSF Soil,Rhizosphere
+3163,3163,A. bracteata,Non-PSF Soil,Rhizosphere
+3165-1,3165-1,A. bracteata,Non-PSF Soil,Rhizosphere
+3165-2,3165-2,A. bracteata,Non-PSF Soil,Rhizosphere
+3170,3170,A. bracteata,Common Soil,Rhizosphere
+3171,3171,A. bracteata,Common Soil,Rhizosphere
+3172,3172,A. bracteata,Common Soil,Rhizosphere
+3174,3174,A. bracteata,Common Soil,Rhizosphere
+3175,3175,Lupine,PSF Soil,Rhizosphere
+3177,3177,Lupine,PSF Soil,Rhizosphere
+3180-1,3180-1,Lupine,PSF Soil,Rhizosphere
+3180-2,3180-2,Lupine,PSF Soil,Rhizosphere
+3181,3181,Lupine,Common Soil,Rhizosphere
+3182,3182,Lupine,Common Soil,Rhizosphere
+3183,3183,Lupine,Common Soil,Rhizosphere
+3185,3185,Lupine,Common Soil,Rhizosphere
+3190,3190,T. repens,PSF Soil,Rhizosphere
+3191,3191,T. repens,PSF Soil,Rhizosphere
+3193,3193,T. repens,PSF Soil,Rhizosphere
+3200,3200,T. repens,PSF Soil,Rhizosphere
+3224,3224,T. repens,Common Soil,Rhizosphere
+3225,3225,T. repens,Common Soil,Rhizosphere
+3226,3226,T. repens,Common Soil,Rhizosphere
+3227,3227,T. repens,Common Soil,Rhizosphere
+3231,3231,M. truncatula,PSF Soil,Rhizosphere
+3232,3232,M. truncatula,PSF Soil,Rhizosphere
+3244,3244,M. truncatula,PSF Soil,Rhizosphere
+3245,3245,M. truncatula,PSF Soil,Rhizosphere
+3246,3246,M. truncatula,PSF Soil,Rhizosphere
+3247,3247,M. truncatula,PSF Soil,Rhizosphere
+3255,3255,M. truncatula,PSF Soil,Rhizosphere
+3256,3256,M. truncatula,PSF Soil,Rhizosphere
+3262,3262,M. truncatula,Common Soil,Rhizosphere
+3264,3264,M. truncatula,Common Soil,Rhizosphere
+3271,3271,M. truncatula,Common Soil,Rhizosphere
+3272,3272,M. truncatula,Common Soil,Rhizosphere
+3282,3282,M. truncatula,Non-PSF Soil,Rhizosphere
+3283,3283,M. truncatula,Non-PSF Soil,Rhizosphere
+3290,3290,M. truncatula,Non-PSF Soil,Rhizosphere
+3292,3292,M. truncatula,Non-PSF Soil,Rhizosphere
+4009,4009,S. helvola,PSF Soil,Nodule
+4025,4025,S. helvola,Non-PSF Soil,Nodule
+4041,4041,S. helvola,Common Soil,Nodule
+4059,4059,C. fasciculata,PSF Soil,Nodule
+4075,4075,C. fasciculata,Non-PSF Soil,Nodule
+4090,4090,C. fasciculata,Common Soil,Nodule
+4108,4108,D. illinoense,PSF Soil,Nodule
+4124,4124,D. illinoense,Non-PSF Soil,Nodule
+4141,4141,D. illinoense,Common Soil,Nodule
+4155,4155,A. bracteata,PSF Soil,Nodule
+4190,4190,T. repens,PSF Soil,Nodule
+4218,4218,T. repens,Non-PSF Soil,Nodule
+4224,4224,T. repens,Common Soil,Nodule
+4231,4231,M. truncatula,PSF Soil,Nodule
+4245,4245,M. truncatula,PSF Soil,Nodule
+4265,4265,M. truncatula,Common Soil,Nodule
+4280,4280,M. truncatula,Non-PSF Soil,Nodule
+5009,5009,S. helvola,PSF Soil,Bulk Soil
+5010,5010,S. helvola,PSF Soil,Bulk Soil
+5011,5011,S. helvola,PSF Soil,Bulk Soil
+5012,5012,S. helvola,Non-PSF Soil,Bulk Soil
+5013,5013,S. helvola,Non-PSF Soil,Bulk Soil
+5014,5014,S. helvola,Non-PSF Soil,Bulk Soil
+5044,5044,S. helvola,Common Soil,Bulk Soil
+5045,5045,S. helvola,Common Soil,Bulk Soil
+5046,5046,S. helvola,Common Soil,Bulk Soil
+5061,5061,C. fasciculata,PSF Soil,Bulk Soil
+5062,5062,C. fasciculata,PSF Soil,Bulk Soil
+5063,5063,C. fasciculata,PSF Soil,Bulk Soil
+5076,5076,C. fasciculata,Non-PSF Soil,Bulk Soil
+5077,5077,C. fasciculata,Non-PSF Soil,Bulk Soil
+5078,5078,C. fasciculata,Non-PSF Soil,Bulk Soil
+5110,5110,D. illinoense,PSF Soil,Bulk Soil
+5111,5111,D. illinoense,PSF Soil,Bulk Soil
+5112,5112,D. illinoense,PSF Soil,Bulk Soil
+5129-1,5129-1,D. illinoense,Non-PSF Soil,Bulk Soil
+5129-2,5129-2,D. illinoense,Non-PSF Soil,Bulk Soil
+5129-3,5129-3,D. illinoense,Non-PSF Soil,Bulk Soil
+5155,5155,A. bracteata,PSF Soil,Bulk Soil
+5156,5156,A. bracteata,PSF Soil,Bulk Soil
+5157,5157,A. bracteata,PSF Soil,Bulk Soil
+5158,5158,A. bracteata,Non-PSF Soil,Bulk Soil
+5159,5159,A. bracteata,Non-PSF Soil,Bulk Soil
+5160,5160,A. bracteata,Non-PSF Soil,Bulk Soil
+5177,5177,Lupine,PSF Soil,Bulk Soil
+5178,5178,Lupine,PSF Soil,Bulk Soil
+5179,5179,Lupine,PSF Soil,Bulk Soil
+5201,5201,T. repens,PSF Soil,Bulk Soil
+5202,5202,T. repens,PSF Soil,Bulk Soil
+5203,5203,T. repens,PSF Soil,Bulk Soil
+5210,5210,T. repens,Non-PSF Soil,Bulk Soil
+5211,5211,T. repens,Non-PSF Soil,Bulk Soil
+5212,5212,T. repens,Non-PSF Soil,Bulk Soil
+5247,5247,M. truncatula,PSF Soil,Bulk Soil
+5248,5248,M. truncatula,PSF Soil,Bulk Soil
+5249,5249,M. truncatula,PSF Soil,Bulk Soil
+5250,5250,M. truncatula,Non-PSF Soil,Bulk Soil
+5251,5251,M. truncatula,Non-PSF Soil,Bulk Soil
+5252,5252,M. truncatula,Non-PSF Soil,Bulk Soil
+RTSF1,RTSF1,Imma,Leave,Dishere
+RTSF2,RTSF2,Imma,Leave,Dishere
+ZymoMockDNA,ZymoMockDNA,Imma,Leave,Dishere
