@@ -1,6 +1,6 @@
 #### Package Installation (if neccessary)####
 if(!require(optparse)) { install.packages("optparse") }
-if(!require(ggplot2)) { install.packages('ggplot2')}
+if(require(ggplot2)) { install.packages('ggplot2')}
 if(!require(dplyr)) { install.packages('dplyr')}
 if(!require(vegan)) { install.packages('vegan')}
 if(!require(cgwtools)) { install.packages('cgwtools')}
