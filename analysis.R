@@ -18,7 +18,7 @@ if(!require(Biostrings)) {BiocManager::install("Biostrings")}
 if(!require(ShortRead)) {BiocManager::install("ShortRead")}
 
 
-# Rscript ~/PSF_MBIOME/analysis.R --raw_soil ~/test_PSF/reads/soil_reads --raw_root ~/test_PSF/reads/endo_reads --soil_metadata ~/PSF_MBIOME/metadata/soil_metadata.csv --pheno ~/PSF_MBIOME/nodnbio.csv --reference ~/PSF_MBIOME/reference/rdp_19_toGenus_trainset.fa.gz | cat > PSF_log.txt #
+# Rscript ~/PSF_MBIOME/analysis.R --raw_soil ~/test/reads/raw/soil_reads --raw_root ~/test/reads/raw/endo_reads --soil_metadata ~/test/metadata/soil_metadata.csv --pheno ~/test/nodnbio.csv --reference ~/test/reference/rdp_19_toGenus_trainset.fa.gz | cat > PSF_log.txt #
 
 #### Argument Parsing ####
 library(optparse); packageVersion("optparse")
@@ -233,6 +233,17 @@ nodnbio.plot <- (nod.plot) /
   plot_layout(guides = 'keep') &
   theme(plot.tag = element_text(size = 20))
 
+#### FastQC on the reads ####
+# Call fastqc to do quality control from the command line #
+system('mkdir QC')
+system('mkdir ./QC/raw_qc')
+system('mkdir ./QC/raw_qc/raw_soil_qc')
+system(paste0("fastqc --noextract ",soil.dir, "*fastq.gz -o ./QC/raw_qc/raw_soil_qc"))
+system('mkdir ./QC/raw_qc/raw_root_qc')
+system(paste0("fastqc --noextract ",root.dir, "*fastq.gz -o ./QC/raw_qc/raw_root_qc"))
+system("rm ./QC/raw_qc/raw_soil_qc/*.zip")
+system("rm ./QC/raw_qc/raw_root_qc/*.zip")
+
 #### Soil Primer Removal ####
 # Ensure you have the right files #
 list.files(soil.dir)
@@ -316,6 +327,7 @@ soil.rderep <- derepFastq(post_soil.rfp, verbose=TRUE)
 soil.fdada <- dada(soil.fderep, err=soil_for.er, multithread=TRUE, verbose = TRUE)
 soil.rdada <- dada(soil.rderep, err=soil_rev.er, multithread=TRUE, verbose = TRUE)
 
+save.image("./test.RData")
 # Merge the denoised forward and reversed reads #
 soil.remerged <- mergePairs(soil.fdada, post_soil.ffp, soil.rdada, post_soil.rfp, verbose=TRUE)
 
@@ -435,6 +447,7 @@ root.rderep <- derepFastq(post_root.rfp, verbose=TRUE)
 root.fdada <- dada(root.fderep, err=root_for.er, multithread=TRUE, verbose = TRUE)
 root.rdada <- dada(root.rderep, err=root_rev.er, multithread=TRUE, verbose = TRUE)
 
+save.image("./test.RData")
 # Merge the denoised forward and reversed reads #
 root.remerged <- mergePairs(root.fdada, post_root.ffp, root.rdada, post_root.rfp, verbose=TRUE)
 
