@@ -1,23 +1,3 @@
-#### Package Installation (if neccessary)####
-if(!require(optparse)) { install.packages("optparse") }
-if(require(ggplot2)) { install.packages('ggplot2')}
-if(!require(dplyr)) { install.packages('dplyr')}
-if(!require(vegan)) { install.packages('vegan')}
-if(!require(cgwtools)) { install.packages('cgwtools')}
-if(!require(patchwork)) { install.packages('patchwork')}
-if (!requireNamespace("BiocManager", quietly = TRUE))
-  install.packages("BiocManager")
-if(!require(dada2)) {BiocManager::install("dada2", version = "3.20")}
-if(!require(phyloseq)) {BiocManager::install("phyloseq", version = "3.20")}
-if(!require(microbiome)) {BiocManager::install("microbiome")}
-if(!require(Maaslin2)) {BiocManager::install("Maaslin2")}
-if(!require(microbiomeutilities)) {remotes::install_github("microsud/microbiomeutilities")}
-if(!require(msa)) {BiocManager::install("msa")}
-if(!require(phangorn)) {BiocManager::install("phangorn")}
-if(!require(Biostrings)) {BiocManager::install("Biostrings")}
-if(!require(ShortRead)) {BiocManager::install("ShortRead")}
-
-
 # Rscript ~/PSF_MBIOME/analysis.R --raw_soil ~/test_PSF/reads/soil_reads --raw_root ~/test_PSF/reads/endo_reads --soil_metadata ~/PSF_MBIOME/metadata/soil_metadata.csv --pheno ~/PSF_MBIOME/nodnbio.csv --reference ~/PSF_MBIOME/reference/rdp_19_toGenus_trainset.fa.gz | cat > PSF_log.txt #
 
 #### Argument Parsing ####
@@ -28,10 +8,10 @@ option_list <- list(
   make_option("--pheno", type = "character", help = "filepath that contains the Comma Separated Values (csv) file of the phenotype data (biomass and nodule counts)"),
   make_option("--reference", type = "character", help = "filepath that contains the reference database to assign taxonomy to the reads"),
   make_option("--raw_root", type = "character", help = "filepath containing the raw, untrimmed reads for the reads generated from the v5-v7 primers( root endosphere and some nodule samples)"),
-  make_option("--root_metadata", type = "character", help = "filepath that contains the Comma Separated Values (csv) file of the root metadata"),
-  make_option("--reference", type = "character", help = "filepath that contains the reference database to assign taxonomy to the reads"))
+  make_option("--root_metadata", type = "character", help = "filepath that contains the Comma Separated Values (csv) file of the root metadata"))
 
 opt <- parse_args(OptionParser(option_list=option_list))
+
 soil.dir <- opt$raw_soil
 soil.met <- opt$soil_metadata
 nodnbio <- opt$pheno
