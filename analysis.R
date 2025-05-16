@@ -18,7 +18,7 @@ if(!require(Biostrings)) {BiocManager::install("Biostrings")}
 if(!require(ShortRead)) {BiocManager::install("ShortRead")}
 
 
-# Rscript ~/PSF_MBIOME/analysis.R --raw_soil ~/test/reads/raw/soil_reads --raw_root ~/test/reads/raw/endo_reads --soil_metadata ~/test/metadata/soil_metadata.csv --pheno ~/test/nodnbio.csv --reference ~/test/reference/rdp_19_toGenus_trainset.fa.gz | cat > PSF_log.txt #
+# Rscript ~/PSF_MBIOME/analysis.R --raw_soil ~/test_PSF/reads/soil_reads --raw_root ~/test_PSF/reads/endo_reads --soil_metadata ~/PSF_MBIOME/metadata/soil_metadata.csv --pheno ~/PSF_MBIOME/nodnbio.csv --reference ~/PSF_MBIOME/reference/rdp_19_toGenus_trainset.fa.gz | cat > PSF_log.txt #
 
 #### Argument Parsing ####
 library(optparse); packageVersion("optparse")
