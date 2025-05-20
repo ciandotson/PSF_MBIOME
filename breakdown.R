@@ -1,10 +1,25 @@
+#### Argument Parsing ####
+library(optparse); packageVersion("optparse")
+option_list <- list(
+  make_option("--raw_soil", type = "character", help = "filepath containing the raw, untrimmed reads for the reads generated from the v4 primers (bulk soil, rhizosphere, and some nodule samples)"),
+  make_option("--soil_metadata", type = "character", help = "filepath that contains the Comma Separated Values (csv) file of the soil metadata"),
+  make_option("--pheno", type = "character", help = "filepath that contains the Comma Separated Values (csv) file of the phenotype data (biomass and nodule counts)"),
+  make_option("--reference", type = "character", help = "filepath that contains the reference database to assign taxonomy to the reads"),
+  make_option("--raw_root", type = "character", help = "filepath containing the raw, untrimmed reads for the reads generated from the v5-v7 primers( root endosphere and some nodule samples)"),
+  make_option("--root_metadata", type = "character", help = "filepath that contains the Comma Separated Values (csv) file of the root metadata"))
+
+opt <- parse_args(OptionParser(option_list=option_list))
+
+soil.dir <- opt$raw_soil
+soil.met <- opt$soil_metadata
+nodnbio <- opt$pheno
+reference <- opt$reference
+root.dir <- opt$raw_root
+root.met <- opt$root_metadata
+reference <- opt$reference
+
 load("./test.RData")
 
-# Assign Taxonomy #
-library(dada2)
-soil_rdp.taxa <- assignTaxonomy(rownames(soil_nochim.st), refFasta = reference, multithread = TRUE, verbose = TRUE)
-soil_rdp.taxa <- as.matrix(soil_rdp.taxa)
-save.image("./test.RData")
 
 # Load the metadata #
 soil_raw.met <- read.csv2(soil_metadata, sep = ',', row.names = TRUE)
