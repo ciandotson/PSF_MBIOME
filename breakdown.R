@@ -6,8 +6,8 @@ option_list <- list(
   make_option("--pheno", type = "character", help = "filepath that contains the Comma Separated Values (csv) file of the phenotype data (biomass and nodule counts)"),
   make_option("--reference", type = "character", help = "filepath that contains the reference database to assign taxonomy to the reads"),
   make_option("--raw_root", type = "character", help = "filepath containing the raw, untrimmed reads for the reads generated from the v5-v7 primers( root endosphere and some nodule samples)"),
-  make_option("--root_metadata", type = "character", help = "filepath that contains the Comma Separated Values (csv) file of the root metadata"))
-
+  make_option("--root_metadata", type = "character", help = "filepath that contains the Comma Separated Values (csv) file of the root metadata"),
+  make_option("--zymo", type = "character", help = "filepath that contains the ZYMO mock community reference fastas"))
 opt <- parse_args(OptionParser(option_list=option_list))
 
 soil.dir <- opt$raw_soil
@@ -17,6 +17,7 @@ reference <- opt$reference
 root.dir <- opt$raw_root
 root.met <- opt$root_metadata
 reference <- opt$reference
+zymo <- opt$zymo
 
 load("./test.RData")
 
