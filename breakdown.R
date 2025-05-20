@@ -28,8 +28,7 @@ rownames(soil_raw.met) <- soil_raw.met$Sample
 soil_raw.met <- soil_raw.met[,c('Sample', 'Plant', 'Soil_Treatment', 'Compartment')]
 
 # Check to see if ASVs were denoise properly #
-soil_nochim.st <- t(soil_nochim.st)
-unqs.mock <- soil_nochim.st["ZymoMockDNA",]
+unqs.mock <- soil_nochim.st[,"ZymoMockDNA_1870_S132"]
 unqs.mock <- sort(unqs.mock[unqs.mock>0], decreasing=TRUE)
 cat("DADA2 inferred", length(unqs.mock), "sample sequences present in the Mock community.\n")
 mock.ref <- getSequences(zymo)
