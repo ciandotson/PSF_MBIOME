@@ -8,6 +8,7 @@ option_list <- list(
   make_option("--raw_root", type = "character", help = "filepath containing the raw, untrimmed reads for the reads generated from the v5-v7 primers( root endosphere and some nodule samples)"),
   make_option("--root_metadata", type = "character", help = "filepath that contains the Comma Separated Values (csv) file of the root metadata"),
   make_option("--zymo", type = "character", help = "filepath that contains the ZYMO mock community reference fastas"))
+
 opt <- parse_args(OptionParser(option_list=option_list))
 
 soil.dir <- opt$raw_soil
@@ -23,7 +24,7 @@ load("./test.RData")
 
 
 # Load the metadata #
-soil_raw.met <- read.csv2(soil_metadata, sep = ',', row.names = TRUE)
+soil_raw.met <- read.csv2(soil.met, sep = ',', row.names = TRUE)
 rownames(soil_raw.met) <- soil_raw.met$Sample
 soil_raw.met <- soil_raw.met[,c('Sample', 'Plant', 'Soil_Treatment', 'Compartment')]
 
@@ -31,7 +32,7 @@ soil_raw.met <- soil_raw.met[,c('Sample', 'Plant', 'Soil_Treatment', 'Compartmen
 unqs.mock <- soil_nochim.st["ZymoMockDNA",]
 unqs.mock <- sort(unqs.mock[unqs.mock>0], decreasing=TRUE)
 cat("DADA2 inferred", length(unqs.mock), "sample sequences present in the Mock community.\n")
-mock.ref <- getSequences("./reads/ssrRNAs")
+mock.ref <- getSequences(zymo)
 match.ref <- sum(sapply(names(unqs.mock), function(x) any(grepl(x, mock.ref))))
 cat("Of those,", sum(match.ref), "were exact matches to the expected reference sequences.\n")
 
