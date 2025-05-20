@@ -22,9 +22,8 @@ zymo <- opt$zymo
 
 load("./test.RData")
 
-
 # Load the metadata #
-soil_raw.met <- read.csv2(soil.met, sep = ',', row.names = TRUE)
+soil_raw.met <- read.csv2(soil.met, sep = ',')
 rownames(soil_raw.met) <- soil_raw.met$Sample
 soil_raw.met <- soil_raw.met[,c('Sample', 'Plant', 'Soil_Treatment', 'Compartment')]
 
