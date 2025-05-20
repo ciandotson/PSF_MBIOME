@@ -4,6 +4,7 @@ load("./test.RData")
 library(dada2)
 soil_rdp.taxa <- assignTaxonomy(rownames(soil_nochim.st), refFasta = reference, multithread = TRUE, verbose = TRUE)
 soil_rdp.taxa <- as.matrix(soil_rdp.taxa)
+save.image("./test.RData")
 
 # Load the metadata #
 soil_raw.met <- read.csv2(soil_metadata, sep = ',', row.names = TRUE)
@@ -14,7 +15,7 @@ soil_raw.met <- soil_raw.met[,c('Sample', 'Plant', 'Soil_Treatment', 'Compartmen
 unqs.mock <- soil_nochim.st["ZymoMockDNA",]
 unqs.mock <- sort(unqs.mock[unqs.mock>0], decreasing=TRUE)
 cat("DADA2 inferred", length(unqs.mock), "sample sequences present in the Mock community.\n")
-mock.ref <- getSequences(zymo.dir)
+mock.ref <- getSequences("./reads/ssrRNAs")
 match.ref <- sum(sapply(names(unqs.mock), function(x) any(grepl(x, mock.ref))))
 cat("Of those,", sum(match.ref), "were exact matches to the expected reference sequences.\n")
 
@@ -23,6 +24,7 @@ library(phyloseq)
 raw_soil.ps <- phyloseq(otu_table(soil_nochim.st, taxa_are_rows = TRUE),
                         sample_data(soil_raw.met),
                         tax_table(soil_rdp.taxa))
+save.image("./test.RData")
 
 raw_soil.dna <- Biostrings::DNAStringSet(taxa_names(raw_soil.ps))
 names(raw_soil.dna) <- taxa_names(raw_soil.ps)
@@ -37,6 +39,8 @@ raw_soil.ps <- subset_samples(raw_soil.ps, Plant != 'Lupine')
 
 raw_soil.ps <- subset_taxa(raw_soil.ps, taxa_sums(raw_soil.ps) > 1000)
 colnames(tax_table(raw_soil.ps)) <- c('rdp_Kingdom', 'rdp_Phylum', 'rdp_Class', 'rdp_Order', 'rdp_Family', 'rdp_Genus')
+
+save.image("./test.RData")
 
 decompose_ps <- function(ps, label){
   # function that decomposes a phyloseq object into separate data.frame and refseq objects (does not include tree) #
@@ -67,6 +71,8 @@ for(i in 1:length(soil.dna)){
   raw_soil.tax$Best_Hit[i] <- hold[1, 2]
 }
 
+save.image("./test.RData")
+
 # Filter out reads that do not correspond to a NCBI entry #
 library(dplyr); packageVersion('dplyr')
 filt_soil.tax <- filter(raw_soil.tax, !is.na(raw_soil.tax$Best_Hit))
@@ -76,6 +82,7 @@ if(!dir.exists("./blast_hits")){
   dir.create('./blast_hits')
 }
 write.table(filt_soil.tax$Best_Hit, './blast_hits/soil_blast_hits.txt')
+save.image("./test.RData")
 
 # Call the python script to retrieve the taxonomies of the matched entries #
 system('python3 rRNA_BLAST.py -i ./blast_hits/soil_blast_hits.txt -o ./blast_hits/soil_ncbi_hits.csv')
@@ -92,12 +99,14 @@ for(i in 1:nrow(soil_ncbi_fin.tax)){
     soil_ncbi_fin.tax$Genus[i] <- soil_ncbi_fin.tax$hold[i]
   }
 }
+save.image("./test.RData")
 
 # Filter otu table and refseq object such that all reads without a BLAST assignment are removed #
 soil_ncbi_fin.tax <- soil_ncbi_fin.tax[,1:7]
 filter_soil.tax <- cbind(filt_soil.tax, soil_ncbi_fin.tax)
 
 decompose_ps(raw_soil.ps, filt_soil)
+save.image("./test.RData")
 
 filt_soil.tax <- filter_soil.tax
 filt_soil.otu <- filter(filt_soil.otu, rownames(filt_soil.otu) %in% rownames(filt_soil.tax))
@@ -114,6 +123,7 @@ soil.ps <- phyloseq(otu_table(filt_soil.otu, taxa_are_rows = TRUE),
                     refseq(filt_soil.dna))
 
 soil.ps <- subset_taxa(soil.ps, taxa_sums(soil.ps) > 1000)
+save.image("./test.RData")
 
 # Change the taxa names to represent comparatiove abundance and lowest identification level #
 taxa_names(soil.ps) <- paste0('ASV', seq(ntaxa(soil.ps)))
@@ -144,6 +154,8 @@ system('mafft --auto --thread -1 ./reads/soil_input.fasta > ./reads/soils_aligne
 # Construct a tree using IQTree with a general time reversible model with a gamma distribution and invariant site copies #
 system('iqtree -s ./reads/soils_aligned.fasta -m GTR+G+I -nt AUTO')
 
+save.image("./test.RData")
+
 # Read the tree using ape and check that the tip labels match #
 library(ape); packageVersion('ape')
 soil.tre <- read.tree("./reads/soils_aligned.fasta.treefile")
@@ -154,7 +166,7 @@ soil.ps <- phyloseq(otu_table(soil.otu, taxa_are_rows = TRUE),
                     tax_table(soil.tax),
                     refseq(soil.dna),
                     phy_tree(soil.tre))
-
+save.image("./test.RData")
 #### Root Primer Removal ####
 # Ensure you have the right files #
 list.files(root.dir)
