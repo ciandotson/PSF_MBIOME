@@ -285,7 +285,7 @@ system('mkdir ./reads/postfilt/soil_postfilt')
 post_soil.ffp <- file.path('./reads/postfilt/soil_postfilt', paste0(soil.names, '_filt_R1.fastq.gz'))
 post_soil.rfp <- file.path('./reads/postfilt/soil_postfilt', paste0(soil.names, '_filt_R2.fastq.gz'))
 
-soil_postfilt.track <- filterAndTrim(pt_soil.ffp, post_soil.ffp, pt_soil.rfp, post_soil.rfp, truncLen=c(230,230),
+soil_postfilt.track <- filterAndTrim(pt_soil.ffp, post_soil.ffp, pt_soil.rfp, post_soil.rfp, truncLen=c(230,200),
                                      maxN=0, maxEE=c(2,2), truncQ=2, rm.phix=TRUE,
                                      compress=TRUE, multithread=TRUE)
 
@@ -405,7 +405,7 @@ system('mkdir ./reads/postfilt/root_postfilt')
 post_root.ffp <- file.path('./reads/postfilt/root_postfilt', paste0(root.names, '_filt_R1.fastq.gz'))
 post_root.rfp <- file.path('./reads/postfilt/root_postfilt', paste0(root.names, '_filt_R2.fastq.gz'))
 
-root_postfilt.track <- filterAndTrim(pt_root.ffp, post_root.ffp, pt_root.rfp, post_root.rfp, truncLen=c(230,230),
+root_postfilt.track <- filterAndTrim(pt_root.ffp, post_root.ffp, pt_root.rfp, post_root.rfp, truncLen=c(230,200),
                                      maxN=0, maxEE=c(2,2), truncQ=2, rm.phix=TRUE,
                                      compress=TRUE, multithread=TRUE)
 
