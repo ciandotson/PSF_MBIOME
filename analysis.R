@@ -489,12 +489,17 @@ system('iqtree -s ./reads/soils_aligned.fasta -m GTR+G+I -nt AUTO')
 # Read the tree using ape and check that the tip labels match #
 library(ape); packageVersion('ape')
 soil.tre <- read.tree("./reads/soils_aligned.fasta.treefile")
+soil.tre$tip.label <- sub("^(ASV[0-9]+)_([^_]+)_$", "\\1(\\2)", soil.tre$tip.label)
+soil.tre$tip.label <- gsub("ASV47_Enterobacter", "ASV47(Enterobacter cloacae complex)", soil.tre$tip.label)
+soil.tre$tip.label <- gsub("ASV32_Streptomyces", "ASV32(Streptomyces aurantiacus group)", soil.tre$tip.label)
+soil.tre$tip.label <- gsub("ASV53_Streptomyces", "ASV53(Streptomyces aurantiacus group)", soil.tre$tip.label)
 
 # Combine final phyloseq object for soil samples #
-soil.ps <- phyloseq(otu_table(soil.otu, taxa_are_rows = TRUE),
-                    sample_data(soil.met),
-                    tax_table(soil.tax),
-                    refseq(soil.dna),
+soil$tax <- as.matrix(soil$tax)
+soil.ps <- phyloseq(otu_table(soil$otu, taxa_are_rows = TRUE),
+                    sample_data(soil$met),
+                    tax_table(soil$tax),
+                    refseq(soil$dna),
                     phy_tree(soil.tre))
 
 #### Root Primer Removal ####
@@ -705,7 +710,6 @@ for(i in 1:nrow(root.tax)){
 
 # produce final decomposed phyloseq object
 decompose_ps(root.ps, root)
-save.image("./test.RData")
 
 #### Phylogenetic Tree Construction for roots ####
 # Output the reads into a fasta file #
