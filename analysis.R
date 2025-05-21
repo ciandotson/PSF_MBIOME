@@ -474,11 +474,11 @@ for(i in 1:nrow(soil$tax)){
 }
 
 # produce final decomposed phyloseq object
-decompose_ps(soil.ps, soil)
+decompose_ps(soil.ps, 'soil')
 
 #### Phylogenetic Tree Construction for Soils ####
 # Output the reads into a fasta file #
-writeXStringSet(as.character(soil.dna, "./reads/soil_input.fasta"))
+writeXStringSet(soil$dna, "./reads/soil_input.fasta")
 
 # Perform a multiple sequence alignment using MAFFT #
 system('mafft --auto --thread -1 ./reads/soil_input.fasta > ./reads/soils_aligned.fasta')
@@ -592,11 +592,10 @@ dim(root_nochim.st)
 # Determine the ratio of non-chimeras to all reads #
 sum(root_nochim.st)/sum(root.st)
 root_nochim.st <- t(root_nochim.st)
-save.image("./test.RData")
 
 # track reads through the pipeline #
 getN <- function(x) sum(getUniques(x))
-root_final.track <- cbind(root_prefilt.track[,1], root_prefilt.track[,2], root_postfilt.track[,2], sapply(root.fdada, getN), sapply(root.rdada, getN), sapply(root.remerged, getN), rowSums(root_nochim.st))
+root_final.track <- cbind(root_prefilt.track[,1], root_prefilt.track[,2], root_postfilt.track[,2], sapply(root.fdada, getN), sapply(root.rdada, getN), sapply(root.remerged, getN), colSums(root_nochim.st))
 colnames(root_final.track) <- c("pre-cutadapt", "post-cutadapt", "filtered", "denoisedF", "denoisedR", "merged", "nonchim")
 rownames(root_final.track) <- root.names
 root_final.track <- as.data.frame(root_final.track)
