@@ -7,7 +7,7 @@ option_list <- list(
   make_option("--reference", type = "character", help = "filepath that contains the reference database to assign taxonomy to the reads"),
   make_option("--raw_root", type = "character", help = "filepath containing the raw, untrimmed reads for the reads generated from the v5-v7 primers( root endosphere and some nodule samples)"),
   make_option("--root_metadata", type = "character", help = "filepath that contains the Comma Separated Values (csv) file of the root metadata"),
-  make_option("--zymo", type = "character", help = "filepath that contains the ZYMO mock community reference fastas"))
+  make_option("--zymo", type = "character", help = "filepath to where the reference fasta files are for the ZYMO mock culture"))
 
 opt <- parse_args(OptionParser(option_list=option_list))
 
@@ -20,7 +20,8 @@ root.met <- opt$root_metadata
 reference <- opt$reference
 zymo <- opt$zymo
 
-#### Root Primer Removal ####
+
+#### root Primer Removal ####
 # Ensure you have the right files #
 list.files(root.dir)
 
@@ -43,8 +44,8 @@ allOrients <- function(primer) {
   return(sapply(orients, toString))  # Convert back to character vector
 }
 
-root.fprimer <- "GTGCCAGCMGCCGCGGTAA"
-root.rprimer <- "GGACTACHVGGGTWTCTAAT"
+root.fprimer <- "AACMGGATTAGATACCCKG"
+root.rprimer <- "ACGTCATCCCCACCTTCC"
 
 root.fori <- allOrients(root.fprimer)
 root.rori <- allOrients(root.fprimer)
@@ -55,7 +56,7 @@ pre_root.ffp <- file.path('./reads/pretrim/root_pretrim', paste0(root.names, '_p
 pre_root.rfp <- file.path('./reads/pretrim/root_pretrim', paste0(root.names, '_pretrim_R2.fastq.gz'))
 
 # Filter reads less than 75 bp and save the filtered fastqs to the pretrim filepaths #
-library(dada2)
+library(dada2); packageVersion('dada2')
 root_prefilt.track <- filterAndTrim(raw_root.ffp, pre_root.ffp, raw_root.rfp, pre_root.rfp, minLen = 75,
                                     compress = TRUE, multithread = TRUE)
 
@@ -83,7 +84,7 @@ root_postfilt.track <- filterAndTrim(pt_root.ffp, post_root.ffp, pt_root.rfp, po
                                      compress=TRUE, multithread=TRUE)
 
 save.image("./root.RData")
-#### dada2 Implementation for the Root Samples ####
+#### dada2 Implementation for the root Samples ####
 # Learn the error rates that are specific to your data #
 root_for.er <- learnErrors(post_root.ffp, multithread=TRUE, verbose = TRUE)
 root_rev.er <- learnErrors(post_root.rfp, multithread=TRUE, verbose = TRUE)
@@ -116,4 +117,6 @@ dim(root_nochim.st)
 # Determine the ratio of non-chimeras to all reads #
 sum(root_nochim.st)/sum(root.st)
 root_nochim.st <- t(root_nochim.st)
+colnames(root_nochim.st) <- root.names
+
 save.image("./root.RData")
