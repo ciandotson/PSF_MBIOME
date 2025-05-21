@@ -20,7 +20,7 @@ reference <- opt$reference
 root.dir <- opt$raw_root
 root.met <- opt$root_metadata
 reference <- opt$reference
-zymo.dir <- opt$zymo
+zymo <- opt$zymo
 
 #### Nodule Count and Biomass Data Visualization ####
 # Read in the phenotypic data and clean it for analysis #
@@ -235,7 +235,7 @@ raw_soil.ffp <- sort(list.files(soil.dir, pattern = "_R1_001.fastq.gz", full.nam
 raw_soil.rfp <- sort(list.files(soil.dir, pattern = "_R2_001.fastq.gz", full.names = TRUE))
 
 # Save the names based on the file names #
-soil.names <- strsplit(basename(raw_soil.ffp), "_L001_R1_001.fastq.gz")
+soil.names <- strsplit(basename(raw_soil.ffp), "_")[[1]]
 soil.names <- as.character(soil.names)
 
 # Find all orientations of each primer for primer trimming #
@@ -325,6 +325,8 @@ dim(soil_nochim.st)
 # Determine the ratio of non-chimeras to all reads #
 sum(soil_nochim.st)/sum(soil.st)
 soil_nochim.st <- t(soil_nochim.st)
+colnames(soil_nochim.st) <- soil.names
+
 save.image("./test.RData")
 # track reads through the pipeline #
 getN <- function(x) sum(getUniques(x))
@@ -338,15 +340,15 @@ soil_rdp.taxa <- assignTaxonomy(rownames(soil_nochim.st), refFasta = reference, 
 soil_rdp.taxa <- as.matrix(soil_rdp.taxa)
 
 # Load the metadata #
-soil_raw.met <- read.csv2(soil_metadata, sep = ',', row.names = TRUE)
+soil_raw.met <- read.csv2(soil.met, sep = ',')
 rownames(soil_raw.met) <- soil_raw.met$Sample
 soil_raw.met <- soil_raw.met[,c('Sample', 'Plant', 'Soil_Treatment', 'Compartment')]
 
 # Check to see if ASVs were denoise properly #
-unqs.mock <- soil_nochim.st["ZymoMockDNA",]
+unqs.mock <- soil_nochim.st["ZymoMockDNA_1870_S132",]
 unqs.mock <- sort(unqs.mock[unqs.mock>0], decreasing=TRUE)
 cat("DADA2 inferred", length(unqs.mock), "sample sequences present in the Mock community.\n")
-mock.ref <- getSequences(zymo.dir)
+mock.ref <- getSequences(zymo)
 match.ref <- sum(sapply(names(unqs.mock), function(x) any(grepl(x, mock.ref))))
 cat("Of those,", sum(match.ref), "were exact matches to the expected reference sequences.\n")
 
