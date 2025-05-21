@@ -327,10 +327,9 @@ sum(soil_nochim.st)/sum(soil.st)
 soil_nochim.st <- t(soil_nochim.st)
 colnames(soil_nochim.st) <- soil.names
 
-save.image("./test.RData")
 # track reads through the pipeline #
 getN <- function(x) sum(getUniques(x))
-soil_final.track <- cbind(soil_prefilt.track[,1], soil_prefilt.track[,2], soil_postfilt.track[,2], sapply(soil.fdada, getN), sapply(soil.rdada, getN), sapply(soil.remerged, getN), rowSums(soil_nochim.st))
+soil_final.track <- cbind(soil_prefilt.track[,1], soil_prefilt.track[,2], soil_postfilt.track[,2], sapply(soil.fdada, getN), sapply(soil.rdada, getN), sapply(soil.remerged, getN), colSums(soil_nochim.st))
 colnames(soil_final.track) <- c("pre-cutadapt", "post-cutadapt", "filtered", "denoisedF", "denoisedR", "merged", "nonchim")
 rownames(soil_final.track) <- soil.names
 soil_final.track <- as.data.frame(soil_final.track)
@@ -345,7 +344,7 @@ rownames(soil_raw.met) <- soil_raw.met$Sample
 soil_raw.met <- soil_raw.met[,c('Sample', 'Plant', 'Soil_Treatment', 'Compartment')]
 
 # Check to see if ASVs were denoise properly #
-unqs.mock <- soil_nochim.st["ZymoMockDNA_1870_S132",]
+unqs.mock <- soil_nochim.st[,"ZymoMockDNA"]
 unqs.mock <- sort(unqs.mock[unqs.mock>0], decreasing=TRUE)
 cat("DADA2 inferred", length(unqs.mock), "sample sequences present in the Mock community.\n")
 mock.ref <- getSequences(zymo)
@@ -364,23 +363,34 @@ raw_soil.ps <- merge_phyloseq(raw_soil.ps, raw_soil.dna)
 raw_soil.ps <- subset_taxa(raw_soil.ps, Phylum != "Plantae")
 raw_soil.ps <- subset_taxa(raw_soil.ps, Phylum != "Cyanobacteriota")
 
-raw_soil.ps <- subset_samples(raw_soil.ps, Plant != 'Imma')
+raw_soil.ps <- subset_samples(raw_soil.ps, Plant != 'N/A')
 raw_soil.ps <- subset_samples(raw_soil.ps, Compartment != 'Leaf')
 raw_soil.ps <- subset_samples(raw_soil.ps, Plant != 'Lupine')
 
 raw_soil.ps <- subset_taxa(raw_soil.ps, taxa_sums(raw_soil.ps) > 1000)
 colnames(tax_table(raw_soil.ps)) <- c('rdp_Kingdom', 'rdp_Phylum', 'rdp_Class', 'rdp_Order', 'rdp_Family', 'rdp_Genus')
 
+taxa_names(raw_soil.ps) <- paste0("ASV", seq(ntaxa(raw_soil.ps)))
+
 decompose_ps <- function(ps, label){
   # function that decomposes a phyloseq object into separate data.frame and refseq objects (does not include tree) #
-  assign(paste0(label, '.tax'), as.data.frame(tax_table(ps)))
-  assign(paste0(label, '.otu'), as.data.frame(otu_table(ps)))
-  assign(paste0(label, '.met'), as(sample_data(ps), 'data.frame'))
-  assign(paste0(label, '.dna'), refseq(ps))
-  assign(paste0(label, '.fra'), cbind(get(paste0(label, '.tax')), get(paste0(label, '.otu'))))
+  tax.tab <- as.data.frame(tax_table(ps))
+  otu.tab <- as.data.frame(otu_table(ps))
+  met.tab <- as(sample_data(ps), 'data.frame')
+  dna.tab <- refseq(ps)
+  fra.tab <- cbind(tax.tab, otu.tab)
+  decomposed = list(
+    tax = tax.tab,
+    otu = otu.tab,
+    met = met.tab,
+    dna = dna.tab,
+    fra = fra.tab
+  )
+  assign(label, decomposed, envir = .GlobalEnv)
+  invisible(decomposed)
 }
 
-decompose_ps(raw_soil.ps, raw_soil)
+decompose_ps(raw_soil.ps, 'raw_soil')
 #### Cross-Validation of Soil Reads Using BLAST ####
 library(rBLAST)
 
@@ -391,18 +401,18 @@ list.files('./reference/16S_database')
 blast.db <- blast(db = './reference/16S_database/16S_ribosomal_RNA')
 
 # Performs the blast for each read and returns the best hit # 
-soil.hits <- matrix(nrow = nrow(raw_soil.tax), ncol = 12)
+soil.hits <- matrix(nrow = nrow(raw_soil$tax), ncol = 12)
 soil.hits <- as.data.frame(soil.hits) 
 hold <- c()
-for(i in 1:length(soil.dna)){
-  hold <- predict(blast.db, raw_soil.dna[i])
+for(i in 1:length(raw_soil$dna)){
+  hold <- predict(blast.db, raw_soil$dna[i])
   soil.hits[i,] <- hold[1,]
-  raw_soil.tax$Best_Hit[i] <- hold[1, 2]
+  raw_soil$tax$Best_Hit[i] <- hold[1, 2]
 }
 
 # Filter out reads that do not correspond to a NCBI entry #
 library(dplyr); packageVersion('dplyr')
-filt_soil.tax <- filter(raw_soil.tax, !is.na(raw_soil.tax$Best_Hit))
+filt_soil.tax <- filter(raw_soil$tax, !is.na(raw_soil$tax$Best_Hit))
 
 # Output the resulting NCBI entry names to a list #
 if(!dir.exists("./blast_hits")){
@@ -411,14 +421,14 @@ if(!dir.exists("./blast_hits")){
 write.table(filt_soil.tax$Best_Hit, './blast_hits/soil_blast_hits.txt')
 
 # Call the python script to retrieve the taxonomies of the matched entries #
-system('python3 rRNA_BLAST.py -i ./blast_hits/soil_blast_hits.txt -o ./blast_hits/soil_ncbi_hits.csv')
+system('python3 ~/PSF_MBIOME/rRNA_BLAST.py -i ./blast_hits/soil_blast_hits.txt -o ./blast_hits/soil_ncbi_hits.csv')
 
 # Read in the output from the python script and make new taxonomy table "soil_ncbi_fin.tax" #
 soil_ncbi.taxa <- read.csv2('./blast_hits/soil_ncbi_hits.csv', header = FALSE, fill = TRUE)
 soil_ncbi.int <- strsplit(as.character(soil_ncbi.taxa$V1), ",")
 soil_ncbi_fin.tax <- do.call(rbind, lapply(soil_ncbi.int, function(x) { length(x) <- max(sapply(soil_ncbi.int, length)); x }))
 soil_ncbi_fin.tax <- as.data.frame(soil_ncbi_fin.tax, stringsAsFactors = FALSE)
-rownames(ncbi.taxa) <- rownames(filt_soil.tax)
+rownames(soil_ncbi.taxa) <- rownames(filt_soil.tax)
 colnames(soil_ncbi_fin.tax) <- c('Domain', 'Kingdom', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'hold')
 for(i in 1:nrow(soil_ncbi_fin.tax)){
   if(!is.na(soil_ncbi_fin.tax$hold[i])){
@@ -430,34 +440,34 @@ for(i in 1:nrow(soil_ncbi_fin.tax)){
 soil_ncbi_fin.tax <- soil_ncbi_fin.tax[,1:7]
 filter_soil.tax <- cbind(filt_soil.tax, soil_ncbi_fin.tax)
 
-decompose_ps(raw_soil.ps, filt_soil)
+decompose_ps(raw_soil.ps, 'filt_soil')
 
-filt_soil.tax <- filter_soil.tax
-filt_soil.otu <- filter(filt_soil.otu, rownames(filt_soil.otu) %in% rownames(filt_soil.tax))
-soil_dna.df <- as.data.frame(filt_soil.dna)
-soil_dna.df <- filter(soil_dna.df, rownames(soil_dna.df) %in% rownames(filt_soil.tax))
-filt_soil.dna <- DNAStringSet(soil_dna.df$x)
-names(filt_soil.dna) <- rownames(filt_soil.tax)
-filt_soil.tax <- as.matrix(filt_soil.tax)
+filt_soil$tax <- filter_soil.tax
+filt_soil$otu <- filter(filt_soil$otu, rownames(filt_soil$otu) %in% rownames(filt_soil$tax))
+soil_dna.df <- as.data.frame(filt_soil$dna)
+soil_dna.df <- filter(soil_dna.df, rownames(soil_dna.df) %in% rownames(filt_soil$tax))
+filt_soil$dna <- DNAStringSet(soil_dna.df$x)
+names(filt_soil$dna) <- rownames(filt_soil$tax)
+filt_soil$tax <- as.matrix(filt_soil$tax)
 
 # Make phyloseq object with filtered tables #
-soil.ps <- phyloseq(otu_table(filt_soil.otu, taxa_are_rows = TRUE),
-                        sample_data(filt_soil.met),
-                        tax_table(filt_soil.tax),
-                        refseq(filt_soil.dna))
+soil.ps <- phyloseq(otu_table(filt_soil$otu, taxa_are_rows = TRUE),
+                        sample_data(filt_soil$met),
+                        tax_table(filt_soil$tax),
+                        refseq(filt_soil$dna))
 
 soil.ps <- subset_taxa(soil.ps, taxa_sums(soil.ps) > 1000)
 
-# Change the taxa names to represent comparatiove abundance and lowest identification level #
+# Change the taxa names to represent comparative abundance and lowest identification level #
 taxa_names(soil.ps) <- paste0('ASV', seq(ntaxa(soil.ps)))
-soil.tax <- as.data.frame(tax_table(soil.ps))
-for(i in 1:nrow(soil.tax)){
-  if(!is.na(soil.tax$Genus[i])){
-    taxa_names(soil.ps)[i] = paste0(taxa_names(soil.ps)[i], '(', soil.tax$Genus[i], ')')
-  }else if(!is.na(soil.tax$Family[i])){
-    taxa_names(soil.ps)[i] = paste0(taxa_names(soil.ps)[i], '(', soil.tax$Family[i], ')')
-  }else if(!is.na(soil.tax$Order[i])){
-    taxa_names(soil.ps)[i] = paste0(taxa_names(soil.ps)[i], '(', soil.tax$Order[i], ')')
+decompose_ps(soil.ps, 'soil')
+for(i in 1:nrow(soil$tax)){
+  if(!is.na(soil$tax$Genus[i])){
+    taxa_names(soil.ps)[i] = paste0(taxa_names(soil.ps)[i], '(', soil$tax$Genus[i], ')')
+  }else if(!is.na(soil$tax$Family[i])){
+    taxa_names(soil.ps)[i] = paste0(taxa_names(soil.ps)[i], '(', soil$tax$Family[i], ')')
+  }else if(!is.na(soil$tax$Order[i])){
+    taxa_names(soil.ps)[i] = paste0(taxa_names(soil.ps)[i], '(', soil$tax$Order[i], ')')
   }else{
     taxa_names(soil.ps)[i] = paste0(taxa_names(soil.ps)[i], '(NA)')
   }
@@ -465,7 +475,6 @@ for(i in 1:nrow(soil.tax)){
 
 # produce final decomposed phyloseq object
 decompose_ps(soil.ps, soil)
-save.image("./test.RData")
 
 #### Phylogenetic Tree Construction for Soils ####
 # Output the reads into a fasta file #
