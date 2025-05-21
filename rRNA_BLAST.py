@@ -1,8 +1,23 @@
-import os
+import argparse
+import sys
 
-os.chdir('./blast_hits/')
+#function to parse command line arguments #
+def check_arg(args=None): 
+	parser = argparse.ArgumentParser(description= 'Produces a brief analysis of RNA-seq data')
+	parser.add_argument('-i', '--input',
+		help='path to input file',
+		required = 'True')
+	parser.add_argument('-o', '--output',
+		help = 'output file name',
+		required = 'True')
+	return parser.parse_args(args)
 
-con = open('blast_hits.txt')
+#retrieve command line arguments and assign to variables
+args = check_arg(sys.argv[1:])
+infile = args.input
+outfile = args.output
+
+con = open(infile)
 use = con.read().split()
 
 ids = list()
@@ -28,6 +43,7 @@ for taxa in records:
 
 import csv
 
-with open('ncbi_hits.csv', 'w') as f:
+with open(outfile, 'w') as f:
 	write = csv.writer(f)
 	write.writerows(all_na)
+
