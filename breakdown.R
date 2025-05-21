@@ -20,9 +20,8 @@ root.met <- opt$root_metadata
 reference <- opt$reference
 zymo <- opt$zymo
 
-
-# Perform a multiple sequence alignment using MAFFT #
-system('mafft --auto --thread -1 ./reads/soil_input.fasta > ./reads/soils_aligned.fasta')
-
-# Construct a tree using IQTree with a general time reversible model with a gamma distribution and invariant site copies #
-system('iqtree -s ./reads/soils_aligned.fasta -m GTR+G+I -nt AUTO')
+load("./root.RData")
+# Assign Taxonomy #
+root_rdp.taxa <- assignTaxonomy(rownames(root_nochim.st), refFasta = reference, multithread = TRUE, verbose = TRUE)
+root_rdp.taxa <- as.matrix(root_rdp.taxa)
+save.image("./root.RData")
