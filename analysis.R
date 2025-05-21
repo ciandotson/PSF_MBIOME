@@ -235,7 +235,7 @@ raw_soil.ffp <- sort(list.files(soil.dir, pattern = "_R1_001.fastq.gz", full.nam
 raw_soil.rfp <- sort(list.files(soil.dir, pattern = "_R2_001.fastq.gz", full.names = TRUE))
 
 # Save the names based on the file names #
-soil.names <- strsplit(basename(raw_soil.ffp), "_")[[1]]
+soil.names <- sapply(strsplit(basename(raw_soil.ffp), "_"), `[`, 1)
 soil.names <- as.character(soil.names)
 
 # Find all orientations of each primer for primer trimming #
@@ -497,7 +497,7 @@ raw_root.ffp <- sort(list.files(root.dir, pattern = "_R1_001.fastq.gz", full.nam
 raw_root.rfp <- sort(list.files(root.dir, pattern = "_R2_001.fastq.gz", full.names = TRUE))
 
 # Save the names based on the file names #
-root.names <- strsplit(basename(raw_root.ffp), "_L001_R1_001.fastq.gz")
+root.names <- sapply(strsplit(basename(raw_root.ffp), "_"), `[`, 1)
 root.names <- as.character(root.names)
 
 # Find all orientations of each primer for primer trimming #
