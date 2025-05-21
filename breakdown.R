@@ -38,6 +38,7 @@ cat("Of those,", sum(match.ref), "were exact matches to the expected reference s
 
 #### Phyloseq Object Construction and Filtering for Soils ####
 library(phyloseq)
+soil_rdp.taxa <- as.matrix(soil_rdp.taxa)
 raw_soil.ps <- phyloseq(otu_table(soil_nochim.st, taxa_are_rows = TRUE),
                         sample_data(soil_raw.met),
                         tax_table(soil_rdp.taxa))
