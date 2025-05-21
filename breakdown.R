@@ -22,6 +22,7 @@ zymo <- opt$zymo
 
 load("./root.RData")
 # Assign Taxonomy #
+library(dada2)
 root_rdp.taxa <- assignTaxonomy(rownames(root_nochim.st), refFasta = reference, multithread = TRUE, verbose = TRUE)
 root_rdp.taxa <- as.matrix(root_rdp.taxa)
 save.image("./root.RData")
