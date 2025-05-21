@@ -253,7 +253,7 @@ soil.fprimer <- "GTGCCAGCMGCCGCGGTAA"
 soil.rprimer <- "GGACTACHVGGGTWTCTAAT"
 
 soil.fori <- allOrients(soil.fprimer)
-soil.rori <- allOrients(soil.fprimer)
+soil.rori <- allOrients(soil.rprimer)
 
 # Make filepaths for pretrimmed fastqs #
 system('mkdir ./reads/pretrim')
@@ -529,7 +529,7 @@ root.fprimer <- "AACMGGATTAGATACCCKG"
 root.rprimer <- "ACGTCATCCCCACCTTCC"
 
 root.fori <- allOrients(root.fprimer)
-root.rori <- allOrients(root.fprimer)
+root.rori <- allOrients(root.rprimer)
 
 # Make filepaths for pretrimmed fastqs #
 system('mkdir ./reads/pretrim/root_pretrim')
@@ -610,11 +610,13 @@ root_rdp.taxa <- assignTaxonomy(rownames(root_nochim.st), refFasta = reference, 
 root_rdp.taxa <- as.matrix(root_rdp.taxa)
 
 # Load the metadata #
-root_raw.met <- read.csv2(root_metadata, sep = ',', row.names = TRUE)
+root_raw.met <- read.csv2(root_metadata, sep = ',')
 rownames(root_raw.met) <- root_raw.met$Sample
-root_raw.met <- root_raw.met[,c('Sample', 'Plant', 'Soil_Treatment', 'Compartment')]
+root_raw.met <- root_raw.met[,c('Sample.Name', 'Plant.Species', 'Soil.Origin', 'Compartment')]
+rownames(root_raw.met) <- 
 
 #### Phyloseq Object Construction and Filtering for roots ####
+root_rdp.taxa <- as.matrix(root_rdp.taxa)
 raw_root.ps <- phyloseq(otu_table(root_nochim.st, taxa_are_rows = TRUE),
                         sample_data(root_raw.met),
                         tax_table(root_rdp.taxa))
