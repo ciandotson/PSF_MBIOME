@@ -497,7 +497,7 @@ raw_root.ffp <- sort(list.files(root.dir, pattern = "_R1_001.fastq.gz", full.nam
 raw_root.rfp <- sort(list.files(root.dir, pattern = "_R2_001.fastq.gz", full.names = TRUE))
 
 # Save the names based on the file names #
-root.names <- sapply(strsplit(basename(raw_root.ffp), "_"), `[`, 1)
+root.names <- sub("^([^_]+_[^_]+)_.*$", "\\1", basename(raw_root.ffp))
 root.names <- as.character(root.names)
 
 # Find all orientations of each primer for primer trimming #
@@ -511,8 +511,8 @@ allOrients <- function(primer) {
   return(sapply(orients, toString))  # Convert back to character vector
 }
 
-root.fprimer <- "GTGCCAGCMGCCGCGGTAA"
-root.rprimer <- "GGACTACHVGGGTWTCTAAT"
+root.fprimer <- "AACMGGATTAGATACCCKG"
+root.rprimer <- "ACGTCATCCCCACCTTCC"
 
 root.fori <- allOrients(root.fprimer)
 root.rori <- allOrients(root.fprimer)
