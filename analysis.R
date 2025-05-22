@@ -610,7 +610,7 @@ root_rdp.taxa <- assignTaxonomy(rownames(root_nochim.st), refFasta = reference, 
 root_rdp.taxa <- as.matrix(root_rdp.taxa)
 
 # Load the metadata #
-root_raw.met <- read.csv2(root_metadata, sep = ',')
+root_raw.met <- read.csv2(root.met, sep = ',')
 rownames(root_raw.met) <- root_raw.met$Sample
 root_raw.met <- root_raw.met[,c('Sample.Name', 'Plant.Species', 'Soil.Origin', 'Compartment')]
 rownames(root_raw.met) <- sub("^([^_]+_[^_]+)_.*$", "\\1", rownames(root_raw.met))
