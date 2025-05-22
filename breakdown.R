@@ -152,7 +152,7 @@ decompose_ps(root.ps, 'root')
 save.image("./root2.RData")
 #### Phylogenetic Tree Construction for roots ####
 # Output the reads into a fasta file #
-writeXStringSet(as.character(root$dna, "./reads/root_input.fasta"))
+writeXStringSet(as.character(root$dna, "./reads/root_input.fasta", use.names = TRUE))
 
 # Perform a multiple sequence alignment using MAFFT #
 system('mafft --auto --thread -1 ./reads/root_input.fasta > ./reads/roots_aligned.fasta')
