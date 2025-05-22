@@ -19,7 +19,6 @@ nodnbio <- opt$pheno
 reference <- opt$reference
 root.dir <- opt$raw_root
 root.met <- opt$root_metadata
-reference <- opt$reference
 zymo <- opt$zymo
 
 #### Root Primer Removal ####
