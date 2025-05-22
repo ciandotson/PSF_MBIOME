@@ -25,6 +25,7 @@ zymo <- opt$zymo
 load("./soil2.RData")
 # Load the metadata #
 library(phyloseq)
+library(dada2)
 soil_raw.met <- read.csv2(soil.met, sep = ',')
 rownames(soil_raw.met) <- soil_raw.met$Sample
 soil_raw.met <- soil_raw.met[,c('Sample', 'Plant', 'Soil_Treatment', 'Compartment')]
