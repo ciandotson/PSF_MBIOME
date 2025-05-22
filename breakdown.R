@@ -149,9 +149,10 @@ for(i in 1:nrow(root$tax)){
 # produce final decomposed phyloseq object
 decompose_ps(root.ps, 'root')
 
+save.image("./root2.RData")
 #### Phylogenetic Tree Construction for roots ####
 # Output the reads into a fasta file #
-writeXStringSet(as.character(root.dna, "./reads/root_input.fasta"))
+writeXStringSet(as.character(root$dna, "./reads/root_input.fasta"))
 
 # Perform a multiple sequence alignment using MAFFT #
 system('mafft --auto --thread -1 ./reads/root_input.fasta > ./reads/roots_aligned.fasta')
