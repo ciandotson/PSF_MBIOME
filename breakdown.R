@@ -23,9 +23,6 @@ zymo <- opt$zymo
 
 #### Root Primer Removal ####
 # Ensure you have the right files #
-if(file.exists("./soil2.RData")){
-  rm(list=ls())
-}
 list.files(root.dir)
 
 # Create a list of the files that are corresponding to the forward and reverse reads #
