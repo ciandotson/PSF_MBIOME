@@ -73,6 +73,7 @@ decompose_ps(raw_root.ps, 'raw_root')
 
 # Performs the blast for each read and returns the best hit # 
 library(rBLAST)
+blast.db <- blast(db = './reference/16S_database/16S_ribosomal_RNA')
 root.hits <- matrix(nrow = nrow(raw_root$tax), ncol = 12)
 root.hits <- as.data.frame(root.hits) 
 hold <- c()
