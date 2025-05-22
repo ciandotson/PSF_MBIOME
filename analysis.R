@@ -352,6 +352,7 @@ match.ref <- sum(sapply(names(unqs.mock), function(x) any(grepl(x, mock.ref))))
 cat("Of those,", sum(match.ref), "were exact matches to the expected reference sequences.\n")
 
 #### Phyloseq Object Construction and Filtering for Soils ####
+library(phyloseq)
 raw_soil.ps <- phyloseq(otu_table(soil_nochim.st, taxa_are_rows = TRUE),
                         sample_data(soil_raw.met),
                         tax_table(soil_rdp.taxa))
