@@ -56,6 +56,7 @@ pre_root.ffp <- file.path('./reads/pretrim/root_pretrim', paste0(root.names, '_p
 pre_root.rfp <- file.path('./reads/pretrim/root_pretrim', paste0(root.names, '_pretrim_R2.fastq.gz'))
 
 # Filter reads less than 75 bp and save the filtered fastqs to the pretrim filepaths #
+library(dada2)
 root_prefilt.track <- filterAndTrim(raw_root.ffp, pre_root.ffp, raw_root.rfp, pre_root.rfp, minLen = 75,
                                     compress = TRUE, multithread = TRUE)
 
@@ -100,7 +101,7 @@ root.rderep <- derepFastq(post_root.rfp, verbose=TRUE)
 root.fdada <- dada(root.fderep, err=root_for.er, multithread=TRUE, verbose = TRUE)
 root.rdada <- dada(root.rderep, err=root_rev.er, multithread=TRUE, verbose = TRUE)
 
-save.image("./root.RData")
+save.image("./root2.RData")
 # Merge the denoised forward and reversed reads #
 root.remerged <- mergePairs(root.fdada, post_root.ffp, root.rdada, post_root.rfp, verbose=TRUE)
 
@@ -136,6 +137,7 @@ root_raw.met <- root_raw.met[,c('Sample.Name', 'Plant.Species', 'Soil.Origin', '
 rownames(root_raw.met) <- sub("^([^_]+_[^_]+)_.*$", "\\1", rownames(root_raw.met))
 
 #### Phyloseq Object Construction and Filtering for roots ####
+library(phyloseq)
 root_rdp.taxa <- as.matrix(root_rdp.taxa)
 raw_root.ps <- phyloseq(otu_table(root_nochim.st, taxa_are_rows = TRUE),
                         sample_data(root_raw.met),
