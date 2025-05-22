@@ -614,6 +614,7 @@ root_raw.met <- read.csv2(root.met, sep = ',')
 rownames(root_raw.met) <- root_raw.met$Sample
 root_raw.met <- root_raw.met[,c('Sample.Name', 'Plant.Species', 'Soil.Origin', 'Compartment')]
 rownames(root_raw.met) <- sub("^([^_]+_[^_]+)_.*$", "\\1", rownames(root_raw.met))
+colnames(root_nochim.st) <- rownames(root_raw.met)
 
 #### Phyloseq Object Construction and Filtering for roots ####
 root_rdp.taxa <- as.matrix(root_rdp.taxa)
