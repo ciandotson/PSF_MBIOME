@@ -25,7 +25,7 @@ zymo <- opt$zymo
 # Output the reads into a fasta file #
 load("root2.RData")
 library(Biostrings)
-writeXStringSet(as.character(root$dna, filepath = "./reads/root_input.fasta")
+writeXStringSet(as.character(root$dna), "./reads/root_input.fasta")
 
 # Perform a multiple sequence alignment using MAFFT #
 system('mafft --auto --thread -1 ./reads/root_input.fasta > ./reads/roots_aligned.fasta')
