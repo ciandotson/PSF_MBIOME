@@ -23,6 +23,7 @@ zymo <- opt$zymo
 
 #### Phylogenetic Tree Construction for roots ####
 # Output the reads into a fasta file #
+load("root2.RData")
 library(Biostrings)
 writeXStringSet(as.character(root$dna, filepath = "./reads/root_input.fasta")
 
