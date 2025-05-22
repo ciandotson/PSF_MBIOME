@@ -23,6 +23,24 @@ zymo <- opt$zymo
 
 
 load("./root2.RData")
+decompose_ps <- function(ps, label){
+  # function that decomposes a phyloseq object into separate data.frame and refseq objects (does not include tree) #
+  tax.tab <- as.data.frame(tax_table(ps))
+  otu.tab <- as.data.frame(otu_table(ps))
+  met.tab <- as(sample_data(ps), 'data.frame')
+  dna.tab <- refseq(ps)
+  fra.tab <- cbind(tax.tab, otu.tab)
+  decomposed = list(
+    tax = tax.tab,
+    otu = otu.tab,
+    met = met.tab,
+    dna = dna.tab,
+    fra = fra.tab
+  )
+  assign(label, decomposed, envir = .GlobalEnv)
+  invisible(decomposed)
+}
+
 # Load the metadata #
 root_raw.met <- read.csv2(root.met, sep = ',')
 rownames(root_raw.met) <- root_raw.met$Sample
