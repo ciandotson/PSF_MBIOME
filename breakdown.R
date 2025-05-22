@@ -14,10 +14,10 @@ option_list <- list(
 opt <- parse_args(OptionParser(option_list=option_list))
 
 soil.dir <- opt$raw_soil
+root.dir <- opt$raw_root
 soil.met <- opt$soil_metadata
 nodnbio <- opt$pheno
 reference <- opt$reference
-root.dir <- opt$raw_root
 root.met <- opt$root_metadata
 zymo <- opt$zymo
 
