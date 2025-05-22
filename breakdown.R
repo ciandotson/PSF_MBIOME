@@ -24,8 +24,9 @@ zymo <- opt$zymo
 
 load("./soil2.RData")
 # Load the metadata #
-library(phyloseq)
+library(phyloseq); packageVersion("phyloseq")
 library(dada2)
+library(Biostrings)
 soil_raw.met <- read.csv2(soil.met, sep = ',')
 rownames(soil_raw.met) <- soil_raw.met$Sample
 soil_raw.met <- soil_raw.met[,c('Sample', 'Plant', 'Soil_Treatment', 'Compartment')]
@@ -78,6 +79,8 @@ decompose_ps <- function(ps, label){
 }
 
 decompose_ps(raw_soil.ps, 'raw_soil')
+
+save.image("./soil2.RData")
 #### Cross-Validation of Soil Reads Using BLAST ####
 library(rBLAST)
 
