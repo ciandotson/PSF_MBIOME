@@ -700,8 +700,6 @@ md_soil_nod.plot <- ggplot(md_soil_nod.df, aes(x = Soil, y = Abundance, fill = A
   labs(tag = "G.")
 md_soil_nod.plot
 
-
-
 #### Root Primer Removal ####
 # Ensure you have the right files #
 list.files(root.dir)
@@ -1155,7 +1153,59 @@ md_root_nod.plot
 
 (md_soil_nod.plot | md_root_nod.plot)
 
+#### Alpha Diversity Analysis and Visualization ####
+# Add additional variables as factors for Soils #
+soil$met$Soils <- factor(soil$met$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
+soil$met$Comps <- factor(soil$met$Compartment, levels = c("Bulk Soil", "Rhizosphere"))
+soil$met$Plants <- factor(soil$met$Plant, levels = c("T. repens", "M. truncatula", "S. helvola", "C. fasciculata", "D. illinoense", "A. bracteata"))
+for(i in 1:nrow(soil$met)){
+  soil$met$Tri[i] <- paste0(substr(soil$met$Plant[i],1,1), substr(soil$met$Soil_Treatment[i],1,1), substr(soil$met$Compartment[i],1,2)) 
+}
 
+# Add additional variables as factors for Soils #
+root$met$Soils <- factor(root$met$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
+root$met$Comps <- factor(root$met$Compartment, levels = "Root Endosphere")
+root$met$Plants <- factor(root$met$Plant.Species, levels = c("T. repens", "M. truncatula", "S. helvola", "C. fasciculata", "D. illinoense", "A. bracteata"))
+for(i in 1:nrow(root$met)){
+  root$met$Tri[i] <- paste0(substr(root$met$Plant.Species[i],1,1), substr(root$met$Soil.Origin[i],1,1), substr(root$met$Compartment[i],1,2)) 
+}
+soil$met <- soil$met[,c("Plant", "Soil_Treatment", "Compartment", "Soils", "Comps", "Plants", "Tri")]
+root$met <- root$met[,c("Plant.Species", "Soil.Origin", "Compartment", "Soils", "Comps", "Plants", "Tri")]
+colnames(root$met) <- colnames(soil$met)
 
+# Calculate the diversitry metrics #
+soil.rich <- estimate_richness(soil.ps)
+soil.rich <- as.data.frame(soil.rich)
+soil.rich <- cbind(soil$met, soil.rich)
+root.rich <- estimate_richness(root.ps)
+root.rich <- as.data.frame(root.rich)
+root.rich <- cbind(root$met, root.rich)
+all.rich <- rbind(soil.rich, root.rich)
+# Calculate Shannon Evenness by dividing the Shannon Diversity value by the natual log of the number of observed species #
+for(i in 1:nrow(all.rich)){
+  all.rich$ShaEvn[i] <- all.rich$Shannon[i]/log(all.rich$Chao1[i], base = 2.718) 
+}
+
+# Transform Shannon Evenness and Shannon Diversity using Logit Transoformations #
+library(car); packageVersion("car")
+for(i in 1:nrow(all.rich)){
+  all.rich$asinsqrtShaEvn[i] <- asin(sqrt(all.rich$ShaEvn[i]))
+}
+# Perform three way anova tests for plant species, compartment, and soil origin #
+all_cha.aov <- aov(Chao1~Soils*Plants*Comps, all.rich)
+summary(all_cha.aov)
+all_evn.aov <- aov(asinsqrtShaEvn~Soils*Plants*Comps, all.rich)
+summary(all_evn.aov)
+plot(all_evn.aov, 1)
+plot(all_evn.aov, 2)
+shapiro.test(residuals(all_evn.aov))
+leveneTest(all_evn.aov)
+all_sha.aov <- aov(Shannon~Soils*Plants*Comps, all.rich)
+summary(all_sha.aov)
+plot(all_sha.aov, 1)
+plot(all_sha.aov, 2)
+
+library(MASS)
+all_evn.box <- boxcox(all.rich$ShaEvn ~ 1)
 
 save.image("./total.RData")
