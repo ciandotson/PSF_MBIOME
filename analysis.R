@@ -529,9 +529,9 @@ decompose_ps(soil.ps, 'soil')
 
 # Construct a phyloseq object for each individual plant taxon's nodule community # 
 ## Fuzzy bean ##
-fb_soil_nod.ps <- subset_samples(soil_nod.ps, Plant == "S. helvola")
-fb_soil_nod.ps <- subset_taxa(fb_soil_nod.ps, taxa_sums(fb_soil_nod.ps) > 0)
-fb_soil_nod.ps <- aggregate_top_taxa2(fb_soil_nod.ps, 8, "ASV")
+fb_soil_nod_raw.ps <- subset_samples(soil_nod.ps, Plant == "S. helvola")
+fb_soil_nod_raw.ps <- subset_taxa(fb_soil_nod_raw.ps, taxa_sums(fb_soil_nod_raw.ps) > 0)
+fb_soil_nod.ps <- aggregate_top_taxa2(fb_soil_nod_raw.ps, 8, "ASV")
 fb_nod_soil.name <- names(sort(taxa_sums(fb_soil_nod.ps), decreasing = TRUE))
 fb_soil_nod.colr <- soil_nod.colr[fb_nod_soil.name,]
 fb_soil_nod.df <- psmelt(fb_soil_nod.ps)
@@ -969,8 +969,8 @@ decompose_ps(root.ps, 'root')
 
 # Construct a phyloseq object for each individual plant taxon's nodule community # 
 ## Fuzzy bean ##
-fb_root_nod.ps <- subset_samples(root_nod.ps, Plant.Species == "S. helvola")
-fb_root_nod.ps <- subset_taxa(fb_root_nod.ps, taxa_sums(fb_root_nod.ps) > 0)
+fb_root_nod_raw.ps <- subset_samples(root_nod.ps, Plant.Species == "S. helvola")
+fb_root_nod_raw.ps <- subset_taxa(fb_root_nod_raw.ps, taxa_sums(fb_root_nod_raw.ps) > 0)
 fb_root_nod.ps <- aggregate_top_taxa2(fb_root_nod.ps, 8, "ASV")
 fb_nod_root.name <- names(sort(taxa_sums(fb_root_nod.ps), decreasing = TRUE))
 fb_root_nod.colr <- root_nod.colr[fb_nod_root.name,]
@@ -2152,3 +2152,3847 @@ cha_root.plot
   (cha_root.plot | evn_root.plot | sha_root.plot) +
   plot_layout(guides = 'auto')
 
+#### Beta Diversity Measurements and Visualizations ####
+# Bulk Soils #
+# Construct a Weighted Unifrac distance matrix and PCoA ordination #
+bulk.ps <- subset_samples(soil.ps, Compartment == "Bulk Soil")
+bulk.ps <- subset_taxa(bulk.ps, taxa_sums(bulk.ps) > 0)
+
+bulk_prop.ps <- transform_sample_counts(bulk.ps, function(x) x/sum(x))
+
+set.seed(248)
+bulk.wuni <- phyloseq::distance(bulk_prop.ps, method = 'wunifrac')
+bulk.pcoa <- phyloseq::ordinate(bulk_prop.ps, 'PCoA', distance = bulk.wuni)
+
+# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
+bulk.nmds <- metaMDS(bulk.wuni, 
+                    k = 4, try = 20, trymax = 1000, maxit = 999,
+                    model = 'global', 
+                    autotransform = FALSE, previous.best = bulk.pcoa$vectors[,1:5])
+
+# Save the loading scores for all axes and make a distance matrix from these scores #
+bulk_nmds.scores <- scores(bulk.nmds, display = 'sites')
+bulk_nmds.dist <- dist(bulk_nmds.scores)
+
+# Fit a linear model using the vectorized weighted Unifrac ditsance matrix as a predictor of the vectorized loading score distance matrix to fine total R^2 of the model # 
+bulk_nmds.ffit <- lm(as.vector(bulk_nmds.dist) ~ as.vector(bulk.wuni))
+summary(bulk_nmds.ffit)
+bulk_nmds.totr2 <- summary(bulk_nmds.ffit)$r.squared
+
+# Axes Variance Calculation #
+# Fit linear models as before expect to preidtc the distance matrix of each individual axis #
+bulk_nmds.dist1 <- dist(bulk_nmds.scores[,1])
+bulk_nmds.fit1 <- lm(as.vector(bulk_nmds.dist1)~as.vector(bulk.wuni))
+bulk_nmds.r1 <- summary(bulk_nmds.fit1)$r.squared
+
+bulk_nmds.dist2 <- dist(bulk_nmds.scores[,2])
+bulk_nmds.fit2 <- lm(as.vector(bulk_nmds.dist2)~as.vector(bulk.wuni))
+bulk_nmds.r2 <- summary(bulk_nmds.fit2)$r.squared
+
+bulk_nmds.dist3 <- dist(bulk_nmds.scores[,3])
+bulk_nmds.fit3 <- lm(as.vector(bulk_nmds.dist3)~as.vector(bulk.wuni))
+bulk_nmds.r3 <- summary(bulk_nmds.fit3)$r.squared
+
+bulk_nmds.dist4 <- dist(bulk_nmds.scores[,4])
+bulk_nmds.fit4 <- lm(as.vector(bulk_nmds.dist4)~as.vector(bulk.wuni))
+bulk_nmds.r4 <- summary(bulk_nmds.fit4)$r.squared
+
+# Take the sum the R^2 value from each axis #
+bulk_nmds.comb <- bulk_nmds.r1 + bulk_nmds.r2 + bulk_nmds.r3 + bulk_nmds.r4
+
+# Divide each axis R^2 by the total of all axes and then multiply by the variation explained by the whole model
+bulk_nmds.axisr <- c()
+for(i in 1:ncol(bulk_nmds.scores)){
+  bulk_nmds.axisr[i] <- (get(paste0('bulk_nmds.r', i)) / bulk_nmds.comb) * bulk_nmds.totr2 
+}
+
+### Calculating Variance Components ###
+library(lme4); packageVersion('lme4')
+
+# Construct a data.frame that has sample info and their loading scores #
+decompose_ps(bulk.ps, 'bulk')
+for(i in 1:nrow(bulk$met)){
+  bulk$met$PS[i] <- paste0(substr(bulk$met$Plant[i],1,1), substr(bulk$met$Soil_Treatment[i],1,1))
+}
+for(i in 1:nrow(bulk$met)){
+  if(bulk$met$PS[i] == "SC"){
+    bulk$met$Plant[i] = "Common Soil"
+  }
+}
+bulk$met$Plants <- factor(bulk$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. illinoense', 'A. bracteata', 'T. repens', 'M. truncatula', 'Common Soil'))
+bulk$met$Comps <- factor(bulk$met$Compartment, c('Bulk Soil'))
+bulk$met$Soils <- factor(bulk$met$Soil_Treatment, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
+
+sample_data(bulk.ps) <- bulk$met
+bulk_nmds.load <- cbind(bulk$met, bulk_nmds.scores)
+
+# Test the mixed linear model on the first NMDS axis #
+bulk_nmds.vfit1 <- lmer(NMDS1 ~ (1|Soils) + (1|Plants) +(1|Soils:Plants), data = bulk_nmds.load, REML = TRUE)
+summary(bulk_nmds.vfit1)
+bulk_nmds.vca1 <- as.data.frame(VarCorr(bulk_nmds.vfit1))
+
+# Using Loop to do each NMDS axis #
+bulk_nmds.vca <- matrix(nrow = 4, ncol = ncol(bulk_nmds.scores))
+hold <- c()
+for(i in 1:ncol(bulk_nmds.scores)){
+  hold <- lmer(bulk_nmds.scores[,i] ~  (1|Soils) + (1|Plants) +(1|Soils:Plants), data = bulk_nmds.load, REML = TRUE)
+  hold <- as.data.frame(VarCorr(hold))
+  bulk_nmds.vca[1,i] <- hold[1,4]
+  bulk_nmds.vca[2,i] <- hold[2,4]
+  bulk_nmds.vca[3,i] <- hold[3,4]
+  bulk_nmds.vca[4,i] <- hold[4,4]
+}
+
+# Save the variance components to their assigned variable/variable interaction and their NMDS loading axis #
+rownames(bulk_nmds.vca) <- c('PSF History x Plant', 'Plant', 'PSF History', 'Residual')
+colnames(bulk_nmds.vca) <- colnames(bulk_nmds.scores)
+
+# Calculate the total variance of each variance component#
+bulk_nmds.vtot <- colSums(bulk_nmds.vca)
+
+# Weight each variance component by the amount of variation each axis explains #
+bulk_nmds.wvca <- matrix(nrow = nrow(bulk_nmds.vca), ncol = length(bulk_nmds.axisr))
+for(i in 1:length(bulk_nmds.axisr)){
+  for(j in 1:nrow(bulk_nmds.vca)){
+    bulk_nmds.wvca[j,i] <- bulk_nmds.vca[j,i]*bulk_nmds.axisr[i] 
+  }
+}
+# Take the total variance explained by each predictor and take the sum of those values #
+rownames(bulk_nmds.wvca) <- rownames(bulk_nmds.vca); colnames(bulk_nmds.wvca) <- colnames(bulk_nmds.vca)
+bulk_nmds.tvca <- rowSums(bulk_nmds.wvca)
+bulk_nmds.tvca <- as.data.frame(bulk_nmds.tvca)
+bulk_nmds.ptot <- colSums(bulk_nmds.tvca)
+
+# Take the variance explained by each predictor and divide by the total variance explained and multiply by 100% #
+bulk_nmds.pvca <- matrix(nrow = nrow(bulk_nmds.tvca), ncol = 1)
+for(i in 1:nrow(bulk_nmds.tvca)){
+  bulk_nmds.pvca[i,1] <- bulk_nmds.tvca[i,1] / bulk_nmds.ptot * 100
+}
+
+# Save the variation explained percentages of each predictor/predictor interaction #
+rownames(bulk_nmds.pvca) <- rownames(bulk_nmds.vca); colnames(bulk_nmds.pvca) <- 'Variance Explained'
+bulk_nmds.pvca
+
+# Perform PermANOVA using all samples #
+bulk.adon <- adonis2(bulk.wuni~Plants*Soils, bulk$met, permutations = 999)
+bulk.adon_by <- adonis2(bulk.wuni~Plants*Soils, bulk$met, permutations = 999, by = 'terms')
+bulk.adon
+bulk.adon_by
+
+# Perform PermDISP using all samples # 
+bulk.bdis <- betadisper(bulk.wuni, group = bulk$met$PS)
+anova(bulk.bdis)
+TukeyHSD(bulk.bdis)
+
+# Make an object with the data to be plotted #
+bulk_nmds.load <- cbind(bulk$met, bulk_nmds.scores)
+library(ggplot2);packageVersion('ggplot2')
+
+# plot the NMDS ordination of all samples that will be used to make a patchwork plot #
+bulk_nmds.plot <- ggplot(bulk_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape = Soils)) +
+  geom_point(size = 8) +
+  scale_color_manual(name = "Bulk Soil Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. illinoense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
+  scale_shape_manual(name = "PSF History", labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c(15,17,16)) +
+  xlab(expression("NMDS1 (R"^2 ~ "= 0.8167)")) +
+  ylab(expression("NMDS2 (R"^2 ~ "= 0.1551)")) +
+  theme_bw() +
+  theme(legend.position = 'right',
+        panel.grid = element_blank(),
+        legend.text = element_text(size = 12, family = "Liberation Sans"),
+        legend.title = element_text(size = 16, family = "Liberation Sans"),
+        axis.title = element_text(size=20, family = "Liberation Sans"),
+        axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +
+  annotate('text', x = 0.075, y = -0.15,
+           label = expression("(PERMANOVA) F"["9,29"] ~ "= 39.918, P < 0.001;  (PERMDISP) F"["9,29"] ~  "= 0.3344, P = 0.9526"),
+           size = 8, family = 'Liberation Sans') +
+  coord_cartesian(ylim = c(-0.145,0.2)) +
+  labs(tag = 'A.')
+
+bulk_nmds.plot
+
+# Separate samples by plant species #
+## Fuzzy Bean ##
+npsf_bulk.ps <- subset_samples(bulk.ps, Soil_Treatment == "Non-PSF Soil")
+fb_bulk.ps <- subset_samples(bulk.ps, Plant == "S. helvola" | Plant == "Common Soil")
+fb_bulk.ps <- merge_phyloseq(fb_bulk.ps, subset_samples(npsf_bulk.ps, Plant == "C. fasciculata"))
+fb_bulk.ps <- subset_taxa(fb_bulk.ps, taxa_sums(fb_bulk.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(fb_bulk.ps, 'fb_bulk')
+fb_bulk_prop.ps <- transform_sample_counts(fb_bulk.ps, function(x) x/sum(x))
+set.seed(248)
+fb_bulk.wuni <- phyloseq::distance(fb_bulk_prop.ps, method = 'wunifrac')
+fb_bulk.pcoa <- phyloseq::ordinate(fb_bulk_prop.ps, 'PCoA', distance = fb_bulk.wuni)
+
+# Perform PermANOVA on all of the soils #
+fb_bulk.adon <- adonis2(fb_bulk.wuni~Soils, fb_bulk$met, by = "terms")
+fb_bulk.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+fb_bulk.pair <- pairwise.adonis2(fb_bulk.wuni~Soils, fb_bulk$met, by = "terms")
+fb_bulk.pair
+
+## Chamaecrista ##
+cc_bulk.ps <- subset_samples(bulk.ps, Plant == "C. fasciculata" | Plant == "Common Soil")
+cc_bulk.ps <- subset_taxa(cc_bulk.ps, taxa_sums(cc_bulk.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(cc_bulk.ps, 'cc_bulk')
+cc_bulk_prop.ps <- transform_sample_counts(cc_bulk.ps, function(x) x/sum(x))
+set.seed(248)
+cc_bulk.wuni <- phyloseq::distance(cc_bulk_prop.ps, method = 'wunifrac')
+cc_bulk.pcoa <- phyloseq::ordinate(cc_bulk_prop.ps, 'PCoA', distance = cc_bulk.wuni)
+
+# Perform PermANOVA on all of the soils #
+cc_bulk.adon <- adonis2(cc_bulk.wuni~Soils, cc_bulk$met, by = "terms")
+cc_bulk.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+cc_bulk.pair <- pairwise.adonis2(cc_bulk.wuni~Soils, cc_bulk$met, by = "terms")
+cc_bulk.pair
+
+## Desmodium ##
+ds_bulk.ps <- subset_samples(bulk.ps, Plant == "D. illinoense" | Plant == "Common Soil")
+ds_bulk.ps <- subset_taxa(ds_bulk.ps, taxa_sums(ds_bulk.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(ds_bulk.ps, 'ds_bulk')
+ds_bulk_prop.ps <- transform_sample_counts(ds_bulk.ps, function(x) x/sum(x))
+set.seed(248)
+ds_bulk.wuni <- phyloseq::distance(ds_bulk_prop.ps, method = 'wunifrac')
+ds_bulk.pcoa <- phyloseq::ordinate(ds_bulk_prop.ps, 'PCoA', distance = ds_bulk.wuni)
+
+# Perform PermANOVA on all of the soils #
+ds_bulk.adon <- adonis2(ds_bulk.wuni~Soils, ds_bulk$met, by = "terms")
+ds_bulk.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+ds_bulk.pair <- pairwise.adonis2(ds_bulk.wuni~Soils, ds_bulk$met, by = "terms")
+ds_bulk.pair
+
+## Hog Peanut ##
+hp_bulk.ps <- subset_samples(bulk.ps, Plant == "A. bracteata" | Plant == "Common Soil")
+hp_bulk.ps <- merge_phyloseq(hp_bulk.ps, subset_samples(npsf_bulk.ps, Plant == "D. illinoense"))
+hp_bulk.ps <- subset_taxa(hp_bulk.ps, taxa_sums(hp_bulk.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(hp_bulk.ps, 'hp_bulk')
+hp_bulk_prop.ps <- transform_sample_counts(hp_bulk.ps, function(x) x/sum(x))
+set.seed(248)
+hp_bulk.wuni <- phyloseq::distance(hp_bulk_prop.ps, method = 'wunifrac')
+hp_bulk.pcoa <- phyloseq::ordinate(hp_bulk_prop.ps, 'PCoA', distance = hp_bulk.wuni)
+
+# Perform PermANOVA on all of the soils #
+hp_bulk.adon <- adonis2(hp_bulk.wuni~Soils, hp_bulk$met, by = "terms")
+hp_bulk.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+hp_bulk.pair <- pairwise.adonis2(hp_bulk.wuni~Soils, hp_bulk$met, by = "terms")
+hp_bulk.pair
+
+## Clover ##
+cl_bulk.ps <- subset_samples(bulk.ps, Plant == "T. repens" | Plant == "Common Soil")
+cl_bulk.ps <- subset_taxa(cl_bulk.ps, taxa_sums(cl_bulk.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(cl_bulk.ps, 'cl_bulk')
+cl_bulk_prop.ps <- transform_sample_counts(cl_bulk.ps, function(x) x/sum(x))
+set.seed(248)
+cl_bulk.wuni <- phyloseq::distance(cl_bulk_prop.ps, method = 'wunifrac')
+cl_bulk.pcoa <- phyloseq::ordinate(cl_bulk_prop.ps, 'PCoA', distance = cl_bulk.wuni)
+
+# Perform PermANOVA on all of the soils #
+cl_bulk.adon <- adonis2(cl_bulk.wuni~Soils, cl_bulk$met, by = "terms")
+cl_bulk.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+cl_bulk.pair <- pairwise.adonis2(cl_bulk.wuni~Soils, cl_bulk$met, by = "terms")
+cl_bulk.pair
+
+## Medicago ##
+md_bulk.ps <- subset_samples(bulk.ps, Plant == "M. truncatula" | Plant == "Common Soil")
+md_bulk.ps <- merge_phyloseq(md_bulk.ps, subset_samples(npsf_bulk.ps, Plant == "T. repens"))
+md_bulk.ps <- subset_taxa(md_bulk.ps, taxa_sums(md_bulk.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(md_bulk.ps, 'md_bulk')
+md_bulk_prop.ps <- transform_sample_counts(md_bulk.ps, function(x) x/sum(x))
+set.seed(248)
+md_bulk.wuni <- phyloseq::distance(md_bulk_prop.ps, method = 'wunifrac')
+md_bulk.pcoa <- phyloseq::ordinate(md_bulk_prop.ps, 'PCoA', distance = md_bulk.wuni)
+
+# Perform PermANOVA on all of the soils #
+md_bulk.adon <- adonis2(md_bulk.wuni~Soils, md_bulk$met, by = "terms")
+md_bulk.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+md_bulk.pair <- pairwise.adonis2(md_bulk.wuni~Soils, md_bulk$met, by = "terms")
+md_bulk.pair
+
+# Rhizosphere #
+# Construct a Weighted Unifrac distance matrix and PCoA ordination #
+rhiz.ps <- subset_samples(soil.ps, Compartment == "Rhizosphere")
+rhiz.ps <- subset_taxa(rhiz.ps, taxa_sums(rhiz.ps) > 0)
+
+rhiz_prop.ps <- transform_sample_counts(rhiz.ps, function(x) x/sum(x))
+
+set.seed(248)
+rhiz.wuni <- phyloseq::distance(rhiz_prop.ps, method = 'wunifrac')
+rhiz.pcoa <- phyloseq::ordinate(rhiz_prop.ps, 'PCoA', distance = rhiz.wuni)
+
+# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
+rhiz.nmds <- metaMDS(rhiz.wuni, 
+                     k = 4, try = 20, trymax = 1000, maxit = 999,
+                     model = 'global', 
+                     autotransform = FALSE, previous.best = rhiz.pcoa$vectors[,1:5])
+
+# Save the loading scores for all axes and make a distance matrix from these scores #
+rhiz_nmds.scores <- scores(rhiz.nmds, display = 'sites')
+rhiz_nmds.dist <- dist(rhiz_nmds.scores)
+
+# Fit a linear model using the vectorized weighted Unifrac ditsance matrix as a predictor of the vectorized loading score distance matrix to fine total R^2 of the model # 
+rhiz_nmds.ffit <- lm(as.vector(rhiz_nmds.dist) ~ as.vector(rhiz.wuni))
+summary(rhiz_nmds.ffit)
+rhiz_nmds.totr2 <- summary(rhiz_nmds.ffit)$r.squared
+
+# Axes Variance Calculation #
+# Fit linear models as before expect to preidtc the distance matrix of each individual axis #
+rhiz_nmds.dist1 <- dist(rhiz_nmds.scores[,1])
+rhiz_nmds.fit1 <- lm(as.vector(rhiz_nmds.dist1)~as.vector(rhiz.wuni))
+rhiz_nmds.r1 <- summary(rhiz_nmds.fit1)$r.squared
+
+rhiz_nmds.dist2 <- dist(rhiz_nmds.scores[,2])
+rhiz_nmds.fit2 <- lm(as.vector(rhiz_nmds.dist2)~as.vector(rhiz.wuni))
+rhiz_nmds.r2 <- summary(rhiz_nmds.fit2)$r.squared
+
+rhiz_nmds.dist3 <- dist(rhiz_nmds.scores[,3])
+rhiz_nmds.fit3 <- lm(as.vector(rhiz_nmds.dist3)~as.vector(rhiz.wuni))
+rhiz_nmds.r3 <- summary(rhiz_nmds.fit3)$r.squared
+
+rhiz_nmds.dist4 <- dist(rhiz_nmds.scores[,4])
+rhiz_nmds.fit4 <- lm(as.vector(rhiz_nmds.dist4)~as.vector(rhiz.wuni))
+rhiz_nmds.r4 <- summary(rhiz_nmds.fit4)$r.squared
+
+# Take the sum the R^2 value from each axis #
+rhiz_nmds.comb <- rhiz_nmds.r1 + rhiz_nmds.r2 + rhiz_nmds.r3 + rhiz_nmds.r4
+
+# Divide each axis R^2 by the total of all axes and then multiply by the variation explained by the whole model
+rhiz_nmds.axisr <- c()
+for(i in 1:ncol(rhiz_nmds.scores)){
+  rhiz_nmds.axisr[i] <- (get(paste0('rhiz_nmds.r', i)) / rhiz_nmds.comb) * rhiz_nmds.totr2 
+}
+
+### Calculating Variance Components ###
+
+# Construct a data.frame that has sample info and their loading scores #
+decompose_ps(rhiz.ps, 'rhiz')
+for(i in 1:nrow(rhiz$met)){
+  rhiz$met$PS[i] <- paste0(substr(rhiz$met$Plant[i],1,1), substr(rhiz$met$Soil_Treatment[i],1,1))
+}
+rhiz$met$Plants <- factor(rhiz$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. illinoense', 'A. bracteata', 'T. repens', 'M. truncatula'))
+rhiz$met$Comps <- factor(rhiz$met$Compartment, c('Rhizosphere'))
+rhiz$met$Soils <- factor(rhiz$met$Soil_Treatment, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
+
+sample_data(rhiz.ps) <- rhiz$met
+rhiz_nmds.load <- cbind(rhiz$met, rhiz_nmds.scores)
+
+# Test the mixed linear model on the first NMDS axis #
+rhiz_nmds.vfit1 <- lmer(NMDS1 ~ (1|Soils) + (1|Plants) +(1|Soils:Plants), data = rhiz_nmds.load, REML = TRUE)
+summary(rhiz_nmds.vfit1)
+rhiz_nmds.vca1 <- as.data.frame(VarCorr(rhiz_nmds.vfit1))
+
+# Using Loop to do each NMDS axis #
+rhiz_nmds.vca <- matrix(nrow = 4, ncol = ncol(rhiz_nmds.scores))
+hold <- c()
+for(i in 1:ncol(rhiz_nmds.scores)){
+  hold <- lmer(rhiz_nmds.scores[,i] ~  (1|Soils) + (1|Plants) +(1|Soils:Plants), data = rhiz_nmds.load, REML = TRUE)
+  hold <- as.data.frame(VarCorr(hold))
+  rhiz_nmds.vca[1,i] <- hold[1,4]
+  rhiz_nmds.vca[2,i] <- hold[2,4]
+  rhiz_nmds.vca[3,i] <- hold[3,4]
+  rhiz_nmds.vca[4,i] <- hold[4,4]
+}
+
+# Save the variance components to their assigned variable/variable interaction and their NMDS loading axis #
+rownames(rhiz_nmds.vca) <- c('PSF History x Plant', 'Plant', 'PSF History', 'Residual')
+colnames(rhiz_nmds.vca) <- colnames(rhiz_nmds.scores)
+
+# Calculate the total variance of each variance component#
+rhiz_nmds.vtot <- colSums(rhiz_nmds.vca)
+
+# Weight each variance component by the amount of variation each axis explains #
+rhiz_nmds.wvca <- matrix(nrow = nrow(rhiz_nmds.vca), ncol = length(rhiz_nmds.axisr))
+for(i in 1:length(rhiz_nmds.axisr)){
+  for(j in 1:nrow(rhiz_nmds.vca)){
+    rhiz_nmds.wvca[j,i] <- rhiz_nmds.vca[j,i]*rhiz_nmds.axisr[i] 
+  }
+}
+# Take the total variance explained by each predictor and take the sum of those values #
+rownames(rhiz_nmds.wvca) <- rownames(rhiz_nmds.vca); colnames(rhiz_nmds.wvca) <- colnames(rhiz_nmds.vca)
+rhiz_nmds.tvca <- rowSums(rhiz_nmds.wvca)
+rhiz_nmds.tvca <- as.data.frame(rhiz_nmds.tvca)
+rhiz_nmds.ptot <- colSums(rhiz_nmds.tvca)
+
+# Take the variance explained by each predictor and divide by the total variance explained and multiply by 100% #
+rhiz_nmds.pvca <- matrix(nrow = nrow(rhiz_nmds.tvca), ncol = 1)
+for(i in 1:nrow(rhiz_nmds.tvca)){
+  rhiz_nmds.pvca[i,1] <- rhiz_nmds.tvca[i,1] / rhiz_nmds.ptot * 100
+}
+
+# Save the variation explained percentages of each predictor/predictor interaction #
+rownames(rhiz_nmds.pvca) <- rownames(rhiz_nmds.vca); colnames(rhiz_nmds.pvca) <- 'Variance Explained'
+rhiz_nmds.pvca
+
+# Perform PermANOVA using all samples #
+rhiz.adon <- adonis2(rhiz.wuni~Plants*Soils, rhiz$met, permutations = 999)
+rhiz.adon_by <- adonis2(rhiz.wuni~Plants*Soils, rhiz$met, permutations = 999, by = 'terms')
+rhiz.adon
+rhiz.adon_by
+
+# Perform PermDISP using all samples # 
+rhiz.bdis <- betadisper(rhiz.wuni, group = rhiz$met$PS)
+anova(rhiz.bdis)
+TukeyHSD(rhiz.bdis)
+
+# Make an object with the data to be plotted #
+rhiz_nmds.load <- cbind(rhiz$met, rhiz_nmds.scores)
+
+# plot the NMDS ordination of all samples that will be used to make a patchwork plot #
+rhiz_nmds.plot <- ggplot(rhiz_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape = Soils)) +
+  geom_point(size = 8) +
+  scale_color_manual(name = "Rhizosphere Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. illinoense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
+  scale_shape_manual(name = "PSF History", labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c(15,17,16)) +
+  xlab(expression("NMDS1 (R"^2 ~ "= 0.5386)")) +
+  ylab(expression("NMDS2 (R"^2 ~ "= 0.2525)")) +
+  theme_bw() +
+  theme(legend.position = 'right',
+        panel.grid = element_blank(),
+        legend.text = element_text(size = 12, family = "Liberation Sans"),
+        legend.title = element_text(size = 16, family = "Liberation Sans"),
+        axis.title = element_text(size=20, family = "Liberation Sans"),
+        axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +
+  annotate('text', x = -0.1, y = -0.29,
+           label = expression("(PERMANOVA) F"["16,70"] ~ "= 25.443, P = 0.001;  (PERMDISP) F"["16,70"] ~  "= 4.9933, P < 0.001"),
+           size = 8, family = 'Liberation Sans') +
+  coord_cartesian(ylim = c(-0.28, 0.15)) +
+  labs(tag = 'A.')
+
+rhiz_nmds.plot
+
+# Separate samples by plant species #
+## Fuzzy Bean ##
+fb_rhiz.ps <- subset_samples(rhiz.ps, Plant == "S. helvola")
+fb_rhiz.ps <- subset_taxa(fb_rhiz.ps, taxa_sums(fb_rhiz.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(fb_rhiz.ps, 'fb_rhiz')
+fb_rhiz_prop.ps <- transform_sample_counts(fb_rhiz.ps, function(x) x/sum(x))
+set.seed(248)
+fb_rhiz.wuni <- phyloseq::distance(fb_rhiz_prop.ps, method = 'wunifrac')
+fb_rhiz.pcoa <- phyloseq::ordinate(fb_rhiz_prop.ps, 'PCoA', distance = fb_rhiz.wuni)
+
+# Perform PermANOVA on all of the soils #
+fb_rhiz.adon <- adonis2(fb_rhiz.wuni~Soils, fb_rhiz$met, by = "terms")
+fb_rhiz.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+fb_rhiz.pair <- pairwise.adonis2(fb_rhiz.wuni~Soils, fb_rhiz$met, by = "terms")
+fb_rhiz.pair
+
+fb_rhiz.bdis <- betadisper(fb_rhiz.wuni, group = fb_rhiz$met$Soils)
+anova(fb_rhiz.bdis)
+TukeyHSD(fb_rhiz.bdis)
+
+## Chamaecrista ##
+cc_rhiz.ps <- subset_samples(rhiz.ps, Plant == "C. fasciculata")
+cc_rhiz.ps <- subset_taxa(cc_rhiz.ps, taxa_sums(cc_rhiz.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(cc_rhiz.ps, 'cc_rhiz')
+cc_rhiz_prop.ps <- transform_sample_counts(cc_rhiz.ps, function(x) x/sum(x))
+set.seed(248)
+cc_rhiz.wuni <- phyloseq::distance(cc_rhiz_prop.ps, method = 'wunifrac')
+cc_rhiz.pcoa <- phyloseq::ordinate(cc_rhiz_prop.ps, 'PCoA', distance = cc_rhiz.wuni)
+
+# Perform PermANOVA on all of the soils #
+cc_rhiz.adon <- adonis2(cc_rhiz.wuni~Soils, cc_rhiz$met, by = "terms")
+cc_rhiz.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+cc_rhiz.pair <- pairwise.adonis2(cc_rhiz.wuni~Soils, cc_rhiz$met, by = "terms")
+cc_rhiz.pair
+
+cc_rhiz.bdis <- betadisper(cc_rhiz.wuni, group = cc_rhiz$met$Soils)
+anova(cc_rhiz.bdis)
+TukeyHSD(cc_rhiz.bdis)
+
+## Desmodium ##
+ds_rhiz.ps <- subset_samples(rhiz.ps, Plant == "D. illinoense")
+ds_rhiz.ps <- subset_taxa(ds_rhiz.ps, taxa_sums(ds_rhiz.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(ds_rhiz.ps, 'ds_rhiz')
+ds_rhiz_prop.ps <- transform_sample_counts(ds_rhiz.ps, function(x) x/sum(x))
+set.seed(248)
+ds_rhiz.wuni <- phyloseq::distance(ds_rhiz_prop.ps, method = 'wunifrac')
+ds_rhiz.pcoa <- phyloseq::ordinate(ds_rhiz_prop.ps, 'PCoA', distance = ds_rhiz.wuni)
+
+# Perform PermANOVA on all of the soils #
+ds_rhiz.adon <- adonis2(ds_rhiz.wuni~Soils, ds_rhiz$met, by = "terms")
+ds_rhiz.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+ds_rhiz.pair <- pairwise.adonis2(ds_rhiz.wuni~Soils, ds_rhiz$met, by = "terms")
+ds_rhiz.pair
+
+ds_rhiz.bdis <- betadisper(ds_rhiz.wuni, group = ds_rhiz$met$Soils)
+anova(ds_rhiz.bdis)
+TukeyHSD(ds_rhiz.bdis)
+
+## Hog Peanut ##
+hp_rhiz.ps <- subset_samples(rhiz.ps, Plant == "A. bracteata")
+hp_rhiz.ps <- subset_taxa(hp_rhiz.ps, taxa_sums(hp_rhiz.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(hp_rhiz.ps, 'hp_rhiz')
+hp_rhiz_prop.ps <- transform_sample_counts(hp_rhiz.ps, function(x) x/sum(x))
+set.seed(248)
+hp_rhiz.wuni <- phyloseq::distance(hp_rhiz_prop.ps, method = 'wunifrac')
+hp_rhiz.pcoa <- phyloseq::ordinate(hp_rhiz_prop.ps, 'PCoA', distance = hp_rhiz.wuni)
+
+# Perform PermANOVA on all of the soils #
+hp_rhiz.adon <- adonis2(hp_rhiz.wuni~Soils, hp_rhiz$met, by = "terms")
+hp_rhiz.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+hp_rhiz.pair <- pairwise.adonis2(hp_rhiz.wuni~Soils, hp_rhiz$met, by = "terms")
+hp_rhiz.pair
+
+hp_rhiz.bdis <- betadisper(hp_rhiz.wuni, group = hp_rhiz$met$Soils)
+anova(hp_rhiz.bdis)
+TukeyHSD(hp_rhiz.bdis)
+
+## Clover ##
+cl_rhiz.ps <- subset_samples(rhiz.ps, Plant == "T. repens")
+cl_rhiz.ps <- subset_taxa(cl_rhiz.ps, taxa_sums(cl_rhiz.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(cl_rhiz.ps, 'cl_rhiz')
+cl_rhiz_prop.ps <- transform_sample_counts(cl_rhiz.ps, function(x) x/sum(x))
+set.seed(248)
+cl_rhiz.wuni <- phyloseq::distance(cl_rhiz_prop.ps, method = 'wunifrac')
+cl_rhiz.pcoa <- phyloseq::ordinate(cl_rhiz_prop.ps, 'PCoA', distance = cl_rhiz.wuni)
+
+# Perform PermANOVA on all of the soils #
+cl_rhiz.adon <- adonis2(cl_rhiz.wuni~Soils, cl_rhiz$met, by = "terms")
+cl_rhiz.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+cl_rhiz.pair <- pairwise.adonis2(cl_rhiz.wuni~Soils, cl_rhiz$met, by = "terms")
+cl_rhiz.pair
+
+cl_rhiz.bdis <- betadisper(cl_rhiz.wuni, group = cl_rhiz$met$Soils)
+anova(cl_rhiz.bdis)
+TukeyHSD(cl_rhiz.bdis)
+
+## Medicago ##
+md_rhiz.ps <- subset_samples(rhiz.ps, Plant == "M. truncatula")
+md_rhiz.ps <- subset_taxa(md_rhiz.ps, taxa_sums(md_rhiz.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(md_rhiz.ps, 'md_rhiz')
+md_rhiz_prop.ps <- transform_sample_counts(md_rhiz.ps, function(x) x/sum(x))
+set.seed(248)
+md_rhiz.wuni <- phyloseq::distance(md_rhiz_prop.ps, method = 'wunifrac')
+md_rhiz.pcoa <- phyloseq::ordinate(md_rhiz_prop.ps, 'PCoA', distance = md_rhiz.wuni)
+
+# Perform PermANOVA on all of the soils #
+md_rhiz.adon <- adonis2(md_rhiz.wuni~Soils, md_rhiz$met, by = "terms")
+md_rhiz.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+md_rhiz.pair <- pairwise.adonis2(md_rhiz.wuni~Soils, md_rhiz$met, by = "terms")
+md_rhiz.pair
+
+md_rhiz.bdis <- betadisper(md_rhiz.wuni, group = md_rhiz$met$Soils)
+anova(md_rhiz.bdis)
+TukeyHSD(md_rhiz.bdis)
+
+# Root Endosphere #
+# Construct a Weighted Unifrac distance matrix and PCoA ordination #
+root_prop.ps <- transform_sample_counts(root.ps, function(x) x/sum(x))
+
+set.seed(248)
+root.wuni <- phyloseq::distance(root_prop.ps, method = 'wunifrac')
+root.pcoa <- phyloseq::ordinate(root_prop.ps, 'PCoA', distance = root.wuni)
+
+# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
+root.nmds <- metaMDS(root.wuni, 
+                     k = 11, try = 20, trymax = 1000, maxit = 999,
+                     model = 'global', 
+                     autotransform = FALSE, previous.best = root.pcoa$vectors[,1:5])
+
+# Save the loading scores for all axes and make a distance matrix from these scores #
+root_nmds.scores <- scores(root.nmds, display = 'sites')
+root_nmds.dist <- dist(root_nmds.scores)
+
+# Fit a linear model using the vectorized weighted Unifrac ditsance matrix as a predictor of the vectorized loading score distance matrix to fine total R^2 of the model # 
+root_nmds.ffit <- lm(as.vector(root_nmds.dist) ~ as.vector(root.wuni))
+summary(root_nmds.ffit)
+root_nmds.totr2 <- summary(root_nmds.ffit)$r.squared
+
+# Axes Variance Calculation #
+# Fit linear models as before expect to predict the distance matrix of each individual axis #
+root_nmds.dist1 <- dist(root_nmds.scores[,1])
+root_nmds.fit1 <- lm(as.vector(root_nmds.dist1)~as.vector(root.wuni))
+root_nmds.r1 <- summary(root_nmds.fit1)$r.squared
+
+root_nmds.dist2 <- dist(root_nmds.scores[,2])
+root_nmds.fit2 <- lm(as.vector(root_nmds.dist2)~as.vector(root.wuni))
+root_nmds.r2 <- summary(root_nmds.fit2)$r.squared
+
+root_nmds.dist3 <- dist(root_nmds.scores[,3])
+root_nmds.fit3 <- lm(as.vector(root_nmds.dist3)~as.vector(root.wuni))
+root_nmds.r3 <- summary(root_nmds.fit3)$r.squared
+
+root_nmds.dist4 <- dist(root_nmds.scores[,4])
+root_nmds.fit4 <- lm(as.vector(root_nmds.dist4)~as.vector(root.wuni))
+root_nmds.r4 <- summary(root_nmds.fit4)$r.squared
+
+root_nmds.dist5 <- dist(root_nmds.scores[,5])
+root_nmds.fit5 <- lm(as.vector(root_nmds.dist5)~as.vector(root.wuni))
+root_nmds.r5 <- summary(root_nmds.fit5)$r.squared
+
+root_nmds.dist6 <- dist(root_nmds.scores[,6])
+root_nmds.fit6 <- lm(as.vector(root_nmds.dist6)~as.vector(root.wuni))
+root_nmds.r6 <- summary(root_nmds.fit6)$r.squared
+
+root_nmds.dist7 <- dist(root_nmds.scores[,7])
+root_nmds.fit7 <- lm(as.vector(root_nmds.dist7)~as.vector(root.wuni))
+root_nmds.r7 <- summary(root_nmds.fit7)$r.squared
+
+root_nmds.dist8 <- dist(root_nmds.scores[,8])
+root_nmds.fit8 <- lm(as.vector(root_nmds.dist8)~as.vector(root.wuni))
+root_nmds.r8 <- summary(root_nmds.fit8)$r.squared
+
+root_nmds.dist9 <- dist(root_nmds.scores[,9])
+root_nmds.fit9 <- lm(as.vector(root_nmds.dist9)~as.vector(root.wuni))
+root_nmds.r9 <- summary(root_nmds.fit9)$r.squared
+
+root_nmds.dist10 <- dist(root_nmds.scores[,10])
+root_nmds.fit10 <- lm(as.vector(root_nmds.dist10)~as.vector(root.wuni))
+root_nmds.r10 <- summary(root_nmds.fit10)$r.squared
+
+root_nmds.dist11 <- dist(root_nmds.scores[,11])
+root_nmds.fit11 <- lm(as.vector(root_nmds.dist11)~as.vector(root.wuni))
+root_nmds.r11 <- summary(root_nmds.fit11)$r.squared
+
+# Take the sum the R^2 value from each axis #
+root_nmds.comb <- root_nmds.r1 + root_nmds.r2 + root_nmds.r3 + root_nmds.r4 + root_nmds.r5 + root_nmds.r6 + root_nmds.r7 + root_nmds.r8 + root_nmds.r9 + root_nmds.r10 + root_nmds.r11
+
+# Divide each axis R^2 by the total of all axes and then multiply by the variation explained by the whole model
+root_nmds.axisr <- c()
+for(i in 1:ncol(root_nmds.scores)){
+  root_nmds.axisr[i] <- (get(paste0('root_nmds.r', i)) / root_nmds.comb) * root_nmds.totr2 
+}
+
+### Calculating Variance Components ###
+# Construct a data.frame that has sample info and their loading scores #
+decompose_ps(root.ps, 'root')
+for(i in 1:nrow(root$met)){
+  root$met$PS[i] <- paste0(substr(root$met$Plant.Species[i],1,1), substr(root$met$Soil.Origin[i],1,1))
+}
+root$met$Plants <- factor(root$met$Plant.Species, levels = c('S. helvola', 'C. fasciculata', 'D. illinoense', 'A. bracteata', 'T. repens', 'M. truncatula'))
+root$met$Comps <- factor(root$met$Compartment, c('Root Endosphere'))
+root$met$Soils <- factor(root$met$Soil.Origin, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
+
+sample_data(root.ps) <- root$met
+root_nmds.load <- cbind(root$met, root_nmds.scores)
+
+# Test the mixed linear model on the first NMDS axis #
+root_nmds.vfit1 <- lmer(NMDS1 ~ (1|Soils) + (1|Plants) +(1|Soils:Plants), data = root_nmds.load, REML = TRUE)
+summary(root_nmds.vfit1)
+root_nmds.vca1 <- as.data.frame(VarCorr(root_nmds.vfit1))
+
+# Using Loop to do each NMDS axis #
+root_nmds.vca <- matrix(nrow = 4, ncol = ncol(root_nmds.scores))
+hold <- c()
+for(i in 1:ncol(root_nmds.scores)){
+  hold <- lmer(root_nmds.scores[,i] ~  (1|Soils) + (1|Plants) +(1|Soils:Plants), data = root_nmds.load, REML = TRUE)
+  hold <- as.data.frame(VarCorr(hold))
+  root_nmds.vca[1,i] <- hold[1,4]
+  root_nmds.vca[2,i] <- hold[2,4]
+  root_nmds.vca[3,i] <- hold[3,4]
+  root_nmds.vca[4,i] <- hold[4,4]
+}
+
+# Save the variance components to their assigned variable/variable interaction and their NMDS loading axis #
+rownames(root_nmds.vca) <- c('PSF History x Plant', 'Plant', 'PSF History', 'Residual')
+colnames(root_nmds.vca) <- colnames(root_nmds.scores)
+
+# Calculate the total variance of each variance component#
+root_nmds.vtot <- colSums(root_nmds.vca)
+
+# Weight each variance component by the amount of variation each axis explains #
+root_nmds.wvca <- matrix(nrow = nrow(root_nmds.vca), ncol = length(root_nmds.axisr))
+for(i in 1:length(root_nmds.axisr)){
+  for(j in 1:nrow(root_nmds.vca)){
+    root_nmds.wvca[j,i] <- root_nmds.vca[j,i]*root_nmds.axisr[i] 
+  }
+}
+# Take the total variance explained by each predictor and take the sum of those values #
+rownames(root_nmds.wvca) <- rownames(root_nmds.vca); colnames(root_nmds.wvca) <- colnames(root_nmds.vca)
+root_nmds.tvca <- rowSums(root_nmds.wvca)
+root_nmds.tvca <- as.data.frame(root_nmds.tvca)
+root_nmds.ptot <- colSums(root_nmds.tvca)
+
+# Take the variance explained by each predictor and divide by the total variance explained and multiply by 100% #
+root_nmds.pvca <- matrix(nrow = nrow(root_nmds.tvca), ncol = 1)
+for(i in 1:nrow(root_nmds.tvca)){
+  root_nmds.pvca[i,1] <- root_nmds.tvca[i,1] / root_nmds.ptot * 100
+}
+
+# Save the variation explained percentages of each predictor/predictor interaction #
+rownames(root_nmds.pvca) <- rownames(root_nmds.vca); colnames(root_nmds.pvca) <- 'Variance Explained'
+root_nmds.pvca
+
+# Perform PermANOVA using all samples #
+root.adon <- adonis2(root.wuni~Plants*Soils, root$met, permutations = 999)
+root.adon_by <- adonis2(root.wuni~Plants*Soils, root$met, permutations = 999, by = 'terms')
+root.adon
+root.adon_by
+
+# Perform PermDISP using all samples # 
+root.bdis <- betadisper(root.wuni, group = root$met$PS)
+anova(root.bdis)
+TukeyHSD(root.bdis)
+
+# Make an object with the data to be plotted #
+root_nmds.load <- cbind(root$met, root_nmds.scores)
+
+# plot the NMDS ordination of all samples that will be used to make a patchwork plot #
+root_nmds.plot <- ggplot(root_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape = Soils)) +
+  geom_point(size = 8) +
+  scale_color_manual(name = "rootosphere Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. illinoense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
+  scale_shape_manual(name = "PSF History", labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c(15,17,16)) +
+  xlab(expression("NMDS1 (R"^2 ~ "= 0.5386)")) +
+  ylab(expression("NMDS2 (R"^2 ~ "= 0.2525)")) +
+  theme_bw() +
+  theme(legend.position = 'right',
+        panel.grid = element_blank(),
+        legend.text = element_text(size = 12, family = "Liberation Sans"),
+        legend.title = element_text(size = 16, family = "Liberation Sans"),
+        axis.title = element_text(size=20, family = "Liberation Sans"),
+        axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +
+  annotate('text', x = -0.1, y = -0.29,
+           label = expression("(PERMANOVA) F"["16,70"] ~ "= 25.443, P = 0.001;  (PERMDISP) F"["16,70"] ~  "= 4.9933, P < 0.001"),
+           size = 8, family = 'Liberation Sans') +
+  labs(tag = 'A.')
+
+root_nmds.plot
+
+# Separate samples by plant species #
+## Fuzzy Bean ##
+fb_root.ps <- subset_samples(root.ps, Plant.Species == "S. helvola")
+fb_root.ps <- subset_taxa(fb_root.ps, taxa_sums(fb_root.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(fb_root.ps, 'fb_root')
+fb_root_prop.ps <- transform_sample_counts(fb_root.ps, function(x) x/sum(x))
+set.seed(248)
+fb_root.wuni <- phyloseq::distance(fb_root_prop.ps, method = 'wunifrac')
+fb_root.pcoa <- phyloseq::ordinate(fb_root_prop.ps, 'PCoA', distance = fb_root.wuni)
+
+# Perform PermANOVA on all of the soils #
+fb_root.adon <- adonis2(fb_root.wuni~Soils, fb_root$met, by = "terms")
+fb_root.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+fb_root.pair <- pairwise.adonis2(fb_root.wuni~Soils, fb_root$met, by = "terms")
+fb_root.pair
+
+fb_root.bdis <- betadisper(fb_root.wuni, group = fb_root$met$Soils)
+anova(fb_root.bdis)
+TukeyHSD(fb_root.bdis)
+
+## Chamaecrista ##
+cc_root.ps <- subset_samples(root.ps, Plant.Species == "C. fasciculata")
+cc_root.ps <- subset_taxa(cc_root.ps, taxa_sums(cc_root.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(cc_root.ps, 'cc_root')
+cc_root_prop.ps <- transform_sample_counts(cc_root.ps, function(x) x/sum(x))
+set.seed(248)
+cc_root.wuni <- phyloseq::distance(cc_root_prop.ps, method = 'wunifrac')
+cc_root.pcoa <- phyloseq::ordinate(cc_root_prop.ps, 'PCoA', distance = cc_root.wuni)
+
+# Perform PermANOVA on all of the soils #
+cc_root.adon <- adonis2(cc_root.wuni~Soils, cc_root$met, by = "terms")
+cc_root.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+cc_root.pair <- pairwise.adonis2(cc_root.wuni~Soils, cc_root$met, by = "terms")
+cc_root.pair
+
+cc_root.bdis <- betadisper(cc_root.wuni, group = cc_root$met$Soils)
+anova(cc_root.bdis)
+TukeyHSD(cc_root.bdis)
+
+## Desmodium ##
+ds_root.ps <- subset_samples(root.ps, Plant.Species == "D. illinoense")
+ds_root.ps <- subset_taxa(ds_root.ps, taxa_sums(ds_root.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(ds_root.ps, 'ds_root')
+ds_root_prop.ps <- transform_sample_counts(ds_root.ps, function(x) x/sum(x))
+set.seed(248)
+ds_root.wuni <- phyloseq::distance(ds_root_prop.ps, method = 'wunifrac')
+ds_root.pcoa <- phyloseq::ordinate(ds_root_prop.ps, 'PCoA', distance = ds_root.wuni)
+
+# Perform PermANOVA on all of the soils #
+ds_root.adon <- adonis2(ds_root.wuni~Soils, ds_root$met, by = "terms")
+ds_root.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+ds_root.pair <- pairwise.adonis2(ds_root.wuni~Soils, ds_root$met, by = "terms")
+ds_root.pair
+
+ds_root.bdis <- betadisper(ds_root.wuni, group = ds_root$met$Soils)
+anova(ds_root.bdis)
+TukeyHSD(ds_root.bdis)
+
+## Hog Peanut ##
+hp_root.ps <- subset_samples(root.ps, Plant.Species == "A. bracteata")
+hp_root.ps <- subset_taxa(hp_root.ps, taxa_sums(hp_root.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(hp_root.ps, 'hp_root')
+hp_root_prop.ps <- transform_sample_counts(hp_root.ps, function(x) x/sum(x))
+set.seed(248)
+hp_root.wuni <- phyloseq::distance(hp_root_prop.ps, method = 'wunifrac')
+hp_root.pcoa <- phyloseq::ordinate(hp_root_prop.ps, 'PCoA', distance = hp_root.wuni)
+
+# Perform PermANOVA on all of the soils #
+hp_root.adon <- adonis2(hp_root.wuni~Soils, hp_root$met, by = "terms")
+hp_root.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+hp_root.pair <- pairwise.adonis2(hp_root.wuni~Soils, hp_root$met, by = "terms")
+hp_root.pair
+
+hp_root.bdis <- betadisper(hp_root.wuni, group = hp_root$met$Soils)
+anova(hp_root.bdis)
+TukeyHSD(hp_root.bdis)
+
+## Clover ##
+cl_root.ps <- subset_samples(root.ps, Plant.Species == "T. repens")
+cl_root.ps <- subset_taxa(cl_root.ps, taxa_sums(cl_root.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(cl_root.ps, 'cl_root')
+cl_root_prop.ps <- transform_sample_counts(cl_root.ps, function(x) x/sum(x))
+set.seed(248)
+cl_root.wuni <- phyloseq::distance(cl_root_prop.ps, method = 'wunifrac')
+cl_root.pcoa <- phyloseq::ordinate(cl_root_prop.ps, 'PCoA', distance = cl_root.wuni)
+
+# Perform PermANOVA on all of the soils #
+cl_root.adon <- adonis2(cl_root.wuni~Soils, cl_root$met, by = "terms")
+cl_root.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+cl_root.pair <- pairwise.adonis2(cl_root.wuni~Soils, cl_root$met, by = "terms")
+cl_root.pair
+
+cl_root.bdis <- betadisper(cl_root.wuni, group = cl_root$met$Soils)
+anova(cl_root.bdis)
+TukeyHSD(cl_root.bdis)
+
+## Medicago ##
+md_root.ps <- subset_samples(root.ps, Plant.Species == "M. truncatula")
+md_root.ps <- subset_taxa(md_root.ps, taxa_sums(md_root.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(md_root.ps, 'md_root')
+md_root_prop.ps <- transform_sample_counts(md_root.ps, function(x) x/sum(x))
+set.seed(248)
+md_root.wuni <- phyloseq::distance(md_root_prop.ps, method = 'wunifrac')
+md_root.pcoa <- phyloseq::ordinate(md_root_prop.ps, 'PCoA', distance = md_root.wuni)
+
+# Perform PermANOVA on all of the soils #
+md_root.adon <- adonis2(md_root.wuni~Soils, md_root$met, by = "terms")
+md_root.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+md_root.pair <- pairwise.adonis2(md_root.wuni~Soils, md_root$met, by = "terms")
+md_root.pair
+
+md_root.bdis <- betadisper(md_root.wuni, group = md_root$met$Soils)
+anova(md_root.bdis)
+TukeyHSD(md_root.bdis)
+
+# Bulk Soil vs Rhizosphere No Plant #
+# Construct a phyloseq object containing only samples in the Non-PSF Soil #
+npsf.ps <- subset_samples(soil.ps, Soil_Treatment == "Non-PSF Soil")
+
+# Construct a Weighted Unifrac distance matrix and PCoA ordination #
+npsf_prop.ps <- transform_sample_counts(npsf.ps, function(x) x/sum(x))
+
+set.seed(248)
+npsf.wuni <- phyloseq::distance(npsf_prop.ps, method = 'wunifrac')
+npsf.pcoa <- phyloseq::ordinate(npsf_prop.ps, 'PCoA', distance = npsf.wuni)
+
+# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
+npsf.nmds <- metaMDS(npsf.wuni, 
+                     k = 4, try = 20, trymax = 1000, maxit = 999,
+                     model = 'global', 
+                     autotransform = FALSE, previous.best = npsf.pcoa$vectors[,1:5])
+
+# Save the loading scores for all axes and make a distance matrix from these scores #
+npsf_nmds.scores <- scores(npsf.nmds, display = 'sites')
+npsf_nmds.dist <- dist(npsf_nmds.scores)
+
+# Fit a linear model using the vectorized weighted Unifrac ditsance matrix as a predictor of the vectorized loading score distance matrix to fine total R^2 of the model # 
+npsf_nmds.ffit <- lm(as.vector(npsf_nmds.dist) ~ as.vector(npsf.wuni))
+summary(npsf_nmds.ffit)
+npsf_nmds.totr2 <- summary(npsf_nmds.ffit)$r.squared
+
+# Axes Variance Calculation #
+# Fit linear models as before expect to predict the distance matrix of each individual axis #
+npsf_nmds.dist1 <- dist(npsf_nmds.scores[,1])
+npsf_nmds.fit1 <- lm(as.vector(npsf_nmds.dist1)~as.vector(npsf.wuni))
+npsf_nmds.r1 <- summary(npsf_nmds.fit1)$r.squared
+
+npsf_nmds.dist2 <- dist(npsf_nmds.scores[,2])
+npsf_nmds.fit2 <- lm(as.vector(npsf_nmds.dist2)~as.vector(npsf.wuni))
+npsf_nmds.r2 <- summary(npsf_nmds.fit2)$r.squared
+
+npsf_nmds.dist3 <- dist(npsf_nmds.scores[,3])
+npsf_nmds.fit3 <- lm(as.vector(npsf_nmds.dist3)~as.vector(npsf.wuni))
+npsf_nmds.r3 <- summary(npsf_nmds.fit3)$r.squared
+
+npsf_nmds.dist4 <- dist(npsf_nmds.scores[,4])
+npsf_nmds.fit4 <- lm(as.vector(npsf_nmds.dist4)~as.vector(npsf.wuni))
+npsf_nmds.r4 <- summary(npsf_nmds.fit4)$r.squared
+
+# Take the sum the R^2 value from each axis #
+npsf_nmds.comb <- npsf_nmds.r1 + npsf_nmds.r2 + npsf_nmds.r3 + npsf_nmds.r4
+
+# Divide each axis R^2 by the total of all axes and then multiply by the variation explained by the whole model
+npsf_nmds.axisr <- c()
+for(i in 1:ncol(npsf_nmds.scores)){
+  npsf_nmds.axisr[i] <- (get(paste0('npsf_nmds.r', i)) / npsf_nmds.comb) * npsf_nmds.totr2 
+}
+
+### Calculating Variance Components ###
+# Construct a data.frame that has sample info and their loading scores #
+decompose_ps(npsf.ps, 'npsf')
+for(i in 1:nrow(npsf$met)){
+  npsf$met$PC[i] <- paste0(substr(npsf$met$Plant[i],1,1), substr(npsf$met$Compartment[i],1,2))
+}
+npsf$met$Plants <- factor(npsf$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. illinoense', 'A. bracteata', 'T. repens', 'M. truncatula'))
+npsf$met$Comps <- factor(npsf$met$Compartment, c('Bulk Soil', 'Rhizosphere'))
+npsf$met$Soils <- factor(npsf$met$Soil_Treatment, levels = c("Non-PSF Soil"))
+
+sample_data(npsf.ps) <- npsf$met
+npsf_nmds.load <- cbind(npsf$met, npsf_nmds.scores)
+
+# Test the mixed linear model on the first NMDS axis #
+npsf_nmds.vfit1 <- lmer(NMDS1 ~ (1|Comps) + (1|Plants) +(1|Comps:Plants), data = npsf_nmds.load, REML = TRUE)
+summary(npsf_nmds.vfit1)
+npsf_nmds.vca1 <- as.data.frame(VarCorr(npsf_nmds.vfit1))
+
+# Using Loop to do each NMDS axis #
+npsf_nmds.vca <- matrix(nrow = 4, ncol = ncol(npsf_nmds.scores))
+hold <- c()
+for(i in 1:ncol(npsf_nmds.scores)){
+  hold <- lmer(npsf_nmds.scores[,i] ~  (1|Comps) + (1|Plants) +(1|Comps:Plants), data = npsf_nmds.load, REML = TRUE)
+  hold <- as.data.frame(VarCorr(hold))
+  npsf_nmds.vca[1,i] <- hold[1,4]
+  npsf_nmds.vca[2,i] <- hold[2,4]
+  npsf_nmds.vca[3,i] <- hold[3,4]
+  npsf_nmds.vca[4,i] <- hold[4,4]
+}
+
+# Save the variance components to their assigned variable/variable interaction and their NMDS loading axis #
+rownames(npsf_nmds.vca) <- c('PSF History x Plant', 'Plant', 'PSF History', 'Residual')
+colnames(npsf_nmds.vca) <- colnames(npsf_nmds.scores)
+
+# Calculate the total variance of each variance component#
+npsf_nmds.vtot <- colSums(npsf_nmds.vca)
+
+# Weight each variance component by the amount of variation each axis explains #
+npsf_nmds.wvca <- matrix(nrow = nrow(npsf_nmds.vca), ncol = length(npsf_nmds.axisr))
+for(i in 1:length(npsf_nmds.axisr)){
+  for(j in 1:nrow(npsf_nmds.vca)){
+    npsf_nmds.wvca[j,i] <- npsf_nmds.vca[j,i]*npsf_nmds.axisr[i] 
+  }
+}
+# Take the total variance explained by each predictor and take the sum of those values #
+rownames(npsf_nmds.wvca) <- rownames(npsf_nmds.vca); colnames(npsf_nmds.wvca) <- colnames(npsf_nmds.vca)
+npsf_nmds.tvca <- rowSums(npsf_nmds.wvca)
+npsf_nmds.tvca <- as.data.frame(npsf_nmds.tvca)
+npsf_nmds.ptot <- colSums(npsf_nmds.tvca)
+
+# Take the variance explained by each predictor and divide by the total variance explained and multiply by 100% #
+npsf_nmds.pvca <- matrix(nrow = nrow(npsf_nmds.tvca), ncol = 1)
+for(i in 1:nrow(npsf_nmds.tvca)){
+  npsf_nmds.pvca[i,1] <- npsf_nmds.tvca[i,1] / npsf_nmds.ptot * 100
+}
+
+# Save the variation explained percentages of each predictor/predictor interaction #
+rownames(npsf_nmds.pvca) <- rownames(npsf_nmds.vca); colnames(npsf_nmds.pvca) <- 'Variance Explained'
+npsf_nmds.pvca
+
+# Perform PermANOVA using all samples #
+npsf.adon <- adonis2(npsf.wuni~Comps*Plants, npsf$met, permutations = 999)
+npsf.adon_by <- adonis2(npsf.wuni~Comps*Plants, npsf$met, permutations = 999, by = 'terms')
+npsf.adon
+npsf.adon_by
+
+# Perform PermDISP using all samples # 
+npsf.bdis <- betadisper(npsf.wuni, group = npsf$met$PC)
+anova(npsf.bdis)
+TukeyHSD(npsf.bdis)
+
+# Make an object with the data to be plotted #
+npsf_nmds.load <- cbind(npsf$met, npsf_nmds.scores)
+
+# plot the NMDS ordination of all samples that will be used to make a patchwork plot #
+npsf_nmds.plot <- ggplot(npsf_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape = Comps)) +
+  geom_point(size = 8) +
+  scale_color_manual(name = "Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. illinoense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
+  scale_shape_manual(name = "Compartment", labels = c("Bulk Soil", "Rhizosphere", "PSF Soil"), values = c(15,16)) +
+  xlab(expression("NMDS1 (R"^2 ~ "= 0.6251)")) +
+  ylab(expression("NMDS2 (R"^2 ~ "= 0.2766)")) +
+  theme_bw() +
+  theme(legend.position = 'right',
+        panel.grid = element_blank(),
+        legend.text = element_text(size = 12, family = "Liberation Sans"),
+        legend.title = element_text(size = 16, family = "Liberation Sans"),
+        axis.title = element_text(size=20, family = "Liberation Sans"),
+        axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +
+  annotate('text', x = -0.05, y = -0.3,
+           label = expression("(PERMANOVA) F"["7,27"] ~ "= 26.094, P = 0.001;  (PERMDISP) F"["7,27"] ~  "= 6.0835, P < 0.001"),
+           size = 8, family = 'Liberation Sans') +
+  coord_cartesian(ylim = c(-0.29,0.23)) +
+  labs(tag = 'A.')
+
+npsf_nmds.plot
+
+# Separate samples by plant species #
+## Fuzzy Bean ##
+fb_npsf.ps <- subset_samples(npsf.ps, Plant == "S. helvola")
+fb_npsf.ps <- merge_phyloseq(fb_npsf.ps, subset_samples(npsf.ps, Plant == "C. fasciculata" & Compartment == "Bulk Soil")) 
+fb_npsf.ps <- subset_taxa(fb_npsf.ps, taxa_sums(fb_npsf.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(fb_npsf.ps, 'fb_npsf')
+fb_npsf_prop.ps <- transform_sample_counts(fb_npsf.ps, function(x) x/sum(x))
+set.seed(248)
+fb_npsf.wuni <- phyloseq::distance(fb_npsf_prop.ps, method = 'wunifrac')
+fb_npsf.pcoa <- phyloseq::ordinate(fb_npsf_prop.ps, 'PCoA', distance = fb_npsf.wuni)
+
+# Perform PermANOVA on all of the soils #
+fb_npsf.adon <- adonis2(fb_npsf.wuni~Comps, fb_npsf$met, by = "terms")
+fb_npsf.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+fb_npsf.pair <- pairwise.adonis2(fb_npsf.wuni~Comps, fb_npsf$met, by = "terms")
+fb_npsf.pair
+
+fb_npsf.bdis <- betadisper(fb_npsf.wuni, group = fb_npsf$met$Comps)
+anova(fb_npsf.bdis)
+TukeyHSD(fb_npsf.bdis)
+
+## Chamaecrista ##
+cc_npsf.ps <- subset_samples(npsf.ps, Plant == "C. fasciculata")
+cc_npsf.ps <- subset_taxa(cc_npsf.ps, taxa_sums(cc_npsf.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(cc_npsf.ps, 'cc_npsf')
+cc_npsf_prop.ps <- transform_sample_counts(cc_npsf.ps, function(x) x/sum(x))
+set.seed(248)
+cc_npsf.wuni <- phyloseq::distance(cc_npsf_prop.ps, method = 'wunifrac')
+cc_npsf.pcoa <- phyloseq::ordinate(cc_npsf_prop.ps, 'PCoA', distance = cc_npsf.wuni)
+
+# Perform PermANOVA on all of the soils #
+cc_npsf.adon <- adonis2(cc_npsf.wuni~Comps, cc_npsf$met, by = "terms")
+cc_npsf.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+cc_npsf.pair <- pairwise.adonis2(cc_npsf.wuni~Comps, cc_npsf$met, by = "terms")
+cc_npsf.pair
+
+cc_npsf.bdis <- betadisper(cc_npsf.wuni, group = cc_npsf$met$Comps)
+anova(cc_npsf.bdis)
+TukeyHSD(cc_npsf.bdis)
+
+## Desmodium ##
+ds_npsf.ps <- subset_samples(npsf.ps, Plant == "D. illinoense")
+ds_npsf.ps <- subset_taxa(ds_npsf.ps, taxa_sums(ds_npsf.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(ds_npsf.ps, 'ds_npsf')
+ds_npsf_prop.ps <- transform_sample_counts(ds_npsf.ps, function(x) x/sum(x))
+set.seed(248)
+ds_npsf.wuni <- phyloseq::distance(ds_npsf_prop.ps, method = 'wunifrac')
+ds_npsf.pcoa <- phyloseq::ordinate(ds_npsf_prop.ps, 'PCoA', distance = ds_npsf.wuni)
+
+# Perform PermANOVA on all of the soils #
+ds_npsf.adon <- adonis2(ds_npsf.wuni~Comps, ds_npsf$met, by = "terms")
+ds_npsf.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+ds_npsf.pair <- pairwise.adonis2(ds_npsf.wuni~Comps, ds_npsf$met, by = "terms")
+ds_npsf.pair
+
+ds_npsf.bdis <- betadisper(ds_npsf.wuni, group = ds_npsf$met$Comps)
+anova(ds_npsf.bdis)
+TukeyHSD(ds_npsf.bdis)
+
+## Hog Peanut ##
+hp_npsf.ps <- subset_samples(npsf.ps, Plant == "A. bracteata")
+hp_npsf.ps <- merge_phyloseq(hp_npsf.ps, subset_samples(npsf.ps, Plant == "D. illinoense" & Compartment == "Bulk Soil")) 
+hp_npsf.ps <- subset_taxa(hp_npsf.ps, taxa_sums(hp_npsf.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(hp_npsf.ps, 'hp_npsf')
+hp_npsf_prop.ps <- transform_sample_counts(hp_npsf.ps, function(x) x/sum(x))
+set.seed(248)
+hp_npsf.wuni <- phyloseq::distance(hp_npsf_prop.ps, method = 'wunifrac')
+hp_npsf.pcoa <- phyloseq::ordinate(hp_npsf_prop.ps, 'PCoA', distance = hp_npsf.wuni)
+
+# Perform PermANOVA on all of the soils #
+hp_npsf.adon <- adonis2(hp_npsf.wuni~Comps, hp_npsf$met, by = "terms")
+hp_npsf.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+hp_npsf.pair <- pairwise.adonis2(hp_npsf.wuni~Comps, hp_npsf$met, by = "terms")
+hp_npsf.pair
+
+hp_npsf.bdis <- betadisper(hp_npsf.wuni, group = hp_npsf$met$Comps)
+anova(hp_npsf.bdis)
+TukeyHSD(hp_npsf.bdis)
+
+## Clover ##
+cl_npsf.ps <- subset_samples(npsf.ps, Plant == "T. repens")
+
+## Medicago ##
+md_npsf.ps <- subset_samples(npsf.ps, Plant == "M. truncatula")
+md_npsf.ps <- merge_phyloseq(md_npsf.ps, cl_npsf.ps)
+md_npsf.ps <- subset_taxa(md_npsf.ps, taxa_sums(md_npsf.ps) > 0)
+
+# Create a distance matrix based on Weighted Unifrac Distances #
+decompose_ps(md_npsf.ps, 'md_npsf')
+md_npsf_prop.ps <- transform_sample_counts(md_npsf.ps, function(x) x/sum(x))
+set.seed(248)
+md_npsf.wuni <- phyloseq::distance(md_npsf_prop.ps, method = 'wunifrac')
+md_npsf.pcoa <- phyloseq::ordinate(md_npsf_prop.ps, 'PCoA', distance = md_npsf.wuni)
+
+# Perform PermANOVA on all of the soils #
+md_npsf.adon <- adonis2(md_npsf.wuni~Comps, md_npsf$met, by = "terms")
+md_npsf.adon
+
+# Perform Pairwise Permanova of the individual soil treatments # 
+md_npsf.pair <- pairwise.adonis2(md_npsf.wuni~Comps, md_npsf$met, by = "terms")
+md_npsf.pair
+
+md_npsf.bdis <- betadisper(md_npsf.wuni, group = md_npsf$met$Comps)
+anova(md_npsf.bdis)
+TukeyHSD(md_npsf.bdis)
+
+
+#### Non-Nodule Stacked Histograms ####
+library(microbiome); packageVersion('microbiome')
+library(microbiomeutilities); packageVersion("microbiomeutilities")
+
+# Create a phyloseq object that contains all non-nodule reads #
+decompose_ps(soil.ps, 'soil_temp')
+for(i in 1:nrow(soil_temp$met)){
+  soil_temp$met$PS[i] <- paste0(substr(soil_temp$met$Plant[i],1,1), substr(soil_temp$met$Soil_Treatment[i], 1,1))
+}
+soil_temp$met$Plants <- factor(soil_temp$met$Plant, levels = c("S. helvola", "C. fasciculata", "D. illinoense", "A. bracteata", "T. repens", "M. truncatula"))
+soil_temp$met$Comps <- factor(soil_temp$met$Compartment, levels = c("Bulk Soil", "Rhizosphere", "Root Endosphere"))
+soil_temp$met$Soils <- factor(soil_temp$met$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+
+decompose_ps(root.ps, 'root_temp')
+root_temp$met$Comps <- factor(root_temp$met$Compartment, levels = c("Bulk Soil", "Rhizosphere", "Root Endosphere"))
+colnames(root_temp$met) <- colnames(soil_temp$met)
+
+soil_temp.ps <- phyloseq(otu_table(soil_temp$otu, taxa_are_rows = TRUE),
+                         tax_table(as.matrix(soil_temp$tax[,c("Family", "Genus")])),
+                         sample_data(soil_temp$met))
+soil_temp.ps <- tax_glom(soil_temp.ps, taxrank = "Genus")
+taxa_names(soil_temp.ps) <- tax_table(soil_temp.ps)[,"Genus"]
+root_temp.ps <- phyloseq(otu_table(root_temp$otu, taxa_are_rows = TRUE),
+                         tax_table(as.matrix(root_temp$tax[,c("Family", "Genus")])),
+                         sample_data(root_temp$met))
+root_temp.ps <- tax_glom(root_temp.ps, taxrank = "Genus")
+taxa_names(root_temp.ps) <- tax_table(root_temp.ps)[,"Genus"]
+
+all.ps <- merge_phyloseq(soil_temp.ps, root_temp.ps)
+
+# Create a palette for each genus represented in the phyloseq object #
+library(Polychrome); packageVersion("Polychrome")
+all.colr <- createPalette(ntaxa(all.ps), c("#ff0000", "#00ff00", "#0000ff"))
+all.colr <- as.data.frame(all.colr)
+rownames(all.colr) <- sort(taxa_names(all.ps))
+all.colr[350,] <- "#D4D4D4"
+rownames(all.colr)[350] <- "Other"
+
+# Separate by plant species # 
+## Fuzzy Bean ##
+fb_all.ps <- subset_samples(all.ps, Plant == "S. helvola")
+fb_all.ps <- merge_phyloseq(fb_all.ps, subset_samples(all.ps, Plant == "C. fasciculata" & Soil_Treatment == "Non-PSF Soil" & Compartment == "Bulk Soil"))
+
+fb_top.ps <- aggregate_top_taxa2(fb_all.ps, 19, "Genus")
+fb_top.name <- names(sort(taxa_sums(fb_top.ps), decreasing = TRUE))
+fb_top.colr <- all.colr[fb_top.name,]
+
+fb_top.df <- psmelt(fb_top.ps)
+fb_top.df$Genera <- factor(fb_top.df$Genus, levels = fb_top.name)
+
+fb_top.plot <- ggplot(fb_top.df, aes(x = Soils, y = Abundance, fill = Genera)) +
+  geom_bar(stat='identity', position = 'fill') +
+  facet_wrap(~Comps, scales = "fixed") +
+  xlab('') +
+  ylab('Relative Abudnance') +
+  scale_fill_manual(values = fb_top.colr) +
+  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('S. helvola')))) +
+  theme_bw() +
+  theme(axis.text.x.bottom = element_text(color = "black", size = 18, angle = -45, hjust = 0),
+        axis.title = element_text(size = 22),
+        strip.text = element_text(size =18),
+        legend.text = element_text(size = 18),
+        legend.title = element_blank(),
+        axis.text.y.right = element_blank(),
+        axis.ticks.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90),
+        legend.position = 'right')
+fb_top.plot
+
+## Chamaecrista ##
+cc_all.ps <- subset_samples(all.ps, Plant == "C. fasciculata")
+cc_all.ps <- merge_phyloseq(cc_all.ps, subset_samples(all.ps, Plant == "S. helvola" & Soil_Treatment == "Common Soil" & Compartment == "Bulk Soil"))
+
+cc_top.ps <- aggregate_top_taxa2(cc_all.ps, 19, "Genus")
+cc_top.name <- names(sort(taxa_sums(cc_top.ps), decreasing = TRUE))
+cc_top.colr <- all.colr[cc_top.name,]
+
+cc_top.df <- psmelt(cc_top.ps)
+cc_top.df$Genera <- factor(cc_top.df$Genus, levels = cc_top.name)
+
+cc_top.plot <- ggplot(cc_top.df, aes(x = Soils, y = Abundance, fill = Genera)) +
+  geom_bar(stat='identity', position = 'fill') +
+  facet_wrap(~Comps, scales = "fixed") +
+  xlab('') +
+  ylab('Relative Abudnance') +
+  scale_fill_manual(values = cc_top.colr) +
+  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('C. fasciculata')))) +
+  theme_bw() +
+  theme(axis.text.x.bottom = element_text(color = "black", size = 18, angle = -45, hjust = 0),
+        axis.title = element_text(size = 22),
+        strip.text = element_text(size =18),
+        legend.text = element_text(size = 18),
+        legend.title = element_blank(),
+        axis.text.y.right = element_blank(),
+        axis.ticks.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
+        legend.position = 'right')
+cc_top.plot
+
+## Desmodium ##
+ds_all.ps <- subset_samples(all.ps, Plant == "D. illinoense")
+ds_all.ps <- merge_phyloseq(ds_all.ps, subset_samples(all.ps, Plant == "S. helvola" & Soil_Treatment == "Common Soil" & Compartment == "Bulk Soil"))
+
+ds_top.ps <- aggregate_top_taxa2(ds_all.ps, 19, "Genus")
+ds_top.name <- names(sort(taxa_sums(ds_top.ps), decreasing = TRUE))
+ds_top.colr <- all.colr[ds_top.name,]
+
+ds_top.df <- psmelt(ds_top.ps)
+ds_top.df$Genera <- factor(ds_top.df$Genus, levels = ds_top.name)
+
+ds_top.plot <- ggplot(ds_top.df, aes(x = Soils, y = Abundance, fill = Genera)) +
+  geom_bar(stat='identity', position = 'fill') +
+  facet_wrap(~Comps, scales = "fixed") +
+  xlab('') +
+  ylab('Relative Abudnance') +
+  scale_fill_manual(values = ds_top.colr) +
+  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('D. illinoense')))) +
+  theme_bw() +
+  theme(axis.text.x.bottom = element_text(color = "black", size = 18, angle = -45, hjust = 0),
+        axis.title = element_text(size = 22),
+        strip.text = element_text(size =18),
+        legend.text = element_text(size = 18),
+        legend.title = element_blank(),
+        axis.text.y.right = element_blank(),
+        axis.ticks.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
+        legend.position = 'right')
+ds_top.plot
+
+## Hog Peanut ##
+hp_all.ps <- subset_samples(all.ps, Plant == "A. bracteata")
+hp_all.ps <- merge_phyloseq(hp_all.ps, subset_samples(all.ps, Plant == "S. helvola" & Soil_Treatment == "Common Soil" & Compartment == "Bulk Soil"))
+hp_all.ps <- merge_phyloseq(hp_all.ps, subset_samples(all.ps, Plant == "D. illinoense" & Soil_Treatment == "Non-PSF Soil" & Compartment == "Bulk Soil"))
+
+
+hp_top.ps <- aggregate_top_taxa2(hp_all.ps, 19, "Genus")
+hp_top.name <- names(sort(taxa_sums(hp_top.ps), decreasing = TRUE))
+hp_top.colr <- all.colr[hp_top.name,]
+
+hp_top.df <- psmelt(hp_top.ps)
+hp_top.df$Genera <- factor(hp_top.df$Genus, levels = hp_top.name)
+
+hp_top.plot <- ggplot(hp_top.df, aes(x = Soils, y = Abundance, fill = Genera)) +
+  geom_bar(stat='identity', position = 'fill') +
+  facet_wrap(~Comps, scales = "fixed") +
+  xlab('') +
+  ylab('Relative Abudnance') +
+  scale_fill_manual(values = hp_top.colr) +
+  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('A. bracteata')))) +
+  theme_bw() +
+  theme(axis.text.x.bottom = element_text(color = "black", size = 18, angle = -45, hjust = 0),
+        axis.title = element_text(size = 22),
+        strip.text = element_text(size =18),
+        legend.text = element_text(size = 18),
+        legend.title = element_blank(),
+        axis.text.y.right = element_blank(),
+        axis.ticks.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
+        legend.position = 'right')
+hp_top.plot
+
+## Clover ##
+cl_all.ps <- subset_samples(all.ps, Plant == "T. repens")
+cl_all.ps <- merge_phyloseq(cl_all.ps, subset_samples(all.ps, Plant == "S. helvola" & Soil_Treatment == "Common Soil" & Compartment == "Bulk Soil"))
+
+
+cl_top.ps <- aggregate_top_taxa2(cl_all.ps, 19, "Genus")
+cl_top.name <- names(sort(taxa_sums(cl_top.ps), decreasing = TRUE))
+cl_top.name <- c("Other", cl_top.name[-2])
+cl_top.colr <- all.colr[cl_top.name,]
+
+cl_top.df <- psmelt(cl_top.ps)
+cl_top.df$Genera <- factor(cl_top.df$Genus, levels = cl_top.name)
+
+cl_top.plot <- ggplot(cl_top.df, aes(x = Soils, y = Abundance, fill = Genera)) +
+  geom_bar(stat='identity', position = 'fill') +
+  facet_wrap(~Comps, scales = "fixed") +
+  xlab('') +
+  ylab('Relative Abudnance') +
+  scale_fill_manual(values = cl_top.colr) +
+  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('T. repens')))) +
+  theme_bw() +
+  theme(axis.text.x.bottom = element_text(color = "black", size = 18, angle = -45, hjust = 0),
+        axis.title = element_text(size = 22),
+        strip.text = element_text(size =18),
+        legend.text = element_text(size = 18),
+        legend.title = element_blank(),
+        axis.text.y.right = element_blank(),
+        axis.ticks.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
+        legend.position = 'right')
+cl_top.plot
+
+## Medicago ##
+md_all.ps <- subset_samples(all.ps, Plant == "M. truncatula")
+md_all.ps <- merge_phyloseq(md_all.ps, subset_samples(all.ps, Plant == "S. helvola" & Soil_Treatment == "Common Soil" & Compartment == "Bulk Soil"))
+md_all.ps <- merge_phyloseq(md_all.ps, subset_samples(all.ps, Plant == "T. repens" & Soil_Treatment == "Non-PSF Soil" & Compartment == "Bulk Soil"))
+
+
+md_top.ps <- aggregate_top_taxa2(md_all.ps, 19, "Genus")
+md_top.name <- names(sort(taxa_sums(md_top.ps), decreasing = TRUE))
+md_top.colr <- all.colr[md_top.name,]
+
+md_top.df <- psmelt(md_top.ps)
+md_top.df$Genera <- factor(md_top.df$Genus, levels = md_top.name)
+
+md_top.plot <- ggplot(md_top.df, aes(x = Soils, y = Abundance, fill = Genera)) +
+  geom_bar(stat='identity', position = 'fill') +
+  facet_wrap(~Comps, scales = "fixed") +
+  xlab('') +
+  ylab('Relative Abudnance') +
+  scale_fill_manual(values = md_top.colr) +
+  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('M. truncatula')))) +
+  theme_bw() +
+  theme(axis.text.x.bottom = element_text(color = "black", size = 18, angle = -45, hjust = 0),
+        axis.title = element_text(size = 22),
+        strip.text = element_text(size =18),
+        legend.text = element_text(size = 18),
+        legend.title = element_blank(),
+        axis.text.y.right = element_blank(),
+        axis.ticks.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
+        legend.position = 'right')
+md_top.plot
+
+#### Differential Abundance ####
+library(Maaslin2); packageVersion("Maaslin2")
+
+# Make a decomposed phyloseq object and at a variable for each unique tripartite group of the soil and root samples #
+decompose_ps(soil.ps, "soil_maas")
+for(i in 1:nrow(soil_maas$met)){
+  soil_maas$met$PSC[i] <- paste0(substr(soil_maas$met$Plant[i], 1, 1), substr(soil_maas$met$Soil_Treatment[i], 1, 1), substr(soil_maas$met$Compartment[i],1,2)) 
+}
+decompose_ps(root.ps, "root_maas")
+for(i in 1:nrow(root_maas$met)){
+  root_maas$met$PSC[i] <- paste0(substr(root_maas$met$Plant.Species[i], 1, 1), substr(root_maas$met$Soil.Origin[i], 1, 1), substr(root_maas$met$Compartment[i],1,2)) 
+}
+
+# Make a directory for the differential abundance plots #
+if(!dir.exists('./maas_results')){
+  system('mkdir ./maas_results')
+}
+
+### Perform Maaslin2 analyses on a per plant basis ###
+## Fuzzy Bean ##
+# Organize ASVs by number #
+fb_bulk.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(fb_bulk$otu)))
+fb_bulk$otu <- fb_bulk$otu[order(fb_bulk.sort),]
+# Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
+fb_bulk_wpsf.maas <- Maaslin2(input_data = fb_bulk$otu,
+                               input_metadata = fb_bulk$met,
+                               output = "./maas_results/fb_bulk_wpsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+fb_bulk_wpsf.res <- fb_bulk_wpsf.maas$results
+fb_bulk_wpsf.dares <- c()
+for(i in 1:nrow(fb_bulk_wpsf.res)){
+  if(fb_bulk_wpsf.res$qval[i] < 0.05){
+    fb_bulk_wpsf.dares <- rbind(fb_bulk_wpsf.dares, fb_bulk_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+fb_bulk_npsf.maas <- Maaslin2(input_data = fb_bulk$otu,
+                               input_metadata = fb_bulk$met,
+                               output = "./maas_results/fb_bulk_npsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,Non-PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+fb_bulk_npsf.res <- fb_bulk_npsf.maas$results
+fb_bulk_npsf.dares <- c()
+for(i in 1:nrow(fb_bulk_npsf.res)){
+  if(fb_bulk_npsf.res$qval[i] < 0.05){
+    fb_bulk_npsf.dares <- rbind(fb_bulk_npsf.dares, fb_bulk_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Organize ASVs by number #
+fb_rhiz.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(fb_rhiz$otu)))
+fb_rhiz$otu <- fb_rhiz$otu[order(fb_rhiz.sort),]
+
+# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+fb_rhiz_wpsf.maas <- Maaslin2(input_data = fb_rhiz$otu,
+                               input_metadata = fb_rhiz$met,
+                               output = "./maas_results/fb_rhiz_wpsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
+fb_rhiz_wpsf.res <- fb_rhiz_wpsf.maas$results
+fb_rhiz_wpsf.dares <- c()
+for(i in 1:nrow(fb_rhiz_wpsf.res)){
+  if(fb_rhiz_wpsf.res$qval[i] < 0.05){
+    fb_rhiz_wpsf.dares <- rbind(fb_rhiz_wpsf.dares, fb_rhiz_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
+fb_rhiz_npsf.maas <- Maaslin2(input_data = fb_rhiz$otu,
+                               input_metadata = fb_rhiz$met,
+                               output = "./maas_results/fb_rhiz_npsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,Non-PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
+fb_rhiz_npsf.res <- fb_rhiz_npsf.maas$results
+fb_rhiz_npsf.dares <- c()
+for(i in 1:nrow(fb_rhiz_npsf.res)){
+  if(fb_rhiz_npsf.res$qval[i] < 0.05){
+    fb_rhiz_npsf.dares <- rbind(fb_rhiz_npsf.dares, fb_rhiz_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+# Maaslin2 analysis for the root endosphere data (PSF Soil Reference)# 
+fb_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
+                              input_metadata = root_maas$met,
+                              output = "./maas_results/fb_root_wpsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "NONE",
+                              min_prevalence = 0.05,
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,SPRo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
+
+# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+fb_root_wpsf.res <- fb_root_wpsf.maas$results
+fb_root_wpsf.dares <- c()
+for(i in 1:nrow(fb_root_wpsf.res)){
+  if(fb_root_wpsf.res$value[i] == "SNRo" | fb_root_wpsf.res$value[i] == "SCRo"){
+    if(fb_root_wpsf.res$qval[i] < 0.05){
+      fb_root_wpsf.dares <- rbind(fb_root_wpsf.dares, fb_root_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the root endosphere data (Non-PSF Soil Reference)# 
+fb_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
+                              input_metadata = root_maas$met,
+                              output = "./maas_results/fb_root_npsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "NONE",
+                              min_prevalence = 0.05,
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,SNRo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
+
+# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+fb_root_npsf.res <- fb_root_npsf.maas$results
+fb_root_npsf.dares <- c()
+for(i in 1:nrow(fb_root_npsf.res)){
+  if(fb_root_npsf.res$value[i] == "SPRo" | fb_root_npsf.res$value[i] == "SCRo"){
+    if(fb_root_npsf.res$qval[i] < 0.05){
+      fb_root_npsf.dares <- rbind(fb_root_npsf.dares, fb_root_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the Non-PSF Soil data # 
+fb_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                         input_metadata = soil_maas$met,
+                         output = "./maas_results/fb_npsf.maas",
+                         fixed_effects = c("PSC"),
+                         analysis_method = "LM",
+                         normalization = "CSS",
+                         transform = "NONE",
+                         min_prevalence = 0.05,
+                         correction = "BH",
+                         max_significance = 0.05,
+                         reference = c("PSC,SNRh"), 
+                         plot_heatmap = FALSE,
+                         plot_scatter = FALSE,
+                         save_scatter = FALSE)
+# Save only the pairwise comparisons within Non-PSF treatments of Fuzzy Bean #
+fb_npsf.res <- fb_npsf.maas$results
+fb_npsf.dares <- c()
+for(i in 1:nrow(fb_npsf.res)){
+  if(fb_npsf.res$value[i] == "CNBu"){
+    if(fb_npsf.res$qval[i] < 0.05){
+      fb_npsf.dares <- rbind(fb_npsf.dares, fb_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the Non-PSF Soil data #
+fb_comm.maas <- Maaslin2(input_data = soil_maas$otu,
+                         input_metadata = soil_maas$met,
+                         output = "./maas_results/fb_comm.maas",
+                         fixed_effects = c("PSC"),
+                         analysis_method = "LM",
+                         normalization = "CSS",
+                         transform = "NONE",
+                         min_prevalence = 0.05,
+                         correction = "BH",
+                         max_significance = 0.05,
+                         reference = c("PSC,SCRh"), 
+                         plot_heatmap = FALSE,
+                         plot_scatter = FALSE,
+                         save_scatter = FALSE)
+# Save only the pairwise comparisons within Common Soil treatments of Fuzzy Bean #
+fb_comm.res <- fb_comm.maas$results
+fb_comm.dares <- c()
+for(i in 1:nrow(fb_comm.res)){
+  if(fb_comm.res$value[i] == "SCBu"){
+    if(fb_comm.res$qval[i] < 0.05){
+      fb_comm.dares <- rbind(fb_comm.dares, fb_comm.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the Non-PSF Soil data #
+fb_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                         input_metadata = soil_maas$met,
+                         output = "./maas_results/fb_wpsf.maas",
+                         fixed_effects = c("PSC"),
+                         analysis_method = "LM",
+                         normalization = "CSS",
+                         transform = "NONE",
+                         min_prevalence = 0.05,
+                         correction = "BH",
+                         max_significance = 0.05,
+                         reference = c("PSC,SPRh"), 
+                         plot_heatmap = FALSE,
+                         plot_scatter = FALSE,
+                         save_scatter = FALSE)
+
+# Save only the pairwise comparisons within PSF Soil treatments of Fuzzy Bean #
+fb_wpsf.res <- fb_wpsf.maas$results
+fb_wpsf.dares <- c()
+for(i in 1:nrow(fb_wpsf.res)){
+  if(fb_wpsf.res$value[i] == "SPBu"){
+    if(fb_wpsf.res$qval[i] < 0.05){
+      fb_wpsf.dares <- rbind(fb_wpsf.dares, fb_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+## Chamaecrista ##
+# Organize ASVs by number #
+cc_bulk.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(cc_bulk$otu)))
+cc_bulk$otu <- cc_bulk$otu[order(cc_bulk.sort),]
+# Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
+cc_bulk_wpsf.maas <- Maaslin2(input_data = cc_bulk$otu,
+                               input_metadata = cc_bulk$met,
+                               output = "./maas_results/cc_bulk_wpsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+cc_bulk_wpsf.res <- cc_bulk_wpsf.maas$results
+cc_bulk_wpsf.dares <- c()
+for(i in 1:nrow(cc_bulk_wpsf.res)){
+  if(cc_bulk_wpsf.res$qval[i] < 0.05){
+    cc_bulk_wpsf.dares <- rbind(cc_bulk_wpsf.dares, cc_bulk_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+cc_bulk_npsf.maas <- Maaslin2(input_data = cc_bulk$otu,
+                               input_metadata = cc_bulk$met,
+                               output = "./maas_results/cc_bulk_npsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,Non-PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+cc_bulk_npsf.res <- cc_bulk_npsf.maas$results
+cc_bulk_npsf.dares <- c()
+for(i in 1:nrow(cc_bulk_npsf.res)){
+  if(cc_bulk_npsf.res$qval[i] < 0.05){
+    cc_bulk_npsf.dares <- rbind(cc_bulk_npsf.dares, cc_bulk_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Organize ASVs by number #
+cc_rhiz.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(cc_rhiz$otu)))
+cc_rhiz$otu <- cc_rhiz$otu[order(cc_rhiz.sort),]
+
+# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+cc_rhiz_wpsf.maas <- Maaslin2(input_data = cc_rhiz$otu,
+                               input_metadata = cc_rhiz$met,
+                               output = "./maas_results/cc_rhiz_wpsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
+cc_rhiz_wpsf.res <- cc_rhiz_wpsf.maas$results
+cc_rhiz_wpsf.dares <- c()
+for(i in 1:nrow(cc_rhiz_wpsf.res)){
+  if(cc_rhiz_wpsf.res$qval[i] < 0.05){
+    cc_rhiz_wpsf.dares <- rbind(cc_rhiz_wpsf.dares, cc_rhiz_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
+cc_rhiz_npsf.maas <- Maaslin2(input_data = cc_rhiz$otu,
+                               input_metadata = cc_rhiz$met,
+                               output = "./maas_results/cc_rhiz_npsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,Non-PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
+cc_rhiz_npsf.res <- cc_rhiz_npsf.maas$results
+cc_rhiz_npsf.dares <- c()
+for(i in 1:nrow(cc_rhiz_npsf.res)){
+  if(cc_rhiz_npsf.res$qval[i] < 0.05){
+    cc_rhiz_npsf.dares <- rbind(cc_rhiz_npsf.dares, cc_rhiz_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Maaslin2 analysis for the root endosphere data (PSF Soil Reference)# 
+cc_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
+                              input_metadata = root_maas$met,
+                              output = "./maas_results/cc_root_wpsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "NONE",
+                              min_prevalence = 0.05,
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,CPRo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
+
+# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+cc_root_wpsf.res <- cc_root_wpsf.maas$results
+cc_root_wpsf.dares <- c()
+for(i in 1:nrow(cc_root_wpsf.res)){
+  if(cc_root_wpsf.res$value[i] == "CNRo" | cc_root_wpsf.res$value[i] == "CCRo"){
+    if(cc_root_wpsf.res$qval[i] < 0.05){
+      cc_root_wpsf.dares <- rbind(cc_root_wpsf.dares, cc_root_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the root endosphere data (Non-PSF Soil Reference)# 
+cc_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
+                              input_metadata = root_maas$met,
+                              output = "./maas_results/cc_root_npsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "NONE",
+                              min_prevalence = 0.05,
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,CNRo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
+
+# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+cc_root_npsf.res <- cc_root_npsf.maas$results
+cc_root_npsf.dares <- c()
+for(i in 1:nrow(cc_root_npsf.res)){
+  if(cc_root_npsf.res$value[i] == "CPRo" | cc_root_npsf.res$value[i] == "CCRo"){
+    if(cc_root_npsf.res$qval[i] < 0.05){
+      cc_root_npsf.dares <- rbind(cc_root_npsf.dares, cc_root_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the Non-PSF Soil data # 
+cc_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                         input_metadata = soil_maas$met,
+                         output = "./maas_results/cc_npsf.maas",
+                         fixed_effects = c("PSC"),
+                         analysis_method = "LM",
+                         normalization = "CSS",
+                         transform = "NONE",
+                         min_prevalence = 0.05,
+                         correction = "BH",
+                         max_significance = 0.05,
+                         reference = c("PSC,CNRh"), 
+                         plot_heatmap = FALSE,
+                         plot_scatter = FALSE,
+                         save_scatter = FALSE)
+# Save only the pairwise comparisons within Non-PSF treatments of Fuzzy Bean #
+cc_npsf.res <- cc_npsf.maas$results
+cc_npsf.dares <- c()
+for(i in 1:nrow(cc_npsf.res)){
+  if(cc_npsf.res$value[i] == "CNBu"){
+    if(cc_npsf.res$qval[i] < 0.05){
+      cc_npsf.dares <- rbind(cc_npsf.dares, cc_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the Non-PSF Soil data #
+cc_comm.maas <- Maaslin2(input_data = soil_maas$otu,
+                         input_metadata = soil_maas$met,
+                         output = "./maas_results/cc_comm.maas",
+                         fixed_effects = c("PSC"),
+                         analysis_method = "LM",
+                         normalization = "CSS",
+                         transform = "NONE",
+                         min_prevalence = 0.05,
+                         correction = "BH",
+                         max_significance = 0.05,
+                         reference = c("PSC,CCRh"), 
+                         plot_heatmap = FALSE,
+                         plot_scatter = FALSE,
+                         save_scatter = FALSE)
+# Save only the pairwise comparisons within Common Soil treatments of Fuzzy Bean #
+cc_comm.res <- cc_comm.maas$results
+cc_comm.dares <- c()
+for(i in 1:nrow(cc_comm.res)){
+  if(cc_comm.res$value[i] == "SCBu"){
+    if(cc_comm.res$qval[i] < 0.05){
+      cc_comm.dares <- rbind(cc_comm.dares, cc_comm.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the Non-PSF Soil data #
+cc_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                         input_metadata = soil_maas$met,
+                         output = "./maas_results/cc_wpsf.maas",
+                         fixed_effects = c("PSC"),
+                         analysis_method = "LM",
+                         normalization = "CSS",
+                         transform = "NONE",
+                         min_prevalence = 0.05,
+                         correction = "BH",
+                         max_significance = 0.05,
+                         reference = c("PSC,CPRh"), 
+                         plot_heatmap = FALSE,
+                         plot_scatter = FALSE,
+                         save_scatter = FALSE)
+
+# Save only the pairwise comparisons within PSF Soil treatments of Fuzzy Bean #
+cc_wpsf.res <- cc_wpsf.maas$results
+cc_wpsf.dares <- c()
+for(i in 1:nrow(cc_wpsf.res)){
+  if(cc_wpsf.res$value[i] == "CPBu"){
+    if(cc_wpsf.res$qval[i] < 0.05){
+      cc_wpsf.dares <- rbind(cc_wpsf.dares, cc_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+## Desmodium ##
+# Organize ASVs by number #
+ds_bulk.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(ds_bulk$otu)))
+ds_bulk$otu <- ds_bulk$otu[order(ds_bulk.sort),]
+# Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
+ds_bulk_wpsf.maas <- Maaslin2(input_data = ds_bulk$otu,
+                               input_metadata = ds_bulk$met,
+                               output = "./maas_results/ds_bulk_wpsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+ds_bulk_wpsf.res <- ds_bulk_wpsf.maas$results
+ds_bulk_wpsf.dares <- c()
+for(i in 1:nrow(ds_bulk_wpsf.res)){
+  if(ds_bulk_wpsf.res$qval[i] < 0.05){
+    ds_bulk_wpsf.dares <- rbind(ds_bulk_wpsf.dares, ds_bulk_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+ds_bulk_npsf.maas <- Maaslin2(input_data = ds_bulk$otu,
+                               input_metadata = ds_bulk$met,
+                               output = "./maas_results/ds_bulk_npsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,Non-PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+ds_bulk_npsf.res <- ds_bulk_npsf.maas$results
+ds_bulk_npsf.dares <- c()
+for(i in 1:nrow(ds_bulk_npsf.res)){
+  if(ds_bulk_npsf.res$qval[i] < 0.05){
+    ds_bulk_npsf.dares <- rbind(ds_bulk_npsf.dares, ds_bulk_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Organize ASVs by number #
+ds_rhiz.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(ds_rhiz$otu)))
+ds_rhiz$otu <- ds_rhiz$otu[order(ds_rhiz.sort),]
+
+# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+ds_rhiz_wpsf.maas <- Maaslin2(input_data = ds_rhiz$otu,
+                               input_metadata = ds_rhiz$met,
+                               output = "./maas_results/ds_rhiz_wpsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
+ds_rhiz_wpsf.res <- ds_rhiz_wpsf.maas$results
+ds_rhiz_wpsf.dares <- c()
+for(i in 1:nrow(ds_rhiz_wpsf.res)){
+  if(ds_rhiz_wpsf.res$qval[i] < 0.05){
+    ds_rhiz_wpsf.dares <- rbind(ds_rhiz_wpsf.dares, ds_rhiz_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
+ds_rhiz_npsf.maas <- Maaslin2(input_data = ds_rhiz$otu,
+                               input_metadata = ds_rhiz$met,
+                               output = "./maas_results/ds_rhiz_npsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,Non-PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
+ds_rhiz_npsf.res <- ds_rhiz_npsf.maas$results
+ds_rhiz_npsf.dares <- c()
+for(i in 1:nrow(ds_rhiz_npsf.res)){
+  if(ds_rhiz_npsf.res$qval[i] < 0.05){
+    ds_rhiz_npsf.dares <- rbind(ds_rhiz_npsf.dares, ds_rhiz_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Maaslin2 analysis for the root endosphere data (PSF Soil Reference)# 
+ds_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
+                              input_metadata = root_maas$met,
+                              output = "./maas_results/ds_root_wpsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "NONE",
+                              min_prevalence = 0.05,
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,DPRo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
+
+# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+ds_root_wpsf.res <- ds_root_wpsf.maas$results
+ds_root_wpsf.dares <- c()
+for(i in 1:nrow(ds_root_wpsf.res)){
+  if(ds_root_wpsf.res$value[i] == "DNRo" | ds_root_wpsf.res$value[i] == "DCRo"){
+    if(ds_root_wpsf.res$qval[i] < 0.05){
+      ds_root_wpsf.dares <- rbind(ds_root_wpsf.dares, ds_root_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the root endosphere data (Non-PSF Soil Reference)# 
+ds_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
+                              input_metadata = root_maas$met,
+                              output = "./maas_results/ds_root_npsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "NONE",
+                              min_prevalence = 0.05,
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,DNRo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
+
+# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+ds_root_npsf.res <- ds_root_npsf.maas$results
+ds_root_npsf.dares <- c()
+for(i in 1:nrow(ds_root_npsf.res)){
+  if(ds_root_npsf.res$value[i] == "DPRo" | ds_root_npsf.res$value[i] == "DCRo"){
+    if(ds_root_npsf.res$qval[i] < 0.05){
+      ds_root_npsf.dares <- rbind(ds_root_npsf.dares, ds_root_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the Non-PSF Soil data # 
+ds_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                         input_metadata = soil_maas$met,
+                         output = "./maas_results/ds_npsf.maas",
+                         fixed_effects = c("PSC"),
+                         analysis_method = "LM",
+                         normalization = "CSS",
+                         transform = "NONE",
+                         min_prevalence = 0.05,
+                         correction = "BH",
+                         max_significance = 0.05,
+                         reference = c("PSC,DNRh"), 
+                         plot_heatmap = FALSE,
+                         plot_scatter = FALSE,
+                         save_scatter = FALSE)
+# Save only the pairwise comparisons within Non-PSF treatments of Fuzzy Bean #
+ds_npsf.res <- ds_npsf.maas$results
+ds_npsf.dares <- c()
+for(i in 1:nrow(ds_npsf.res)){
+  if(ds_npsf.res$value[i] == "DNBu"){
+    if(ds_npsf.res$qval[i] < 0.05){
+      ds_npsf.dares <- rbind(ds_npsf.dares, ds_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the Non-PSF Soil data #
+ds_comm.maas <- Maaslin2(input_data = soil_maas$otu,
+                         input_metadata = soil_maas$met,
+                         output = "./maas_results/ds_comm.maas",
+                         fixed_effects = c("PSC"),
+                         analysis_method = "LM",
+                         normalization = "CSS",
+                         transform = "NONE",
+                         min_prevalence = 0.05,
+                         correction = "BH",
+                         max_significance = 0.05,
+                         reference = c("PSC,DCRh"), 
+                         plot_heatmap = FALSE,
+                         plot_scatter = FALSE,
+                         save_scatter = FALSE)
+# Save only the pairwise comparisons within Common Soil treatments of Fuzzy Bean #
+ds_comm.res <- ds_comm.maas$results
+ds_comm.dares <- c()
+for(i in 1:nrow(ds_comm.res)){
+  if(ds_comm.res$value[i] == "SCBu"){
+    if(ds_comm.res$qval[i] < 0.05){
+      ds_comm.dares <- rbind(ds_comm.dares, ds_comm.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the Non-PSF Soil data #
+ds_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                         input_metadata = soil_maas$met,
+                         output = "./maas_results/ds_wpsf.maas",
+                         fixed_effects = c("PSC"),
+                         analysis_method = "LM",
+                         normalization = "CSS",
+                         transform = "NONE",
+                         min_prevalence = 0.05,
+                         correction = "BH",
+                         max_significance = 0.05,
+                         reference = c("PSC,DPRh"), 
+                         plot_heatmap = FALSE,
+                         plot_scatter = FALSE,
+                         save_scatter = FALSE)
+
+# Save only the pairwise comparisons within PSF Soil treatments of Fuzzy Bean #
+ds_wpsf.res <- ds_wpsf.maas$results
+ds_wpsf.dares <- c()
+for(i in 1:nrow(ds_wpsf.res)){
+  if(ds_wpsf.res$value[i] == "DPBu"){
+    if(ds_wpsf.res$qval[i] < 0.05){
+      ds_wpsf.dares <- rbind(ds_wpsf.dares, ds_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+## Hog Peanut ##
+# Organize ASVs by number #
+hp_bulk.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(hp_bulk$otu)))
+hp_bulk$otu <- hp_bulk$otu[order(hp_bulk.sort),]
+# Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
+hp_bulk_wpsf.maas <- Maaslin2(input_data = hp_bulk$otu,
+                               input_metadata = hp_bulk$met,
+                               output = "./maas_results/hp_bulk_wpsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+hp_bulk_wpsf.res <- hp_bulk_wpsf.maas$results
+hp_bulk_wpsf.dares <- c()
+for(i in 1:nrow(hp_bulk_wpsf.res)){
+  if(hp_bulk_wpsf.res$qval[i] < 0.05){
+    hp_bulk_wpsf.dares <- rbind(hp_bulk_wpsf.dares, hp_bulk_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+hp_bulk_npsf.maas <- Maaslin2(input_data = hp_bulk$otu,
+                               input_metadata = hp_bulk$met,
+                               output = "./maas_results/hp_bulk_npsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,Non-PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+hp_bulk_npsf.res <- hp_bulk_npsf.maas$results
+hp_bulk_npsf.dares <- c()
+for(i in 1:nrow(hp_bulk_npsf.res)){
+  if(hp_bulk_npsf.res$qval[i] < 0.05){
+    hp_bulk_npsf.dares <- rbind(hp_bulk_npsf.dares, hp_bulk_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Organize ASVs by number #
+hp_rhiz.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(hp_rhiz$otu)))
+hp_rhiz$otu <- hp_rhiz$otu[order(hp_rhiz.sort),]
+
+# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+hp_rhiz_wpsf.maas <- Maaslin2(input_data = hp_rhiz$otu,
+                               input_metadata = hp_rhiz$met,
+                               output = "./maas_results/hp_rhiz_wpsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
+hp_rhiz_wpsf.res <- hp_rhiz_wpsf.maas$results
+hp_rhiz_wpsf.dares <- c()
+for(i in 1:nrow(hp_rhiz_wpsf.res)){
+  if(hp_rhiz_wpsf.res$qval[i] < 0.05){
+    hp_rhiz_wpsf.dares <- rbind(hp_rhiz_wpsf.dares, hp_rhiz_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
+hp_rhiz_npsf.maas <- Maaslin2(input_data = hp_rhiz$otu,
+                               input_metadata = hp_rhiz$met,
+                               output = "./maas_results/hp_rhiz_npsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,Non-PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
+hp_rhiz_npsf.res <- hp_rhiz_npsf.maas$results
+hp_rhiz_npsf.dares <- c()
+for(i in 1:nrow(hp_rhiz_npsf.res)){
+  if(hp_rhiz_npsf.res$qval[i] < 0.05){
+    hp_rhiz_npsf.dares <- rbind(hp_rhiz_npsf.dares, hp_rhiz_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Maaslin2 analysis for the root endosphere data (PSF Soil Reference)# 
+hp_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
+                              input_metadata = root_maas$met,
+                              output = "./maas_results/hp_root_wpsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "NONE",
+                              min_prevalence = 0.05,
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,APRo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
+
+# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+hp_root_wpsf.res <- hp_root_wpsf.maas$results
+hp_root_wpsf.dares <- c()
+for(i in 1:nrow(hp_root_wpsf.res)){
+  if(hp_root_wpsf.res$value[i] == "ANRo" | hp_root_wpsf.res$value[i] == "ACRo"){
+    if(hp_root_wpsf.res$qval[i] < 0.05){
+      hp_root_wpsf.dares <- rbind(hp_root_wpsf.dares, hp_root_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the root endosphere data (Non-PSF Soil Reference)# 
+hp_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
+                              input_metadata = root_maas$met,
+                              output = "./maas_results/hp_root_npsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "NONE",
+                              min_prevalence = 0.05,
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,ANRo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
+
+# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+hp_root_npsf.res <- hp_root_npsf.maas$results
+hp_root_npsf.dares <- c()
+for(i in 1:nrow(hp_root_npsf.res)){
+  if(hp_root_npsf.res$value[i] == "APRo" | hp_root_npsf.res$value[i] == "ACRo"){
+    if(hp_root_npsf.res$qval[i] < 0.05){
+      hp_root_npsf.dares <- rbind(hp_root_npsf.dares, hp_root_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the Non-PSF Soil data # 
+hp_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                         input_metadata = soil_maas$met,
+                         output = "./maas_results/hp_npsf.maas",
+                         fixed_effects = c("PSC"),
+                         analysis_method = "LM",
+                         normalization = "CSS",
+                         transform = "NONE",
+                         min_prevalence = 0.05,
+                         correction = "BH",
+                         max_significance = 0.05,
+                         reference = c("PSC,ANRh"), 
+                         plot_heatmap = FALSE,
+                         plot_scatter = FALSE,
+                         save_scatter = FALSE)
+# Save only the pairwise comparisons within Non-PSF treatments of Fuzzy Bean #
+hp_npsf.res <- hp_npsf.maas$results
+hp_npsf.dares <- c()
+for(i in 1:nrow(hp_npsf.res)){
+  if(hp_npsf.res$value[i] == "DNBu"){
+    if(hp_npsf.res$qval[i] < 0.05){
+      hp_npsf.dares <- rbind(hp_npsf.dares, hp_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the Non-PSF Soil data #
+hp_comm.maas <- Maaslin2(input_data = soil_maas$otu,
+                         input_metadata = soil_maas$met,
+                         output = "./maas_results/hp_comm.maas",
+                         fixed_effects = c("PSC"),
+                         analysis_method = "LM",
+                         normalization = "CSS",
+                         transform = "NONE",
+                         min_prevalence = 0.05,
+                         correction = "BH",
+                         max_significance = 0.05,
+                         reference = c("PSC,ACRh"), 
+                         plot_heatmap = FALSE,
+                         plot_scatter = FALSE,
+                         save_scatter = FALSE)
+# Save only the pairwise comparisons within Common Soil treatments of Fuzzy Bean #
+hp_comm.res <- hp_comm.maas$results
+hp_comm.dares <- c()
+for(i in 1:nrow(hp_comm.res)){
+  if(hp_comm.res$value[i] == "SCBu"){
+    if(hp_comm.res$qval[i] < 0.05){
+      hp_comm.dares <- rbind(hp_comm.dares, hp_comm.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the Non-PSF Soil data #
+hp_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                         input_metadata = soil_maas$met,
+                         output = "./maas_results/hp_wpsf.maas",
+                         fixed_effects = c("PSC"),
+                         analysis_method = "LM",
+                         normalization = "CSS",
+                         transform = "NONE",
+                         min_prevalence = 0.05,
+                         correction = "BH",
+                         max_significance = 0.05,
+                         reference = c("PSC,APRh"), 
+                         plot_heatmap = FALSE,
+                         plot_scatter = FALSE,
+                         save_scatter = FALSE)
+
+# Save only the pairwise comparisons within PSF Soil treatments of Fuzzy Bean #
+hp_wpsf.res <- hp_wpsf.maas$results
+hp_wpsf.dares <- c()
+for(i in 1:nrow(hp_wpsf.res)){
+  if(hp_wpsf.res$value[i] == "APBu"){
+    if(hp_wpsf.res$qval[i] < 0.05){
+      hp_wpsf.dares <- rbind(hp_wpsf.dares, hp_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+## Clover ##
+# Organize ASVs by number #
+cl_bulk.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(cl_bulk$otu)))
+cl_bulk$otu <- cl_bulk$otu[order(cl_bulk.sort),]
+# Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
+cl_bulk_wpsf.maas <- Maaslin2(input_data = cl_bulk$otu,
+                               input_metadata = cl_bulk$met,
+                               output = "./maas_results/cl_bulk_wpsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+cl_bulk_wpsf.res <- cl_bulk_wpsf.maas$results
+cl_bulk_wpsf.dares <- c()
+for(i in 1:nrow(cl_bulk_wpsf.res)){
+  if(cl_bulk_wpsf.res$qval[i] < 0.05){
+    cl_bulk_wpsf.dares <- rbind(cl_bulk_wpsf.dares, cl_bulk_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+cl_bulk_npsf.maas <- Maaslin2(input_data = cl_bulk$otu,
+                               input_metadata = cl_bulk$met,
+                               output = "./maas_results/cl_bulk_npsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,Non-PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+cl_bulk_npsf.res <- cl_bulk_npsf.maas$results
+cl_bulk_npsf.dares <- c()
+for(i in 1:nrow(cl_bulk_npsf.res)){
+  if(cl_bulk_npsf.res$qval[i] < 0.05){
+    cl_bulk_npsf.dares <- rbind(cl_bulk_npsf.dares, cl_bulk_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Organize ASVs by number #
+cl_rhiz.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(cl_rhiz$otu)))
+cl_rhiz$otu <- cl_rhiz$otu[order(cl_rhiz.sort),]
+
+# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+cl_rhiz_wpsf.maas <- Maaslin2(input_data = cl_rhiz$otu,
+                               input_metadata = cl_rhiz$met,
+                               output = "./maas_results/cl_rhiz_wpsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
+cl_rhiz_wpsf.res <- cl_rhiz_wpsf.maas$results
+cl_rhiz_wpsf.dares <- c()
+for(i in 1:nrow(cl_rhiz_wpsf.res)){
+  if(cl_rhiz_wpsf.res$qval[i] < 0.05){
+    cl_rhiz_wpsf.dares <- rbind(cl_rhiz_wpsf.dares, cl_rhiz_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Maaslin2 analysis for the root endosphere data (PSF Soil Reference)# 
+cl_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
+                              input_metadata = root_maas$met,
+                              output = "./maas_results/cl_root_wpsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "NONE",
+                              min_prevalence = 0.05,
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,TPRo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
+
+# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+cl_root_wpsf.res <- cl_root_wpsf.maas$results
+cl_root_wpsf.dares <- c()
+for(i in 1:nrow(cl_root_wpsf.res)){
+  if(cl_root_wpsf.res$value[i] == "TNRo" | cl_root_wpsf.res$value[i] == "TCRo"){
+    if(cl_root_wpsf.res$qval[i] < 0.05){
+      cl_root_wpsf.dares <- rbind(cl_root_wpsf.dares, cl_root_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the root endosphere data (Non-PSF Soil Reference)# 
+cl_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
+                              input_metadata = root_maas$met,
+                              output = "./maas_results/cl_root_npsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "NONE",
+                              min_prevalence = 0.05,
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,TNRo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
+
+# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+cl_root_npsf.res <- cl_root_npsf.maas$results
+cl_root_npsf.dares <- c()
+for(i in 1:nrow(cl_root_npsf.res)){
+  if(cl_root_npsf.res$value[i] == "TPRo" | cl_root_npsf.res$value[i] == "TCRo"){
+    if(cl_root_npsf.res$qval[i] < 0.05){
+      cl_root_npsf.dares <- rbind(cl_root_npsf.dares, cl_root_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the Non-PSF Soil data #
+cl_comm.maas <- Maaslin2(input_data = soil_maas$otu,
+                         input_metadata = soil_maas$met,
+                         output = "./maas_results/cl_comm.maas",
+                         fixed_effects = c("PSC"),
+                         analysis_method = "LM",
+                         normalization = "CSS",
+                         transform = "NONE",
+                         min_prevalence = 0.05,
+                         correction = "BH",
+                         max_significance = 0.05,
+                         reference = c("PSC,TCRh"), 
+                         plot_heatmap = FALSE,
+                         plot_scatter = FALSE,
+                         save_scatter = FALSE)
+# Save only the pairwise comparisons within Common Soil treatments of Fuzzy Bean #
+cl_comm.res <- cl_comm.maas$results
+cl_comm.dares <- c()
+for(i in 1:nrow(cl_comm.res)){
+  if(cl_comm.res$value[i] == "SCBu"){
+    if(cl_comm.res$qval[i] < 0.05){
+      cl_comm.dares <- rbind(cl_comm.dares, cl_comm.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the Non-PSF Soil data #
+cl_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                         input_metadata = soil_maas$met,
+                         output = "./maas_results/cl_wpsf.maas",
+                         fixed_effects = c("PSC"),
+                         analysis_method = "LM",
+                         normalization = "CSS",
+                         transform = "NONE",
+                         min_prevalence = 0.05,
+                         correction = "BH",
+                         max_significance = 0.05,
+                         reference = c("PSC,TPRh"), 
+                         plot_heatmap = FALSE,
+                         plot_scatter = FALSE,
+                         save_scatter = FALSE)
+
+# Save only the pairwise comparisons within PSF Soil treatments of Fuzzy Bean #
+cl_wpsf.res <- cl_wpsf.maas$results
+cl_wpsf.dares <- c()
+for(i in 1:nrow(cl_wpsf.res)){
+  if(cl_wpsf.res$value[i] == "TPBu"){
+    if(cl_wpsf.res$qval[i] < 0.05){
+      cl_wpsf.dares <- rbind(cl_wpsf.dares, cl_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+## Medicago ##
+# Organize ASVs by number #
+md_bulk.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(md_bulk$otu)))
+md_bulk$otu <- md_bulk$otu[order(md_bulk.sort),]
+# Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
+md_bulk_wpsf.maas <- Maaslin2(input_data = md_bulk$otu,
+                               input_metadata = md_bulk$met,
+                               output = "./maas_results/md_bulk_wpsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+md_bulk_wpsf.res <- md_bulk_wpsf.maas$results
+md_bulk_wpsf.dares <- c()
+for(i in 1:nrow(md_bulk_wpsf.res)){
+  if(md_bulk_wpsf.res$qval[i] < 0.05){
+    md_bulk_wpsf.dares <- rbind(md_bulk_wpsf.dares, md_bulk_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+md_bulk_npsf.maas <- Maaslin2(input_data = md_bulk$otu,
+                               input_metadata = md_bulk$met,
+                               output = "./maas_results/md_bulk_npsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,Non-PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+md_bulk_npsf.res <- md_bulk_npsf.maas$results
+md_bulk_npsf.dares <- c()
+for(i in 1:nrow(md_bulk_npsf.res)){
+  if(md_bulk_npsf.res$qval[i] < 0.05){
+    md_bulk_npsf.dares <- rbind(md_bulk_npsf.dares, md_bulk_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Organize ASVs by number #
+md_rhiz.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(md_rhiz$otu)))
+md_rhiz$otu <- md_rhiz$otu[order(md_rhiz.sort),]
+
+# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+md_rhiz_wpsf.maas <- Maaslin2(input_data = md_rhiz$otu,
+                               input_metadata = md_rhiz$met,
+                               output = "./maas_results/md_rhiz_wpsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
+md_rhiz_wpsf.res <- md_rhiz_wpsf.maas$results
+md_rhiz_wpsf.dares <- c()
+for(i in 1:nrow(md_rhiz_wpsf.res)){
+  if(md_rhiz_wpsf.res$qval[i] < 0.05){
+    md_rhiz_wpsf.dares <- rbind(md_rhiz_wpsf.dares, md_rhiz_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
+md_rhiz_npsf.maas <- Maaslin2(input_data = md_rhiz$otu,
+                               input_metadata = md_rhiz$met,
+                               output = "./maas_results/md_rhiz_npsf.maas",
+                               fixed_effects = c("Soils"),
+                               analysis_method = "LM",
+                               normalization = "CSS",
+                               transform = "NONE",
+                               min_prevalence = 0.32,
+                               correction = "BH",
+                               max_significance = 0.05,
+                               reference = c("Soils,Non-PSF Soil"), 
+                               plot_heatmap = FALSE,
+                               plot_scatter = FALSE,
+                               save_scatter = FALSE)
+
+# Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
+md_rhiz_npsf.res <- md_rhiz_npsf.maas$results
+md_rhiz_npsf.dares <- c()
+for(i in 1:nrow(md_rhiz_npsf.res)){
+  if(md_rhiz_npsf.res$qval[i] < 0.05){
+    md_rhiz_npsf.dares <- rbind(md_rhiz_npsf.dares, md_rhiz_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+  }
+}
+
+# Maaslin2 analysis for the root endosphere data (PSF Soil Reference)# 
+md_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
+                              input_metadata = root_maas$met,
+                              output = "./maas_results/md_root_wpsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "NONE",
+                              min_prevalence = 0.05,
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,MPRo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
+
+# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+md_root_wpsf.res <- md_root_wpsf.maas$results
+md_root_wpsf.dares <- c()
+for(i in 1:nrow(md_root_wpsf.res)){
+  if(md_root_wpsf.res$value[i] == "MNRo" | md_root_wpsf.res$value[i] == "MCRo"){
+    if(md_root_wpsf.res$qval[i] < 0.05){
+      md_root_wpsf.dares <- rbind(md_root_wpsf.dares, md_root_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the root endosphere data (Non-PSF Soil Reference)# 
+md_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
+                              input_metadata = root_maas$met,
+                              output = "./maas_results/md_root_npsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "NONE",
+                              min_prevalence = 0.05,
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,MNRo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
+
+# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+md_root_npsf.res <- md_root_npsf.maas$results
+md_root_npsf.dares <- c()
+for(i in 1:nrow(md_root_npsf.res)){
+  if(md_root_npsf.res$value[i] == "MPRo" | md_root_npsf.res$value[i] == "MCRo"){
+    if(md_root_npsf.res$qval[i] < 0.05){
+      md_root_npsf.dares <- rbind(md_root_npsf.dares, md_root_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the Non-PSF Soil data # 
+md_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                         input_metadata = soil_maas$met,
+                         output = "./maas_results/md_npsf.maas",
+                         fixed_effects = c("PSC"),
+                         analysis_method = "LM",
+                         normalization = "CSS",
+                         transform = "NONE",
+                         min_prevalence = 0.05,
+                         correction = "BH",
+                         max_significance = 0.05,
+                         reference = c("PSC,MNRh"), 
+                         plot_heatmap = FALSE,
+                         plot_scatter = FALSE,
+                         save_scatter = FALSE)
+# Save only the pairwise comparisons within Non-PSF treatments of Fuzzy Bean #
+md_npsf.res <- md_npsf.maas$results
+md_npsf.dares <- c()
+for(i in 1:nrow(md_npsf.res)){
+  if(md_npsf.res$value[i] == "TNBu"){
+    if(md_npsf.res$qval[i] < 0.05){
+      md_npsf.dares <- rbind(md_npsf.dares, md_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the Non-PSF Soil data #
+md_comm.maas <- Maaslin2(input_data = soil_maas$otu,
+                         input_metadata = soil_maas$met,
+                         output = "./maas_results/md_comm.maas",
+                         fixed_effects = c("PSC"),
+                         analysis_method = "LM",
+                         normalization = "CSS",
+                         transform = "NONE",
+                         min_prevalence = 0.05,
+                         correction = "BH",
+                         max_significance = 0.05,
+                         reference = c("PSC,MCRh"), 
+                         plot_heatmap = FALSE,
+                         plot_scatter = FALSE,
+                         save_scatter = FALSE)
+# Save only the pairwise comparisons within Common Soil treatments of Fuzzy Bean #
+md_comm.res <- md_comm.maas$results
+md_comm.dares <- c()
+for(i in 1:nrow(md_comm.res)){
+  if(md_comm.res$value[i] == "SCBu"){
+    if(md_comm.res$qval[i] < 0.05){
+      md_comm.dares <- rbind(md_comm.dares, md_comm.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+# Maaslin2 analysis for the Non-PSF Soil data #
+md_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                         input_metadata = soil_maas$met,
+                         output = "./maas_results/md_wpsf.maas",
+                         fixed_effects = c("PSC"),
+                         analysis_method = "LM",
+                         normalization = "CSS",
+                         transform = "NONE",
+                         min_prevalence = 0.05,
+                         correction = "BH",
+                         max_significance = 0.05,
+                         reference = c("PSC,MPRh"), 
+                         plot_heatmap = FALSE,
+                         plot_scatter = FALSE,
+                         save_scatter = FALSE)
+
+# Save only the pairwise comparisons within PSF Soil treatments of Fuzzy Bean #
+md_wpsf.res <- md_wpsf.maas$results
+md_wpsf.dares <- c()
+for(i in 1:nrow(md_wpsf.res)){
+  if(md_wpsf.res$value[i] == "MPBu"){
+    if(md_wpsf.res$qval[i] < 0.05){
+      md_wpsf.dares <- rbind(md_wpsf.dares, md_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
+    }
+  }
+}
+
+#### Visualizing Differential Abundance ####
+### Fuzzy Bean Bulk Soil ###
+## Soil Nodule ASV: ASV9(Mesorhizobium) ##
+# Transform the abundance data using total sum scaling #
+fb_bulk_prop.ps <- transform_sample_counts(fb_bulk.ps, function(x) x/sum(x))
+decompose_ps(fb_bulk_prop.ps, "fb_bulk_prop")
+
+# Make a data frame of just the bulk soil samples as well as the abundances of rhizobia of the PSF nodule #
+fb_bulk.meso <- cbind(fb_bulk_prop$met, t(fb_bulk_prop$otu["ASV9(Mesorhizobium)",]))
+
+# Make soils a factor with the proper levels #
+fb_bulk.meso$Soils <- factor(fb_bulk.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+
+# Make annotations for significant differences #
+fb_bulk.pvsn <- "*"
+fb_bulk.pvsc <- "**"
+fb_bulk.nvsc <- "ns"
+
+# Plot the differential abundance #
+fb_bulk_meso.plot <- ggplot(fb_bulk.meso, aes(x = Comps, y = `ASV9(Mesorhizobium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  coord_cartesian(ylim = c(0, 0.01)) +
+  scale_y_continuous(limits = c(0,0.01), breaks = seq(0,0.01, by = 0.002), sec.axis = dup_axis(name = "")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Bulk Soil<br>ASV9(*Mesorhizobium*)") +
+  ylab('Relative Abundance') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'none') +
+  geom_signif(annotation = fb_bulk.pvsn,
+              y_position = 0.0065, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = fb_bulk.pvsc,
+              y_position = 0.007, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = fb_bulk.nvsc,
+              y_position = 0.0025, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 12)
+fb_bulk_meso.plot
+
+### Fuzzy Bean Rhizosphere ###
+## Soil Nodule ASV: ASV9(Mesorhizobium) ##
+# Transform the abundance data using total sum scaling #
+fb_rhiz_prop.ps <- transform_sample_counts(fb_rhiz.ps, function(x) x/sum(x))
+decompose_ps(fb_rhiz_prop.ps, "fb_rhiz_prop")
+
+# Make a data frame of just the rhizosphere samples as well as the abundances of rhizobia of the PSF nodule #
+fb_rhiz.meso <- cbind(fb_rhiz_prop$met, t(fb_rhiz_prop$otu["ASV9(Mesorhizobium)",]))
+
+# Make soils a factor with the proper levels #
+fb_rhiz.meso$Soils <- factor(fb_rhiz.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+
+# Make annotations for significant differences #
+fb_rhiz.pvsn <- "ns"
+fb_rhiz.pvsc <- "ns"
+fb_rhiz.nvsc <- "*"
+
+# Plot the differential abundance #
+fb_rhiz_meso.plot <- ggplot(fb_rhiz.meso, aes(x = Comps, y = `ASV9(Mesorhizobium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  coord_cartesian(ylim = c(0, 0.01)) +
+  scale_y_continuous(limits = c(0,0.01), breaks = seq(0,0.01, by = 0.002), sec.axis = dup_axis(name = "")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Rhizosphere<br>ASV9(*Mesorhizobium*)") +
+  ylab('') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'bottom') +
+  geom_signif(annotation = fb_rhiz.pvsn,
+              y_position = 0.0075, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = fb_rhiz.pvsc,
+              y_position = 0.0085, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = fb_rhiz.nvsc,
+              y_position = 0.0055, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65)
+fb_rhiz_meso.plot
+
+### Fuzzy Bean Root Endosphere ###
+## Root Nodule ASV: ASV12(Mesorhizobium) ##
+# Transform the abundance data using total sum scaling #
+fb_root_prop.ps <- transform_sample_counts(fb_root.ps, function(x) x/sum(x))
+decompose_ps(fb_root_prop.ps, "fb_root_prop")
+
+# Make a data frame of just the root endosphere samples as well as the abundances of rhizobia of the PSF nodule #
+fb_root.meso <- cbind(fb_root_prop$met, t(fb_root_prop$otu["ASV12(Mesorhizobium)",]))
+
+# Make soils a factor with the proper levels #
+fb_root.meso$Soils <- factor(fb_root.meso$Soil.Origin, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+
+# Make annotations for significant differences #
+fb_root.pvsn <- "**"
+fb_root.pvsc <- "**"
+fb_root.nvsc <- "ns"
+
+# Plot the differential abundance #
+fb_root_meso.plot <- ggplot(fb_root.meso, aes(x = Comps, y = `ASV12(Mesorhizobium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  scale_y_continuous(limits = c(0,0.35), breaks = seq(0,0.35, by = 0.05), sec.axis = dup_axis(name = "S. helvola")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Root Endosphere<br>ASV12(*Mesorhizobium*)") +
+  ylab('') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'none') +
+  geom_signif(annotation = fb_root.pvsn,
+              y_position = 0.31, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = fb_root.pvsc,
+              y_position = 0.33, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = fb_root.nvsc,
+              y_position = 0.01, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 12)
+fb_root_meso.plot
+
+# Make a patchwork plot for all compartments #
+(fb_bulk_meso.plot | fb_rhiz_meso.plot | fb_root_meso.plot)
+
+
+### Chamaecrista Bulk Soil ###
+## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
+# Transform the abundance data using total sum scaling #
+cc_bulk_prop.ps <- transform_sample_counts(cc_bulk.ps, function(x) x/sum(x))
+decompose_ps(cc_bulk_prop.ps, "cc_bulk_prop")
+
+# Make a data frame of just the bulk soil samples as well as the abundances of rhizobia of the PSF nodule #
+cc_bulk.meso <- cbind(cc_bulk_prop$met, t(cc_bulk_prop$otu["ASV1(Bradyrhizobium)",]))
+
+# Make soils a factor with the proper levels #
+cc_bulk.meso$Soils <- factor(cc_bulk.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+
+# Make annotations for significant differences #
+cc_bulk.pvsn <- "**"
+cc_bulk.pvsc <- "ns"
+cc_bulk.nvsc <- "**"
+
+# Plot the differential abundance #
+cc_bulk_meso.plot <- ggplot(cc_bulk.meso, aes(x = Comps, y = `ASV1(Bradyrhizobium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  coord_cartesian(ylim = c(0, 0.1)) +
+  scale_y_continuous(limits = c(0,0.11), breaks = seq(0,0.1, by = 0.02), sec.axis = dup_axis(name = "")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Bulk Soil<br>ASV1(*Bradyrhizobium*)") +
+  ylab('Relative Abundance') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'none') +
+  geom_signif(annotation = cc_bulk.pvsn,
+              y_position = 0.09, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = cc_bulk.pvsc,
+              y_position = 0.1, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = cc_bulk.nvsc,
+              y_position = 0.095, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65)
+cc_bulk_meso.plot
+
+### Chamaecrista Rhizosphere ###
+## Soil Nodule ASV: ASV9(Mesorhizobium) ##
+# Transform the abundance data using total sum scaling #
+cc_rhiz_prop.ps <- transform_sample_counts(cc_rhiz.ps, function(x) x/sum(x))
+decompose_ps(cc_rhiz_prop.ps, "cc_rhiz_prop")
+
+# Make a data frame of just the rhizosphere samples as well as the abundances of rhizobia of the PSF nodule #
+cc_rhiz.meso <- cbind(cc_rhiz_prop$met, t(cc_rhiz_prop$otu["ASV1(Bradyrhizobium)",]))
+
+# Make soils a factor with the proper levels #
+cc_rhiz.meso$Soils <- factor(cc_rhiz.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+
+# Make annotations for significant differences #
+cc_rhiz.pvsn <- "*"
+cc_rhiz.pvsc <- "ns"
+cc_rhiz.nvsc <- "**"
+
+# Plot the differential abundance #
+cc_rhiz_meso.plot <- ggplot(cc_rhiz.meso, aes(x = Comps, y = `ASV1(Bradyrhizobium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  coord_cartesian(ylim = c(0, 0.8)) +
+  scale_y_continuous(limits = c(0,0.8), breaks = seq(0,0.8, by = 0.1), sec.axis = dup_axis(name = "")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Rhizosphere<br>ASV1(*Bradyrhizobium*)") +
+  ylab('') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'bottom') +
+  geom_signif(annotation = cc_rhiz.pvsn,
+              y_position = 0.65, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = cc_rhiz.pvsc,
+              y_position = 0.75, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = cc_rhiz.nvsc,
+              y_position = 0.7, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65)
+cc_rhiz_meso.plot
+
+### Chamaecrista Root Endosphere ###
+## Root Nodule ASV: ASV3(Bradyrhizobium) ##
+# Transform the abundance data using total sum scaling #
+cc_root_prop.ps <- transform_sample_counts(cc_root.ps, function(x) x/sum(x))
+decompose_ps(cc_root_prop.ps, "cc_root_prop")
+
+# Make a data frame of just the root endosphere samples as well as the abundances of rhizobia of the PSF nodule #
+cc_root.meso <- cbind(cc_root_prop$met, t(cc_root_prop$otu[c("ASV3(Bradyrhizobium)", "ASV6(Bradyrhizobium)", "ASV14(Bradyrhizobium"),]))
+
+# Make soils a factor with the proper levels #
+cc_root.meso$Soils <- factor(cc_root.meso$Soil.Origin, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+
+# Make annotations for significant differences #
+cc_root.pvsn <- "ns"
+cc_root.pvsc <- "**"
+cc_root.nvsc <- "**"
+
+# Plot the differential abundance #
+cc_root_meso.plot <- ggplot(cc_root.meso, aes(x = Comps, y = `ASV3(Bradyrhizobium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  scale_y_continuous(limits = c(0,1), breaks = seq(0,1, by = 0.2), sec.axis = dup_axis(name = "C. fasciculata")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Root Endosphere<br>ASV3(*Bradyrhizobium*)") +
+  ylab('') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'none') +
+  geom_signif(annotation = cc_root.pvsn,
+              y_position = 0.85, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = cc_root.pvsc,
+              y_position = 0.95, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = cc_root.nvsc,
+              y_position = 0.9, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65)
+cc_root_meso.plot
+
+# Make a patchwork plot for all compartments #
+(cc_bulk_meso.plot | cc_rhiz_meso.plot | cc_root_meso.plot)
+
+## Bonus Plots for other noduel rhizobia in roots ##
+# Plot the differential abundance #
+cc_root_meso6.plot <- ggplot(cc_root.meso, aes(x = Comps, y = `ASV6(Bradyrhizobium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  scale_y_continuous(limits = c(0,0.4), breaks = seq(0,0.4, by = 0.05), sec.axis = dup_axis(name = "C. fasciculata")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Root Endosphere<br>ASV6(*Bradyrhizobium*)") +
+  ylab('') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'none') +
+  geom_signif(annotation = "**",
+              y_position = 0.325, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = "ns",
+              y_position = 0.375, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = "**",
+              y_position = 0.35, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65)
+cc_root_meso6.plot
+
+# Plot the differential abundance #
+cc_root_meso14.plot <- ggplot(cc_root.meso, aes(x = Comps, y = `ASV14(Bradyrhizobium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  scale_y_continuous(limits = c(0,0.4), breaks = seq(0,0.4, by = 0.05), sec.axis = dup_axis(name = "C. fasciculata")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Root Endosphere<br>ASV14(*Bradyrhizobium*)") +
+  ylab('') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'none') +
+  geom_signif(annotation = "***",
+              y_position = 0.325, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = "ns",
+              y_position = 0.375, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = "***",
+              y_position = 0.35, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65)
+cc_root_meso14.plot
+
+(cc_root_meso.plot | cc_root_meso6.plot | cc_root_meso14.plot)
+
+### Desmodium Bulk Soil ###
+## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
+# Transform the abundance data using total sum scaling #
+ds_bulk_prop.ps <- transform_sample_counts(ds_bulk.ps, function(x) x/sum(x))
+decompose_ps(ds_bulk_prop.ps, "ds_bulk_prop")
+
+# Make a data frame of just the bulk soil samples as well as the abundances of rhizobia of the PSF nodule #
+ds_bulk.meso <- cbind(ds_bulk_prop$met, t(ds_bulk_prop$otu["ASV1(Bradyrhizobium)",]))
+
+# Make soils a factor with the proper levels #
+ds_bulk.meso$Soils <- factor(ds_bulk.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+
+# Make annotations for significant differences #
+ds_bulk.pvsn <- "***"
+ds_bulk.pvsc <- "***"
+ds_bulk.nvsc <- "**"
+
+# Plot the differential abundance #
+ds_bulk_meso.plot <- ggplot(ds_bulk.meso, aes(x = Comps, y = `ASV1(Bradyrhizobium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  coord_cartesian(ylim = c(0, 0.08)) +
+  scale_y_continuous(limits = c(0,0.08), breaks = seq(0,0.08, by = 0.01), sec.axis = dup_axis(name = "")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Bulk Soil<br>ASV1(*Bradyrhizobium*)") +
+  ylab('Relative Abundance') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'none') +
+  geom_signif(annotation = ds_bulk.pvsn,
+              y_position = 0.065, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = ds_bulk.pvsc,
+              y_position = 0.075, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = ds_bulk.nvsc,
+              y_position = 0.07, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65)
+ds_bulk_meso.plot
+
+### Desmodium Rhizosphere ###
+## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
+# Transform the abundance data using total sum scaling #
+ds_rhiz_prop.ps <- transform_sample_counts(ds_rhiz.ps, function(x) x/sum(x))
+decompose_ps(ds_rhiz_prop.ps, "ds_rhiz_prop")
+
+# Make a data frame of just the rhizosphere samples as well as the abundances of rhizobia of the PSF nodule #
+ds_rhiz.meso <- cbind(ds_rhiz_prop$met, t(ds_rhiz_prop$otu["ASV1(Bradyrhizobium)",]))
+
+# Make soils a factor with the proper levels #
+ds_rhiz.meso$Soils <- factor(ds_rhiz.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+
+# Make annotations for significant differences #
+ds_rhiz.pvsn <- "ns"
+ds_rhiz.pvsc <- "***"
+ds_rhiz.nvsc <- "***"
+
+# Plot the differential abundance #
+ds_rhiz_meso.plot <- ggplot(ds_rhiz.meso, aes(x = Comps, y = `ASV1(Bradyrhizobium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  coord_cartesian(ylim = c(0, 0.1)) +
+  scale_y_continuous(limits = c(0,0.1), breaks = seq(0,0.1, by = 0.025), sec.axis = dup_axis(name = "")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Rhizosphere<br>ASV1(*Bradyrhizobium*)") +
+  ylab('') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'bottom') +
+  geom_signif(annotation = ds_rhiz.pvsn,
+              y_position = 0.085, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = ds_rhiz.pvsc,
+              y_position = 0.095, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = ds_rhiz.nvsc,
+              y_position = 0.09, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65)
+ds_rhiz_meso.plot
+
+### Desmodium Root Endosphere ###
+## Root Nodule ASV: ASV6(Bradyrhizobium) ##
+# Transform the abundance data using total sum scaling #
+ds_root_prop.ps <- transform_sample_counts(ds_root.ps, function(x) x/sum(x))
+decompose_ps(ds_root_prop.ps, "ds_root_prop")
+
+# Make a data frame of just the root endosphere samples as well as the abundances of rhizobia of the PSF nodule #
+ds_root.meso <- cbind(ds_root_prop$met, t(ds_root_prop$otu["ASV7(Bradyrhizobium)",]))
+
+# Make soils a factor with the proper levels #
+ds_root.meso$Soils <- factor(ds_root.meso$Soil.Origin, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+
+# Make annotations for significant differences #
+ds_root.pvsn <- "ns"
+ds_root.pvsc <- "ns"
+ds_root.nvsc <- "ns"
+
+# Plot the differential abundance #
+ds_root_meso.plot <- ggplot(ds_root.meso, aes(x = Comps, y = `ASV7(Bradyrhizobium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  scale_y_continuous(limits = c(0,0.4), breaks = seq(0,0.4, by = 0.1), sec.axis = dup_axis(name = "D. illinoense")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Root Endosphere<br>ASV7(*Bradyrhizobium*)") +
+  ylab('') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'none') +
+  geom_signif(annotation = ds_root.pvsn,
+              y_position = 0.3, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = ds_root.pvsc,
+              y_position = 0.36, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = ds_root.nvsc,
+              y_position = 0.33, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 12)
+ds_root_meso.plot
+
+# Make a patchwork plot for all compartments #
+(ds_bulk_meso.plot | ds_rhiz_meso.plot | ds_root_meso.plot)
+
+### Hog Peanut Bulk Soil ###
+## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
+# Transform the abundance data using total sum scaling #
+hp_bulk_prop.ps <- transform_sample_counts(hp_bulk.ps, function(x) x/sum(x))
+decompose_ps(hp_bulk_prop.ps, "hp_bulk_prop")
+
+# Make a data frame of just the bulk soil samples as well as the abundances of rhizobia of the PSF nodule #
+hp_bulk.meso <- cbind(hp_bulk_prop$met, t(hp_bulk_prop$otu["ASV1(Bradyrhizobium)",]))
+
+# Make soils a factor with the proper levels #
+hp_bulk.meso$Soils <- factor(hp_bulk.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+
+# Make annotations for significant differences #
+hp_bulk.pvsn <- "***"
+hp_bulk.pvsc <- "ns"
+hp_bulk.nvsc <- "***"
+
+# Plot the differential abundance #
+hp_bulk_meso.plot <- ggplot(hp_bulk.meso, aes(x = Comps, y = `ASV1(Bradyrhizobium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  coord_cartesian(ylim = c(0, 0.05)) +
+  scale_y_continuous(limits = c(0,0.05), breaks = seq(0,0.05, by = 0.01), sec.axis = dup_axis(name = "")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Bulk Soil<br>ASV1(*Bradyrhizobium*)") +
+  ylab('Relative Abundance') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'none') +
+  geom_signif(annotation = hp_bulk.pvsn,
+              y_position = 0.038, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = hp_bulk.pvsc,
+              y_position = 0.046, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = hp_bulk.nvsc,
+              y_position = 0.042, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65)
+hp_bulk_meso.plot
+
+### Hog Peanut Rhizosphere ###
+## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
+# Transform the abundance data using total sum scaling #
+hp_rhiz_prop.ps <- transform_sample_counts(hp_rhiz.ps, function(x) x/sum(x))
+decompose_ps(hp_rhiz_prop.ps, "hp_rhiz_prop")
+
+# Make a data frame of just the rhizosphere samples as well as the abundances of rhizobia of the PSF nodule #
+hp_rhiz.meso <- cbind(hp_rhiz_prop$met, t(hp_rhiz_prop$otu["ASV1(Bradyrhizobium)",]))
+
+# Make soils a factor with the proper levels #
+hp_rhiz.meso$Soils <- factor(hp_rhiz.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+
+# Make annotations for significant differences #
+hp_rhiz.pvsn <- "ns"
+hp_rhiz.pvsc <- "ns"
+hp_rhiz.nvsc <- "ns"
+
+# Plot the differential abundance #
+hp_rhiz_meso.plot <- ggplot(hp_rhiz.meso, aes(x = Comps, y = `ASV1(Bradyrhizobium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  coord_cartesian(ylim = c(0, 0.1)) +
+  scale_y_continuous(limits = c(0,0.1), breaks = seq(0,0.1, by = 0.025), sec.axis = dup_axis(name = "")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Rhizosphere<br>ASV1(*Bradyrhizobium*)") +
+  ylab('') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'bottom') +
+  geom_signif(annotation = hp_rhiz.pvsn,
+              y_position = 0.085, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = hp_rhiz.pvsc,
+              y_position = 0.096, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = hp_rhiz.nvsc,
+              y_position = 0.09, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 12)
+hp_rhiz_meso.plot
+
+### Hog Peanut Root Endosphere ###
+## Root Nodule ASV: ASV6(Bradyrhizobium) ##
+# Transform the abundance data using total sum scaling #
+hp_root_prop.ps <- transform_sample_counts(hp_root.ps, function(x) x/sum(x))
+decompose_ps(hp_root_prop.ps, "hp_root_prop")
+
+# Make a data frame of just the root endosphere samples as well as the abundances of rhizobia of the PSF nodule #
+hp_root.meso <- cbind(hp_root_prop$met, t(hp_root_prop$otu["ASV7(Bradyrhizobium)",]))
+
+# Make soils a factor with the proper levels #
+hp_root.meso$Soils <- factor(hp_root.meso$Soil.Origin, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+
+# Make annotations for significant differences #
+hp_root.pvsn <- "***"
+hp_root.pvsc <- "ns"
+hp_root.nvsc <- "***"
+
+# Plot the differential abundance #
+hp_root_meso.plot <- ggplot(hp_root.meso, aes(x = Comps, y = `ASV7(Bradyrhizobium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  scale_y_continuous(limits = c(0,0.8), breaks = seq(0,0.8, by = 0.2), sec.axis = dup_axis(name = "A. bracteata")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Root Endosphere<br>ASV7(*Bradyrhizobium*)") +
+  ylab('') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'none') +
+  geom_signif(annotation = hp_root.pvsn,
+              y_position = 0.7, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = hp_root.pvsc,
+              y_position = 0.8, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = hp_root.nvsc,
+              y_position = 0.75, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65)
+hp_root_meso.plot
+
+# Make a patchwork plot for all compartments #
+(hp_bulk_meso.plot | hp_rhiz_meso.plot | hp_root_meso.plot)
+
+### Clover Bulk Soil ###
+## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
+# Transform the abundance data using total sum scaling #
+cl_bulk_prop.ps <- transform_sample_counts(cl_bulk.ps, function(x) x/sum(x))
+decompose_ps(cl_bulk_prop.ps, "cl_bulk_prop")
+
+# Make a data frame of just the bulk soil samples as well as the abundances of rhizobia of the PSF nodule #
+cl_bulk.meso <- cbind(cl_bulk_prop$met, t(cl_bulk_prop$otu["ASV2(Agrobacterium)",]))
+
+# Make soils a factor with the proper levels #
+cl_bulk.meso$Soils <- factor(cl_bulk.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+
+# Make annotations for significant differences #
+cl_bulk.pvsn <- "ns"
+cl_bulk.pvsc <- "ns"
+cl_bulk.nvsc <- "ns"
+
+# Plot the differential abundance #
+cl_bulk_meso.plot <- ggplot(cl_bulk.meso, aes(x = Comps, y = `ASV2(Agrobacterium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  coord_cartesian(ylim = c(0, 0.01)) +
+  scale_y_continuous(limits = c(0,0.01), breaks = seq(0,0.01, by = 0.002), sec.axis = dup_axis(name = "")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Bulk Soil<br>ASV1(*Agrobacterium*)") +
+  ylab('Relative Abundance') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'none') +
+  geom_signif(annotation = cl_bulk.pvsn,
+              y_position = 0.038, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = cl_bulk.pvsc,
+              y_position = 0.046, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = cl_bulk.nvsc,
+              y_position = 0.042, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65)
+cl_bulk_meso.plot
+
+### Clover Rhizosphere ###
+## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
+# Transform the abundance data using total sum scaling #
+cl_rhiz_prop.ps <- transform_sample_counts(cl_rhiz.ps, function(x) x/sum(x))
+decompose_ps(cl_rhiz_prop.ps, "cl_rhiz_prop")
+
+# Make a data frame of just the rhizosphere samples as well as the abundances of rhizobia of the PSF nodule #
+cl_rhiz.meso <- cbind(cl_rhiz_prop$met, t(cl_rhiz_prop$otu["ASV2(Agrobacterium)",]))
+
+# Make soils a factor with the proper levels #
+cl_rhiz.meso$Soils <- factor(cl_rhiz.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+
+# Make annotations for significant differences #
+cl_rhiz.pvsn <- "ns"
+cl_rhiz.pvsc <- "ns"
+cl_rhiz.nvsc <- "ns"
+
+# Plot the differential abundance #
+cl_rhiz_meso.plot <- ggplot(cl_rhiz.meso, aes(x = Comps, y = `ASV2(Agrobacterium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  coord_cartesian(ylim = c(0, 0.01)) +
+  scale_y_continuous(limits = c(0,0.01), breaks = seq(0,0.01, by = 0.0025), sec.axis = dup_axis(name = "")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Rhizosphere<br>ASV1(*Agrobacterium*)") +
+  ylab('') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'bottom')
+cl_rhiz_meso.plot
+
+### Hog Peanut Root Endosphere ###
+## Root Nodule ASV: ASV6(Bradyrhizobium) ##
+# Transform the abundance data using total sum scaling #
+cl_root_prop.ps <- transform_sample_counts(cl_root.ps, function(x) x/sum(x))
+decompose_ps(cl_root_prop.ps, "cl_root_prop")
+
+# Make a data frame of just the root endosphere samples as well as the abundances of rhizobia of the PSF nodule #
+cl_root.meso <- cbind(cl_root_prop$met, t(cl_root_prop$otu["ASV1(Rhizobium)",]))
+
+# Make soils a factor with the proper levels #
+cl_root.meso$Soils <- factor(cl_root.meso$Soil.Origin, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+
+# Make annotations for significant differences #
+cl_root.pvsn <- "ns"
+cl_root.pvsc <- "ns"
+cl_root.nvsc <- "ns"
+
+# Plot the differential abundance #
+cl_root_meso.plot <- ggplot(cl_root.meso, aes(x = Comps, y = `ASV1(Rhizobium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  scale_y_continuous(limits = c(0,1), breaks = seq(0,1, by = 0.2), sec.axis = dup_axis(name = "T. repens")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Root Endosphere<br>ASV1(*Rhizobium*)") +
+  ylab('') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'none') +
+  geom_signif(annotation = cl_root.pvsn,
+              y_position = 0.85, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = cl_root.pvsc,
+              y_position = 0.96, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = cl_root.nvsc,
+              y_position = 0.9, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 12)
+cl_root_meso.plot
+
+# Make a patchwork plot for all compartments #
+(cl_bulk_meso.plot | cl_rhiz_meso.plot | cl_root_meso.plot)
+
+### Medicago Bulk Soil ###
+## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
+# Transform the abundance data using total sum scaling #
+md_bulk_prop.ps <- transform_sample_counts(md_bulk.ps, function(x) x/sum(x))
+decompose_ps(md_bulk_prop.ps, "md_bulk_prop")
+
+# Make a data frame of just the bulk soil samples as well as the abundances of rhizobia of the PSF nodule #
+md_bulk.meso <- cbind(md_bulk_prop$met, t(md_bulk_prop$otu["ASV2(Agrobacterium)",]))
+
+# Make soils a factor with the proper levels #
+md_bulk.meso$Soils <- factor(md_bulk.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+
+# Make annotations for significant differences #
+md_bulk.pvsn <- "ns"
+md_bulk.pvsc <- "ns"
+md_bulk.nvsc <- "ns"
+
+# Plot the differential abundance #
+md_bulk_meso.plot <- ggplot(md_bulk.meso, aes(x = Comps, y = `ASV2(Agrobacterium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  coord_cartesian(ylim = c(0, 0.01)) +
+  scale_y_continuous(limits = c(0,0.01), breaks = seq(0,0.01, by = 0.0025), sec.axis = dup_axis(name = "")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Bulk Soil<br>ASV2(*Agrobacterium*)") +
+  ylab('Relative Abundance') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'none') +
+  geom_signif(annotation = md_bulk.pvsn,
+              y_position = 0.038, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = md_bulk.pvsc,
+              y_position = 0.046, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = md_bulk.nvsc,
+              y_position = 0.042, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65)
+md_bulk_meso.plot
+
+### Medicago Rhizosphere ###
+## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
+# Transform the abundance data using total sum scaling #
+md_rhiz_prop.ps <- transform_sample_counts(md_rhiz.ps, function(x) x/sum(x))
+decompose_ps(md_rhiz_prop.ps, "md_rhiz_prop")
+
+# Make a data frame of just the rhizosphere samples as well as the abundances of rhizobia of the PSF nodule #
+md_rhiz.meso <- cbind(md_rhiz_prop$met, t(md_rhiz_prop$otu["ASV2(Agrobacterium)",]))
+
+# Make soils a factor with the proper levels #
+md_rhiz.meso$Soils <- factor(md_rhiz.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+
+# Make annotations for significant differences #
+md_rhiz.pvsn <- "ns"
+md_rhiz.pvsc <- "ns"
+md_rhiz.nvsc <- "ns"
+
+# Plot the differential abundance #
+md_rhiz_meso.plot <- ggplot(md_rhiz.meso, aes(x = Comps, y = `ASV2(Agrobacterium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  coord_cartesian(ylim = c(0, 0.01)) +
+  scale_y_continuous(limits = c(0,0.01), breaks = seq(0,0.01, by = 0.0025), sec.axis = dup_axis(name = "")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Rhizosphere<br>ASV2(*Agrobacterium*)") +
+  ylab('') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'bottom') +
+  geom_signif(annotation = md_rhiz.pvsn,
+              y_position = 0.085, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = md_rhiz.pvsc,
+              y_position = 0.096, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = md_rhiz.nvsc,
+              y_position = 0.09, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 12)
+md_rhiz_meso.plot
+
+### Medicago Root Endosphere ###
+## Root Nodule ASV: ASV6(Bradyrhizobium) ##
+# Transform the abundance data using total sum scaling #
+md_root_prop.ps <- transform_sample_counts(md_root.ps, function(x) x/sum(x))
+decompose_ps(md_root_prop.ps, "md_root_prop")
+
+# Make a data frame of just the root endosphere samples as well as the abundances of rhizobia of the PSF nodule #
+md_root.meso <- cbind(md_root_prop$met, t(md_root_prop$otu[c("ASV4(Sinorhizobium)", "ASV2(Sinorhizobium)"),]))
+
+# Make soils a factor with the proper levels #
+md_root.meso$Soils <- factor(md_root.meso$Soil.Origin, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+
+# Make annotations for significant differences #
+md_root.pvsn <- "***"
+md_root.pvsc <- "***"
+md_root.nvsc <- "ns"
+
+# Plot the differential abundance #
+md_root_meso.plot <- ggplot(md_root.meso, aes(x = Comps, y = `ASV4(Sinorhizobium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  coord_cartesian(ylim = c(0,0.65)) +
+  scale_y_continuous(limits = c(0,0.6), breaks = seq(0,0.6, by = 0.15), sec.axis = dup_axis(name = "M. truncatula")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Root Endosphere<br>ASV4(*Sinorhizobium*)") +
+  ylab('') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'none') +
+  geom_signif(annotation = md_root.pvsn,
+              y_position = 0.50, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = md_root.pvsc,
+              y_position = 0.6, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = md_root.nvsc,
+              y_position = 0.55, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 12)
+md_root_meso.plot
+
+# Make a patchwork plot for all compartments #
+(md_bulk_meso.plot | md_rhiz_meso.plot | md_root_meso.plot)
+
+# Plot the differential abundance #
+md_root_meso2.plot <- ggplot(md_root.meso, aes(x = Comps, y = `ASV2(Sinorhizobium)`)) +
+  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  coord_cartesian(ylim = c(0,0.95)) +
+  scale_y_continuous(limits = c(0,0.9), breaks = seq(0,0.9, by = 0.15), sec.axis = dup_axis(name = "M. truncatula")) +
+  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
+  scale_x_discrete(labels = "Root Endosphere<br>ASV2(*Sinorhizobium*)") +
+  ylab('') +
+  xlab('') +
+  theme_prism() +
+  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
+        axis.text.y = element_text(size = 18, color = 'black'),
+        axis.title.y.left = element_text(size = 22),
+        axis.ticks.length.y.right = unit(0, 'cm'),
+        axis.text.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
+        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
+        legend.title = element_blank(),
+        legend.key.spacing.x = unit(2,'cm'),
+        legend.position = 'bottom') +
+  geom_signif(annotation = "**",
+              y_position = 0.72, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = "***",
+              y_position = 0.86, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = "*",
+              y_position = 0.81, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65)
+md_root_meso2.plot
