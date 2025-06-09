@@ -2798,268 +2798,241 @@ bulk_nmds.plot <- ggplot(bulk_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
         legend.title = element_text(size = 16, family = "Liberation Sans"),
         axis.title = element_text(size=20, family = "Liberation Sans"),
         axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +
-  annotate('text', x = 0.075, y = -0.15,
-           label = expression("(PERMANOVA) F"["9,29"] ~ "= 39.918, P < 0.001;  (PERMDISP) F"["9,29"] ~  "= 0.3344, P = 0.9526"),
+  annotate('text', x = 0.06, y = -0.15,
+           label = expression("(PERMANOVA) F"["9,29"] ~ "= 39.918, P < 0.001;  (PERMDISP) F"["9,29"] ~  "= 0.3344, P = 0.9526; 3D Stress = 0.0127"),
            size = 8, family = 'Liberation Sans') +
-  coord_cartesian(ylim = c(-0.145,0.2)) +
-  labs(tag = 'A.')
+  coord_cartesian(ylim = c(-0.145,0.2))
 
 bulk_nmds.plot
 
-# Separate samples by plant species #
 ## Fuzzy Bean ##
+# Create a phyloseq object that has all samples of the specific plant species and compartment #
+fb_bulk.ps <- subset_samples(bulk.ps, Plant == "S. helvola" | Plant == "Common Soil" | Plant == "C. fasciculata" & Soil_Treatment == "Non-PSF Soil")
+fb_bulk.ps <- subset_taxa(fb_bulk.ps, taxa_sums(fb_bulk.ps) > 0)
+
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
+decompose_ps(fb_bulk.ps, 'fb_bulk')
+fb_bulk_prop.ps <- transform_sample_counts(fb_bulk.ps, function(x) x/sum(x))
+set.seed(248)
+fb_bulk.wuni <- phyloseq::distance(fb_bulk_prop.ps, method = 'wunifrac')
+
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
+fb_bulk.bdis <- betadisper(fb_bulk.wuni, group = fb_bulk$met$Soils)
+anova(fb_bulk.bdis)
+TukeyHSD(fb_bulk.bdis)
+
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
 fb_bulk.met <- filter(bulk_nmds.load, Plant == "S. helvola" | Plant == "Common Soil" | Plant == "C. fasciculata" & Soil_Treatment == "Non-PSF Soil")
+
+# Perform MANOVA on all samples #
 fb_bulk.man <- manova(cbind(NMDS1,NMDS2)~Soils, fb_bulk.met)
 summary(fb_bulk.man)
 
+# Subset the data for pairwise MANOVA tests #
+## PSF vs. Non-PSF ##
 fb_bulk_pvsn.met <- filter(fb_bulk.met, Soil_Treatment != "Common Soil")
 fb_bulk_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, fb_bulk_pvsn.met)
 summary(fb_bulk_pvsn.man)
 
+## PSF vs. Common ##
 fb_bulk_pvsc.met <- filter(fb_bulk.met, Soil_Treatment != "Non-PSF Soil")
 fb_bulk_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, fb_bulk_pvsc.met)
 summary(fb_bulk_pvsc.man)
 
+## Non-PSF vs. Common
 fb_bulk_nvsc.met <- filter(fb_bulk.met, Soil_Treatment != "PSF Soil")
 fb_bulk_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, fb_bulk_nvsc.met)
 summary(fb_bulk_nvsc.man)
 
 ## Chamaecrista ##
+# Create a phyloseq object that has all samples of the specific plant species and compartment #
 cc_bulk.ps <- subset_samples(bulk.ps, Plant == "C. fasciculata" | Plant == "Common Soil")
 cc_bulk.ps <- subset_taxa(cc_bulk.ps, taxa_sums(cc_bulk.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(cc_bulk.ps, 'cc_bulk')
 cc_bulk_prop.ps <- transform_sample_counts(cc_bulk.ps, function(x) x/sum(x))
 set.seed(248)
 cc_bulk.wuni <- phyloseq::distance(cc_bulk_prop.ps, method = 'wunifrac')
-cc_bulk.pcoa <- phyloseq::ordinate(cc_bulk_prop.ps, 'PCoA', distance = cc_bulk.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-cc_bulk.nmds <- metaMDS(cc_bulk.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = cc_bulk.pcoa$vectors[,1:2])
-cc_bulk$met <- cbind(cc_bulk$met, cc_bulk.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-cc_bulk.adon <- adonis2(cc_bulk.wuni~Soils, cc_bulk$met, permutations = 999, by = "terms")
-cc_bulk.adon
-
-# Perform Pairwise Permanova of the individual soil treatments # 
-cc_bulk.pair <- pairwise.adonis2(cc_bulk.wuni~Soils, cc_bulk$met, permutations = 9999, by = "terms")
-cc_bulk.pair
-
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 cc_bulk.bdis <- betadisper(cc_bulk.wuni, group = cc_bulk$met$Soils)
 anova(cc_bulk.bdis)
 TukeyHSD(cc_bulk.bdis)
 
-cc_bulk.man <- manova(cbind(MDS1,MDS2)~Soils, cc_bulk$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+cc_bulk.met <- filter(bulk_nmds.load,  Plant == "C. fasciculata" | Plant == "Common Soil")
+
+# Perform MANOVA on all samples #
+cc_bulk.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_bulk.met)
 summary(cc_bulk.man)
 
-cc_bulk_pvsn.met <- filter(cc_bulk$met, Soil_Treatment != "Common Soil")
-cc_bulk_pvsn.man <- manova(cbind(MDS1,MDS2)~Soils, cc_bulk_pvsn.met)
+# Subset the data for pairwise MANOVA tests #
+## PSF vs. Non-PSF ##
+cc_bulk_pvsn.met <- filter(cc_bulk.met, Soil_Treatment != "Common Soil")
+cc_bulk_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_bulk_pvsn.met)
 summary(cc_bulk_pvsn.man)
 
-cc_bulk_pvsc.met <- filter(cc_bulk$met, Soil_Treatment != "Non-PSF Soil")
-cc_bulk_pvsc.man <- manova(cbind(MDS1,MDS2)~Soils, cc_bulk_pvsc.met)
+## PSF vs. Common ##
+cc_bulk_pvsc.met <- filter(cc_bulk.met, Soil_Treatment != "Non-PSF Soil")
+cc_bulk_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_bulk_pvsc.met)
 summary(cc_bulk_pvsc.man)
 
-cc_bulk_nvsc.met <- filter(cc_bulk$met, Soil_Treatment != "PSF Soil")
-cc_bulk_nvsc.man <- manova(cbind(MDS1,MDS2)~Soils, cc_bulk_nvsc.met)
+## Non-PSF vs. Common
+cc_bulk_nvsc.met <- filter(cc_bulk.met, Soil_Treatment != "PSF Soil")
+cc_bulk_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_bulk_nvsc.met)
 summary(cc_bulk_nvsc.man)
 
 ## Desmodium ##
 ds_bulk.ps <- subset_samples(bulk.ps, Plant == "D. illinoense" | Plant == "Common Soil")
 ds_bulk.ps <- subset_taxa(ds_bulk.ps, taxa_sums(ds_bulk.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(ds_bulk.ps, 'ds_bulk')
 ds_bulk_prop.ps <- transform_sample_counts(ds_bulk.ps, function(x) x/sum(x))
 set.seed(248)
 ds_bulk.wuni <- phyloseq::distance(ds_bulk_prop.ps, method = 'wunifrac')
-ds_bulk.pcoa <- phyloseq::ordinate(ds_bulk_prop.ps, 'PCoA', distance = ds_bulk.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-ds_bulk.nmds <- metaMDS(ds_bulk.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = ds_bulk.pcoa$vectors[,1:2])
-ds_bulk$met <- cbind(ds_bulk$met, ds_bulk.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-ds_bulk.adon <- adonis2(ds_bulk.wuni~Soils, ds_bulk$met, permutations = 999, by = "terms")
-ds_bulk.adon
-
-# Perform Pairwise Permanova of the individual soil treatments # 
-ds_bulk.pair <- pairwise.adonis2(ds_bulk.wuni~Soils, ds_bulk$met, permutations = 9999, by = "terms")
-ds_bulk.pair
-
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 ds_bulk.bdis <- betadisper(ds_bulk.wuni, group = ds_bulk$met$Soils)
 anova(ds_bulk.bdis)
 TukeyHSD(ds_bulk.bdis)
 
-ds_bulk.man <- manova(cbind(MDS1,MDS2)~Soils, ds_bulk$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+ds_bulk.met <- filter(bulk_nmds.load,  Plant == "D. illinoense" | Plant == "Common Soil")
+
+# Perform MANOVA on all samples #
+ds_bulk.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_bulk.met)
 summary(ds_bulk.man)
 
-ds_bulk_pvsn.met <- filter(ds_bulk$met, Soil_Treatment != "Common Soil")
-ds_bulk_pvsn.man <- manova(cbind(MDS1,MDS2)~Soils, ds_bulk_pvsn.met)
+# Subset the data for pairwise MANOVA tests #
+## PSF vs. Non-PSF ##
+ds_bulk_pvsn.met <- filter(ds_bulk.met, Soil_Treatment != "Common Soil")
+ds_bulk_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_bulk_pvsn.met)
 summary(ds_bulk_pvsn.man)
 
-ds_bulk_pvsc.met <- filter(ds_bulk$met, Soil_Treatment != "Non-PSF Soil")
-ds_bulk_pvsc.man <- manova(cbind(MDS1,MDS2)~Soils, ds_bulk_pvsc.met)
+## PSF vs. Common ##
+ds_bulk_pvsc.met <- filter(ds_bulk.met, Soil_Treatment != "Non-PSF Soil")
+ds_bulk_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_bulk_pvsc.met)
 summary(ds_bulk_pvsc.man)
 
-ds_bulk_nvsc.met <- filter(ds_bulk$met, Soil_Treatment != "PSF Soil")
-ds_bulk_nvsc.man <- manova(cbind(MDS1,MDS2)~Soils, ds_bulk_nvsc.met)
+## Non-PSF vs. Common
+ds_bulk_nvsc.met <- filter(ds_bulk.met, Soil_Treatment != "PSF Soil")
+ds_bulk_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_bulk_nvsc.met)
 summary(ds_bulk_nvsc.man)
 
 ## Hog Peanut ##
-hp_bulk.ps <- subset_samples(bulk.ps, Plant == "A. bracteata" | Plant == "Common Soil")
-hp_bulk.ps <- merge_phyloseq(hp_bulk.ps, subset_samples(npsf_bulk.ps, Plant == "D. illinoense"))
+hp_bulk.ps <- subset_samples(bulk.ps, Plant == "A. bracteata" | Plant == "Common Soil" | Plant == "D. illinoense" & Soil_Treatment == "Non-PSF Soil")
 hp_bulk.ps <- subset_taxa(hp_bulk.ps, taxa_sums(hp_bulk.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(hp_bulk.ps, 'hp_bulk')
 hp_bulk_prop.ps <- transform_sample_counts(hp_bulk.ps, function(x) x/sum(x))
 set.seed(248)
 hp_bulk.wuni <- phyloseq::distance(hp_bulk_prop.ps, method = 'wunifrac')
-hp_bulk.pcoa <- phyloseq::ordinate(hp_bulk_prop.ps, 'PCoA', distance = hp_bulk.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-hp_bulk.nmds <- metaMDS(hp_bulk.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = hp_bulk.pcoa$vectors[,1:2])
-hp_bulk$met <- cbind(hp_bulk$met, hp_bulk.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-hp_bulk.adon <- adonis2(hp_bulk.wuni~Soils, hp_bulk$met, permutations = 999, by = "terms")
-hp_bulk.adon
-
-# Perform Pairwise Permanova of the individual soil treatments # 
-hp_bulk.pair <- pairwise.adonis2(hp_bulk.wuni~Soils, hp_bulk$met, permutations = 9999, by = "terms")
-hp_bulk.pair
-
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 hp_bulk.bdis <- betadisper(hp_bulk.wuni, group = hp_bulk$met$Soils)
 anova(hp_bulk.bdis)
 TukeyHSD(hp_bulk.bdis)
 
-hp_bulk.man <- manova(cbind(MDS1,MDS2)~Soils, hp_bulk$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+hp_bulk.met <- filter(bulk_nmds.load, Plant == "A. bracteata" | Plant == "Common Soil" | Plant == "D. illinoense" & Soil_Treatment == "Non-PSF Soil")
+
+# Perform MANOVA on all samples #
+hp_bulk.man <- manova(cbind(NMDS1,NMDS2)~Soils, hp_bulk.met)
 summary(hp_bulk.man)
 
-hp_bulk_pvsn.met <- filter(hp_bulk$met, Soil_Treatment != "Common Soil")
-hp_bulk_pvsn.man <- manova(cbind(MDS1,MDS2)~Soils, hp_bulk_pvsn.met)
+# Subset the data for pairwise MANOVA tests #
+## PSF vs. Non-PSF ##
+hp_bulk_pvsn.met <- filter(hp_bulk.met, Soil_Treatment != "Common Soil")
+hp_bulk_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, hp_bulk_pvsn.met)
 summary(hp_bulk_pvsn.man)
 
-hp_bulk_pvsc.met <- filter(hp_bulk$met, Soil_Treatment != "Non-PSF Soil")
-hp_bulk_pvsc.man <- manova(cbind(MDS1,MDS2)~Soils, hp_bulk_pvsc.met)
+## PSF vs. Common ##
+hp_bulk_pvsc.met <- filter(hp_bulk.met, Soil_Treatment != "Non-PSF Soil")
+hp_bulk_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, hp_bulk_pvsc.met)
 summary(hp_bulk_pvsc.man)
 
-hp_bulk_nvsc.met <- filter(hp_bulk$met, Soil_Treatment != "PSF Soil")
-hp_bulk_nvsc.man <- manova(cbind(MDS1,MDS2)~Soils, hp_bulk_nvsc.met)
+## Non-PSF vs. Common
+hp_bulk_nvsc.met <- filter(hp_bulk.met, Soil_Treatment != "PSF Soil")
+hp_bulk_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, hp_bulk_nvsc.met)
 summary(hp_bulk_nvsc.man)
 
 ## Clover ##
 cl_bulk.ps <- subset_samples(bulk.ps, Plant == "T. repens" | Plant == "Common Soil")
 cl_bulk.ps <- subset_taxa(cl_bulk.ps, taxa_sums(cl_bulk.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(cl_bulk.ps, 'cl_bulk')
 cl_bulk_prop.ps <- transform_sample_counts(cl_bulk.ps, function(x) x/sum(x))
 set.seed(248)
 cl_bulk.wuni <- phyloseq::distance(cl_bulk_prop.ps, method = 'wunifrac')
-cl_bulk.pcoa <- phyloseq::ordinate(cl_bulk_prop.ps, 'PCoA', distance = cl_bulk.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-cl_bulk.nmds <- metaMDS(cl_bulk.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = cl_bulk.pcoa$vectors[,1:2])
-cl_bulk$met <- cbind(cl_bulk$met, cl_bulk.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-cl_bulk.adon <- adonis2(cl_bulk.wuni~Soils, cl_bulk$met, by = "terms")
-cl_bulk.adon
-
-# Perform Pairwise Permanova of the individual soil treatments # 
-cl_bulk.pair <- pairwise.adonis2(cl_bulk.wuni~Soils, cl_bulk$met, by = "terms")
-cl_bulk.pair
-
-# Perform PermDISP with Tukey Honest Significant Difference to determine homogeneity in ordination space # 
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 cl_bulk.bdis <- betadisper(cl_bulk.wuni, group = cl_bulk$met$Soils)
 anova(cl_bulk.bdis)
 TukeyHSD(cl_bulk.bdis)
 
-# Perform MANOVA for all samples #
-cl_bulk.man <- manova(cbind(MDS1,MDS2)~Soils, cl_bulk$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+cl_bulk.met <- filter(bulk_nmds.load, Plant == "T. repens" | Plant == "Common Soil")
+
+# Perform MANOVA on all samples #
+cl_bulk.man <- manova(cbind(NMDS1,NMDS2)~Soils, cl_bulk.met)
 summary(cl_bulk.man)
 
-# Perform MANOVA for subsets of the data #
-# PSF vs Non-PSF #
-cl_bulk_pvsn.met <- filter(cl_bulk$met, Soil_Treatment != "Common Soil")
-cl_bulk_pvsn.man <- manova(cbind(MDS1,MDS2)~Soils, cl_bulk_pvsn.met)
+# Subset the data for pairwise MANOVA tests #
+## PSF vs. Non-PSF ##
+cl_bulk_pvsn.met <- filter(cl_bulk.met, Soil_Treatment != "Common Soil")
+cl_bulk_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, cl_bulk_pvsn.met)
 summary(cl_bulk_pvsn.man)
 
-# PSF vs. Common #
-cl_bulk_pvsc.met <- filter(cl_bulk$met, Soil_Treatment != "Non-PSF Soil")
-cl_bulk_pvsc.man <- manova(cbind(MDS1,MDS2)~Soils, cl_bulk_pvsc.met)
+## PSF vs. Common ##
+cl_bulk_pvsc.met <- filter(cl_bulk.met, Soil_Treatment != "Non-PSF Soil")
+cl_bulk_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, cl_bulk_pvsc.met)
 summary(cl_bulk_pvsc.man)
 
-# Non-PSF vs. Common #
-cl_bulk_nvsc.met <- filter(cl_bulk$met, Soil_Treatment != "PSF Soil")
-cl_bulk_nvsc.man <- manova(cbind(MDS1,MDS2)~Soils, cl_bulk_nvsc.met)
+## Non-PSF vs. Common
+cl_bulk_nvsc.met <- filter(cl_bulk.met, Soil_Treatment != "PSF Soil")
+cl_bulk_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, cl_bulk_nvsc.met)
 summary(cl_bulk_nvsc.man)
 
 ## Medicago ##
-md_bulk.ps <- subset_samples(bulk.ps, Plant == "M. truncatula" | Plant == "Common Soil")
-md_bulk.ps <- merge_phyloseq(md_bulk.ps, subset_samples(npsf_bulk.ps, Plant == "T. repens"))
+md_bulk.ps <- subset_samples(bulk.ps, Plant == "M. truncatula" | Plant == "Common Soil" | Plant == "T. repens" & Soil_Treatment == "Non-PSF Soil")
 md_bulk.ps <- subset_taxa(md_bulk.ps, taxa_sums(md_bulk.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(md_bulk.ps, 'md_bulk')
 md_bulk_prop.ps <- transform_sample_counts(md_bulk.ps, function(x) x/sum(x))
 set.seed(248)
 md_bulk.wuni <- phyloseq::distance(md_bulk_prop.ps, method = 'wunifrac')
-md_bulk.pcoa <- phyloseq::ordinate(md_bulk_prop.ps, 'PCoA', distance = md_bulk.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-md_bulk.nmds <- metaMDS(md_bulk.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = md_bulk.pcoa$vectors[,1:2])
-md_bulk$met <- cbind(md_bulk$met, md_bulk.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-md_bulk.adon <- adonis2(md_bulk.wuni~Soils, md_bulk$met, by = "terms")
-md_bulk.adon
-
-# Perform Pairwise Permanova of the individual soil treatments # 
-md_bulk.pair <- pairwise.adonis2(md_bulk.wuni~Soils, md_bulk$met, by = "terms")
-md_bulk.pair
-
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 md_bulk.bdis <- betadisper(md_bulk.wuni, group = md_bulk$met$Soils)
 anova(md_bulk.bdis)
 TukeyHSD(md_bulk.bdis)
 
-# Perform MANOVA for all samples #
-md_bulk.man <- manova(cbind(MDS1,MDS2)~Soils, md_bulk$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+md_bulk.met <- filter(bulk_nmds.load, Plant == "M. truncatula" | Plant == "Common Soil" | Plant == "T. repens" & Soil_Treatment == "Non-PSF Soil")
+
+# Perform MANOVA on all samples #
+md_bulk.man <- manova(cbind(NMDS1,NMDS2)~Soils, md_bulk.met)
 summary(md_bulk.man)
 
-# Perform MANOVA for subsets of the data #
-# PSF vs Non-PSF #
-md_bulk_pvsn.met <- filter(md_bulk$met, Soil_Treatment != "Common Soil")
-md_bulk_pvsn.man <- manova(cbind(MDS1,MDS2)~Soils, md_bulk_pvsn.met)
+# Subset the data for pairwise MANOVA tests #
+## PSF vs. Non-PSF ##
+md_bulk_pvsn.met <- filter(md_bulk.met, Soil_Treatment != "Common Soil")
+md_bulk_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, md_bulk_pvsn.met)
 summary(md_bulk_pvsn.man)
 
-# PSF vs. Common #
-md_bulk_pvsc.met <- filter(md_bulk$met, Soil_Treatment != "Non-PSF Soil")
-md_bulk_pvsc.man <- manova(cbind(MDS1,MDS2)~Soils, md_bulk_pvsc.met)
+## PSF vs. Common ##
+md_bulk_pvsc.met <- filter(md_bulk.met, Soil_Treatment != "Non-PSF Soil")
+md_bulk_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, md_bulk_pvsc.met)
 summary(md_bulk_pvsc.man)
 
-# Non-PSF vs. Common #
-md_bulk_nvsc.met <- filter(md_bulk$met, Soil_Treatment != "PSF Soil")
-md_bulk_nvsc.man <- manova(cbind(MDS1,MDS2)~Soils, md_bulk_nvsc.met)
+## Non-PSF vs. Common
+md_bulk_nvsc.met <- filter(md_bulk.met, Soil_Treatment != "PSF Soil")
+md_bulk_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, md_bulk_nvsc.met)
 summary(md_bulk_nvsc.man)
 
 # Rhizosphere #
@@ -3205,10 +3178,9 @@ rhiz_nmds.plot <- ggplot(rhiz_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
         axis.title = element_text(size=20, family = "Liberation Sans"),
         axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +
   annotate('text', x = -0.1, y = -0.29,
-           label = expression("(PERMANOVA) F"["16,70"] ~ "= 25.443, P = 0.001;  (PERMDISP) F"["16,70"] ~  "= 4.9933, P < 0.001"),
+           label = expression("(PERMANOVA) F"["16,70"] ~ "= 25.443, P = 0.001;  (PERMDISP) F"["16,70"] ~  "= 4.9933, P < 0.001; 3D Stress = 0.0224"),
            size = 8, family = 'Liberation Sans') +
-  coord_cartesian(ylim = c(-0.28, 0.15)) +
-  labs(tag = 'A.')
+  coord_cartesian(ylim = c(-0.28, 0.15))
 
 rhiz_nmds.plot
 
@@ -3217,280 +3189,218 @@ rhiz_nmds.plot
 fb_rhiz.ps <- subset_samples(rhiz.ps, Plant == "S. helvola")
 fb_rhiz.ps <- subset_taxa(fb_rhiz.ps, taxa_sums(fb_rhiz.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(fb_rhiz.ps, 'fb_rhiz')
 fb_rhiz_prop.ps <- transform_sample_counts(fb_rhiz.ps, function(x) x/sum(x))
 set.seed(248)
 fb_rhiz.wuni <- phyloseq::distance(fb_rhiz_prop.ps, method = 'wunifrac')
-fb_rhiz.pcoa <- phyloseq::ordinate(fb_rhiz_prop.ps, 'PCoA', distance = fb_rhiz.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-fb_rhiz.nmds <- metaMDS(fb_rhiz.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = fb_rhiz.pcoa$vectors[,1:2])
-fb_rhiz$met <- cbind(fb_rhiz$met, fb_rhiz.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-fb_rhiz.adon <- adonis2(fb_rhiz.wuni~Soils, fb_rhiz$met, permutations = 999, by = "terms")
-fb_rhiz.adon
-
-# Perform Pairwise Permanova of the individual soil treatments # 
-fb_rhiz.pair <- pairwise.adonis2(fb_rhiz.wuni~Soils, fb_rhiz$met, permutations = 9999, by = "terms")
-fb_rhiz.pair
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 fb_rhiz.bdis <- betadisper(fb_rhiz.wuni, group = fb_rhiz$met$Soils)
 anova(fb_rhiz.bdis)
 TukeyHSD(fb_rhiz.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-fb_rhiz.man <- manova(cbind(MDS1,MDS2)~Soils, fb_rhiz$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+fb_rhiz.met <- filter(rhiz_nmds.load, Plant == "S. helvola")
+
+# Perform MANOVA on all samples #
+fb_rhiz.man <- manova(cbind(NMDS1,NMDS2)~Soils, fb_rhiz.met)
 summary(fb_rhiz.man)
 
-# Subset by each comparison #
-fb_rhiz_pvsn.met <- filter(fb_rhiz$met, Soil_Treatment != "Common Soil")
-fb_rhiz_pvsn.man <- manova(cbind(MDS1,MDS2)~Soils, fb_rhiz_pvsn.met)
+# Subset the data for pairwise MANOVA tests #
+## PSF vs. Non-PSF ##
+fb_rhiz_pvsn.met <- filter(fb_rhiz.met, Soil_Treatment != "Common Soil")
+fb_rhiz_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, fb_rhiz_pvsn.met)
 summary(fb_rhiz_pvsn.man)
 
-fb_rhiz_pvsc.met <- filter(fb_rhiz$met, Soil_Treatment != "Non-PSF Soil")
-fb_rhiz_pvsc.man <- manova(cbind(MDS1,MDS2)~Soils, fb_rhiz_pvsc.met)
+## PSF vs. Common ##
+fb_rhiz_pvsc.met <- filter(fb_rhiz.met, Soil_Treatment != "Non-PSF Soil")
+fb_rhiz_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, fb_rhiz_pvsc.met)
 summary(fb_rhiz_pvsc.man)
 
-fb_rhiz_nvsc.met <- filter(fb_rhiz$met, Soil_Treatment != "PSF Soil")
-fb_rhiz_nvsc.man <- manova(cbind(MDS1,MDS2)~Soils, fb_rhiz_nvsc.met)
+## Non-PSF vs. Common ##
+fb_rhiz_nvsc.met <- filter(fb_rhiz.met, Soil_Treatment != "PSF Soil")
+fb_rhiz_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, fb_rhiz_nvsc.met)
 summary(fb_rhiz_nvsc.man)
 
 ## Chamaecrista ##
 cc_rhiz.ps <- subset_samples(rhiz.ps, Plant == "C. fasciculata")
 cc_rhiz.ps <- subset_taxa(cc_rhiz.ps, taxa_sums(cc_rhiz.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(cc_rhiz.ps, 'cc_rhiz')
 cc_rhiz_prop.ps <- transform_sample_counts(cc_rhiz.ps, function(x) x/sum(x))
 set.seed(248)
 cc_rhiz.wuni <- phyloseq::distance(cc_rhiz_prop.ps, method = 'wunifrac')
-cc_rhiz.pcoa <- phyloseq::ordinate(cc_rhiz_prop.ps, 'PCoA', distance = cc_rhiz.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-cc_rhiz.nmds <- metaMDS(cc_rhiz.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = cc_rhiz.pcoa$vectors[,1:2])
-cc_rhiz$met <- cbind(cc_rhiz$met, cc_rhiz.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-cc_rhiz.adon <- adonis2(cc_rhiz.wuni~Soils, cc_rhiz$met, permutations = 999, by = "terms")
-cc_rhiz.adon
-
-# Perform Pairwise Permanova of the individual soil treatments # 
-cc_rhiz.pair <- pairwise.adonis2(cc_rhiz.wuni~Soils, cc_rhiz$met, permutations = 9999, by = "terms")
-cc_rhiz.pair
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 cc_rhiz.bdis <- betadisper(cc_rhiz.wuni, group = cc_rhiz$met$Soils)
 anova(cc_rhiz.bdis)
 TukeyHSD(cc_rhiz.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-cc_rhiz.man <- manova(cbind(MDS1,MDS2)~Soils, cc_rhiz$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+cc_rhiz.met <- filter(rhiz_nmds.load, Plant == "C. fasciculata")
+
+# Perform MANOVA on all samples #
+cc_rhiz.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_rhiz.met)
 summary(cc_rhiz.man)
 
-# Subset by each comparison #
-cc_rhiz_pvsn.met <- filter(cc_rhiz$met, Soil_Treatment != "Common Soil")
-cc_rhiz_pvsn.man <- manova(cbind(MDS1,MDS2)~Soils, cc_rhiz_pvsn.met)
+# Subset the data for pairwise MANOVA tests #
+## PSF vs. Non-PSF ##
+cc_rhiz_pvsn.met <- filter(cc_rhiz.met, Soil_Treatment != "Common Soil")
+cc_rhiz_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_rhiz_pvsn.met)
 summary(cc_rhiz_pvsn.man)
 
-cc_rhiz_pvsc.met <- filter(cc_rhiz$met, Soil_Treatment != "Non-PSF Soil")
-cc_rhiz_pvsc.man <- manova(cbind(MDS1,MDS2)~Soils, cc_rhiz_pvsc.met)
+## PSF vs. Common ##
+cc_rhiz_pvsc.met <- filter(cc_rhiz.met, Soil_Treatment != "Non-PSF Soil")
+cc_rhiz_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_rhiz_pvsc.met)
 summary(cc_rhiz_pvsc.man)
 
-cc_rhiz_nvsc.met <- filter(cc_rhiz$met, Soil_Treatment != "PSF Soil")
-cc_rhiz_nvsc.man <- manova(cbind(MDS1,MDS2)~Soils, cc_rhiz_nvsc.met)
+## Non-PSF vs. Common ##
+cc_rhiz_nvsc.met <- filter(cc_rhiz.met, Soil_Treatment != "PSF Soil")
+cc_rhiz_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_rhiz_nvsc.met)
 summary(cc_rhiz_nvsc.man)
 
 ## Desmodium ##
 ds_rhiz.ps <- subset_samples(rhiz.ps, Plant == "D. illinoense")
 ds_rhiz.ps <- subset_taxa(ds_rhiz.ps, taxa_sums(ds_rhiz.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(ds_rhiz.ps, 'ds_rhiz')
 ds_rhiz_prop.ps <- transform_sample_counts(ds_rhiz.ps, function(x) x/sum(x))
 set.seed(248)
 ds_rhiz.wuni <- phyloseq::distance(ds_rhiz_prop.ps, method = 'wunifrac')
-ds_rhiz.pcoa <- phyloseq::ordinate(ds_rhiz_prop.ps, 'PCoA', distance = ds_rhiz.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-ds_rhiz.nmds <- metaMDS(ds_rhiz.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = ds_rhiz.pcoa$vectors[,1:2])
-ds_rhiz$met <- cbind(ds_rhiz$met, ds_rhiz.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-ds_rhiz.adon <- adonis2(ds_rhiz.wuni~Soils, ds_rhiz$met, permutations = 999, by = "terms")
-ds_rhiz.adon
-
-# Perform Pairwise Permanova of the individual soil treatments # 
-ds_rhiz.pair <- pairwise.adonis2(ds_rhiz.wuni~Soils, ds_rhiz$met, permutations = 9999, by = "terms")
-ds_rhiz.pair
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 ds_rhiz.bdis <- betadisper(ds_rhiz.wuni, group = ds_rhiz$met$Soils)
 anova(ds_rhiz.bdis)
 TukeyHSD(ds_rhiz.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-ds_rhiz.man <- manova(cbind(MDS1,MDS2)~Soils, ds_rhiz$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+ds_rhiz.met <- filter(rhiz_nmds.load, Plant == "D. illinoense")
+
+# Perform MANOVA on all samples #
+ds_rhiz.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_rhiz.met)
 summary(ds_rhiz.man)
 
-# Subset by each comparison #
-ds_rhiz_pvsn.met <- filter(ds_rhiz$met, Soil_Treatment != "Common Soil")
-ds_rhiz_pvsn.man <- manova(cbind(MDS1,MDS2)~Soils, ds_rhiz_pvsn.met)
+# Subset the data for pairwise MANOVA tests #
+## PSF vs. Non-PSF ##
+ds_rhiz_pvsn.met <- filter(ds_rhiz.met, Soil_Treatment != "Common Soil")
+ds_rhiz_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_rhiz_pvsn.met)
 summary(ds_rhiz_pvsn.man)
 
-ds_rhiz_pvsc.met <- filter(ds_rhiz$met, Soil_Treatment != "Non-PSF Soil")
-ds_rhiz_pvsc.man <- manova(cbind(MDS1,MDS2)~Soils, ds_rhiz_pvsc.met)
+## PSF vs. Common ##
+ds_rhiz_pvsc.met <- filter(ds_rhiz.met, Soil_Treatment != "Non-PSF Soil")
+ds_rhiz_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_rhiz_pvsc.met)
 summary(ds_rhiz_pvsc.man)
 
-ds_rhiz_nvsc.met <- filter(ds_rhiz$met, Soil_Treatment != "PSF Soil")
-ds_rhiz_nvsc.man <- manova(cbind(MDS1,MDS2)~Soils, ds_rhiz_nvsc.met)
+## Non-PSF vs. Common ##
+ds_rhiz_nvsc.met <- filter(ds_rhiz.met, Soil_Treatment != "PSF Soil")
+ds_rhiz_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_rhiz_nvsc.met)
 summary(ds_rhiz_nvsc.man)
 
 ## Hog Peanut ##
 hp_rhiz.ps <- subset_samples(rhiz.ps, Plant == "A. bracteata")
 hp_rhiz.ps <- subset_taxa(hp_rhiz.ps, taxa_sums(hp_rhiz.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(hp_rhiz.ps, 'hp_rhiz')
 hp_rhiz_prop.ps <- transform_sample_counts(hp_rhiz.ps, function(x) x/sum(x))
 set.seed(248)
 hp_rhiz.wuni <- phyloseq::distance(hp_rhiz_prop.ps, method = 'wunifrac')
-hp_rhiz.pcoa <- phyloseq::ordinate(hp_rhiz_prop.ps, 'PCoA', distance = hp_rhiz.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-hp_rhiz.nmds <- metaMDS(hp_rhiz.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = hp_rhiz.pcoa$vectors[,1:2])
-hp_rhiz$met <- cbind(hp_rhiz$met, hp_rhiz.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-hp_rhiz.adon <- adonis2(hp_rhiz.wuni~Soils, hp_rhiz$met, permutations = 999, by = "terms")
-hp_rhiz.adon
-
-# Perform Pairwise Permanova of the individual soil treatments # 
-hp_rhiz.pair <- pairwise.adonis2(hp_rhiz.wuni~Soils, hp_rhiz$met, permutations = 9999, by = "terms")
-hp_rhiz.pair
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 hp_rhiz.bdis <- betadisper(hp_rhiz.wuni, group = hp_rhiz$met$Soils)
 anova(hp_rhiz.bdis)
 TukeyHSD(hp_rhiz.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-hp_rhiz.man <- manova(cbind(MDS1,MDS2)~Soils, hp_rhiz$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+hp_rhiz.met <- filter(rhiz_nmds.load, Plant == "A. bracteata")
+
+# Perform MANOVA on all samples #
+hp_rhiz.man <- manova(cbind(NMDS1,NMDS2)~Soils, hp_rhiz.met)
 summary(hp_rhiz.man)
 
-# Subset by each comparison #
-hp_rhiz_pvsn.met <- filter(hp_rhiz$met, Soil_Treatment != "Common Soil")
-hp_rhiz_pvsn.man <- manova(cbind(MDS1,MDS2)~Soils, hp_rhiz_pvsn.met)
+# Subset the data for pairwise MANOVA tests #
+## PSF vs. Non-PSF ##
+hp_rhiz_pvsn.met <- filter(hp_rhiz.met, Soil_Treatment != "Common Soil")
+hp_rhiz_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, hp_rhiz_pvsn.met)
 summary(hp_rhiz_pvsn.man)
 
-hp_rhiz_pvsc.met <- filter(hp_rhiz$met, Soil_Treatment != "Non-PSF Soil")
-hp_rhiz_pvsc.man <- manova(cbind(MDS1,MDS2)~Soils, hp_rhiz_pvsc.met)
+## PSF vs. Common ##
+hp_rhiz_pvsc.met <- filter(hp_rhiz.met, Soil_Treatment != "Non-PSF Soil")
+hp_rhiz_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, hp_rhiz_pvsc.met)
 summary(hp_rhiz_pvsc.man)
 
-hp_rhiz_nvsc.met <- filter(hp_rhiz$met, Soil_Treatment != "PSF Soil")
-hp_rhiz_nvsc.man <- manova(cbind(MDS1,MDS2)~Soils, hp_rhiz_nvsc.met)
+## Non-PSF vs. Common ##
+hp_rhiz_nvsc.met <- filter(hp_rhiz.met, Soil_Treatment != "PSF Soil")
+hp_rhiz_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, hp_rhiz_nvsc.met)
 summary(hp_rhiz_nvsc.man)
 
 ## Clover ##
 cl_rhiz.ps <- subset_samples(rhiz.ps, Plant == "T. repens")
 cl_rhiz.ps <- subset_taxa(cl_rhiz.ps, taxa_sums(cl_rhiz.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(cl_rhiz.ps, 'cl_rhiz')
 cl_rhiz_prop.ps <- transform_sample_counts(cl_rhiz.ps, function(x) x/sum(x))
 set.seed(248)
 cl_rhiz.wuni <- phyloseq::distance(cl_rhiz_prop.ps, method = 'wunifrac')
-cl_rhiz.pcoa <- phyloseq::ordinate(cl_rhiz_prop.ps, 'PCoA', distance = cl_rhiz.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-cl_rhiz.nmds <- metaMDS(cl_rhiz.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = cl_rhiz.pcoa$vectors[,1:2])
-cl_rhiz$met <- cbind(cl_rhiz$met, cl_rhiz.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-cl_rhiz.adon <- adonis2(cl_rhiz.wuni~Soils, cl_rhiz$met, permutations = 999, by = "terms")
-cl_rhiz.adon
-
-# Perform Pairwise Permanova of the individual soil treatments # 
-cl_rhiz.pair <- pairwise.adonis2(cl_rhiz.wuni~Soils, cl_rhiz$met, permutations = 9999, by = "terms")
-cl_rhiz.pair
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 cl_rhiz.bdis <- betadisper(cl_rhiz.wuni, group = cl_rhiz$met$Soils)
 anova(cl_rhiz.bdis)
 TukeyHSD(cl_rhiz.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-cl_rhiz.man <- manova(cbind(MDS1,MDS2)~Soils, cl_rhiz$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+cl_rhiz.met <- filter(rhiz_nmds.load, Plant == "T. repens")
+
+# Perform MANOVA on all samples #
+cl_rhiz.man <- manova(cbind(NMDS1,NMDS2)~Soils, cl_rhiz.met)
 summary(cl_rhiz.man)
 
-# Subset by each comparison #
-cl_rhiz_pvsc.met <- filter(cl_rhiz$met, Soil_Treatment != "Non-PSF Soil")
-cl_rhiz_pvsc.man <- manova(cbind(MDS1,MDS2)~Soils, cl_rhiz_pvsc.met)
+# Subset the data for pairwise MANOVA tests #
+## PSF vs. Common ##
+cl_rhiz_pvsc.met <- filter(cl_rhiz.met, Soil_Treatment != "Non-PSF Soil")
+cl_rhiz_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, cl_rhiz_pvsc.met)
 summary(cl_rhiz_pvsc.man)
 
 ## Medicago ##
 md_rhiz.ps <- subset_samples(rhiz.ps, Plant == "M. truncatula")
 md_rhiz.ps <- subset_taxa(md_rhiz.ps, taxa_sums(md_rhiz.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(md_rhiz.ps, 'md_rhiz')
 md_rhiz_prop.ps <- transform_sample_counts(md_rhiz.ps, function(x) x/sum(x))
 set.seed(248)
 md_rhiz.wuni <- phyloseq::distance(md_rhiz_prop.ps, method = 'wunifrac')
-md_rhiz.pcoa <- phyloseq::ordinate(md_rhiz_prop.ps, 'PCoA', distance = md_rhiz.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-md_rhiz.nmds <- metaMDS(md_rhiz.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = md_rhiz.pcoa$vectors[,1:2])
-md_rhiz$met <- cbind(md_rhiz$met, md_rhiz.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-md_rhiz.adon <- adonis2(md_rhiz.wuni~Soils, md_rhiz$met, permutations = 999, by = "terms")
-md_rhiz.adon
-
-# Perform Pairwise Permanova of the individual soil treatments # 
-md_rhiz.pair <- pairwise.adonis2(md_rhiz.wuni~Soils, md_rhiz$met, permutations = 9999, by = "terms")
-md_rhiz.pair
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 md_rhiz.bdis <- betadisper(md_rhiz.wuni, group = md_rhiz$met$Soils)
 anova(md_rhiz.bdis)
 TukeyHSD(md_rhiz.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-md_rhiz.man <- manova(cbind(MDS1,MDS2)~Soils, md_rhiz$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+md_rhiz.met <- filter(rhiz_nmds.load, Plant == "M. truncatula")
+
+# Perform MANOVA on all samples #
+md_rhiz.man <- manova(cbind(NMDS1,NMDS2)~Soils, md_rhiz.met)
 summary(md_rhiz.man)
 
-# Subset by each comparison #
-md_rhiz_pvsn.met <- filter(md_rhiz$met, Soil_Treatment != "Common Soil")
-md_rhiz_pvsn.man <- manova(cbind(MDS1,MDS2)~Soils, md_rhiz_pvsn.met)
+# Subset the data for pairwise MANOVA tests #
+## PSF vs. Non-PSF ##
+md_rhiz_pvsn.met <- filter(md_rhiz.met, Soil_Treatment != "Common Soil")
+md_rhiz_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, md_rhiz_pvsn.met)
 summary(md_rhiz_pvsn.man)
 
-md_rhiz_pvsc.met <- filter(md_rhiz$met, Soil_Treatment != "Non-PSF Soil")
-md_rhiz_pvsc.man <- manova(cbind(MDS1,MDS2)~Soils, md_rhiz_pvsc.met)
+## PSF vs. Common ##
+md_rhiz_pvsc.met <- filter(md_rhiz.met, Soil_Treatment != "Non-PSF Soil")
+md_rhiz_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, md_rhiz_pvsc.met)
 summary(md_rhiz_pvsc.man)
 
-md_rhiz_nvsc.met <- filter(md_rhiz$met, Soil_Treatment != "PSF Soil")
-md_rhiz_nvsc.man <- manova(cbind(MDS1,MDS2)~Soils, md_rhiz_nvsc.met)
+## Non-PSF vs. Common ##
+md_rhiz_nvsc.met <- filter(md_rhiz.met, Soil_Treatment != "PSF Soil")
+md_rhiz_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, md_rhiz_nvsc.met)
 summary(md_rhiz_nvsc.man)
 
 
@@ -3660,8 +3570,8 @@ root_nmds.plot <- ggplot(root_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
         legend.title = element_text(size = 16, family = "Liberation Sans"),
         axis.title = element_text(size=20, family = "Liberation Sans"),
         axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +
-  annotate('text', x = 0.1, y = -0.3,
-           label = expression("(PERMANOVA) F"["17,62"] ~ "= 6.4871, P = 0.001;  (PERMDISP) F"["17,62"] ~  "= 0.9935, P = 0.4821"),
+  annotate('text', x = 0.08, y = -0.3,
+           label = expression("(PERMANOVA) F"["17,62"] ~ "= 6.4871, P = 0.001;  (PERMDISP) F"["17,62"] ~  "= 0.9935, P = 0.4821; 3D Stress = 0.0188"),
            size = 8, family = 'Liberation Sans') +
   coord_cartesian(ylim = c(-0.3, 0.25))
 
@@ -3672,288 +3582,228 @@ root_nmds.plot
 fb_root.ps <- subset_samples(root.ps, Plant.Species == "S. helvola")
 fb_root.ps <- subset_taxa(fb_root.ps, taxa_sums(fb_root.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(fb_root.ps, 'fb_root')
 fb_root_prop.ps <- transform_sample_counts(fb_root.ps, function(x) x/sum(x))
 set.seed(248)
 fb_root.wuni <- phyloseq::distance(fb_root_prop.ps, method = 'wunifrac')
-fb_root.pcoa <- phyloseq::ordinate(fb_root_prop.ps, 'PCoA', distance = fb_root.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-fb_root.nmds <- metaMDS(fb_root.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = fb_root.pcoa$vectors[,1:2])
-fb_root$met <- cbind(fb_root$met, fb_root.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-fb_root.adon <- adonis2(fb_root.wuni~Soils, fb_root$met, permutations = 999, by = "terms")
-fb_root.adon
-
-# Perform Pairwise Permanova of the individual soil treatments # 
-fb_root.pair <- pairwise.adonis2(fb_root.wuni~Soils, fb_root$met, permutations = 9999, by = "terms")
-fb_root.pair
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 fb_root.bdis <- betadisper(fb_root.wuni, group = fb_root$met$Soils)
 anova(fb_root.bdis)
 TukeyHSD(fb_root.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-fb_root.man <- manova(cbind(MDS1,MDS2)~Soils, fb_root$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+fb_root.met <- filter(root_nmds.load, Plant.Species == "S. helvola")
+
+# Perform MANOVA on all samples #
+fb_root.man <- manova(cbind(NMDS1,NMDS2)~Soils, fb_root.met)
 summary(fb_root.man)
 
-# Subset by each comparison #
-fb_root_pvsn.met <- filter(fb_root$met, Soil.Origin != "Common Soil")
-fb_root_pvsn.man <- manova(cbind(MDS1,MDS2)~Soils, fb_root_pvsn.met)
+# Subset the data for pairwise MANOVA tests #
+## PSF vs. Non-PSF ##
+fb_root_pvsn.met <- filter(fb_root.met, Soil.Origin != "Common Soil")
+fb_root_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, fb_root_pvsn.met)
 summary(fb_root_pvsn.man)
 
-fb_root_pvsc.met <- filter(fb_root$met, Soil.Origin != "Non-PSF Soil")
-fb_root_pvsc.man <- manova(cbind(MDS1,MDS2)~Soils, fb_root_pvsc.met)
+## PSF vs. Common ##
+fb_root_pvsc.met <- filter(fb_root.met, Soil.Origin != "Non-PSF Soil")
+fb_root_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, fb_root_pvsc.met)
 summary(fb_root_pvsc.man)
 
-fb_root_nvsc.met <- filter(fb_root$met, Soil.Origin != "PSF Soil")
-fb_root_nvsc.man <- manova(cbind(MDS1,MDS2)~Soils, fb_root_nvsc.met)
+## Non-PSF vs. Common ##
+fb_root_nvsc.met <- filter(fb_root.met, Soil.Origin != "PSF Soil")
+fb_root_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, fb_root_nvsc.met)
 summary(fb_root_nvsc.man)
 
 ## Chamaecrista ##
 cc_root.ps <- subset_samples(root.ps, Plant.Species == "C. fasciculata")
 cc_root.ps <- subset_taxa(cc_root.ps, taxa_sums(cc_root.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(cc_root.ps, 'cc_root')
 cc_root_prop.ps <- transform_sample_counts(cc_root.ps, function(x) x/sum(x))
 set.seed(248)
 cc_root.wuni <- phyloseq::distance(cc_root_prop.ps, method = 'wunifrac')
-cc_root.pcoa <- phyloseq::ordinate(cc_root_prop.ps, 'PCoA', distance = cc_root.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-cc_root.nmds <- metaMDS(cc_root.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = cc_root.pcoa$vectors[,1:2])
-cc_root$met <- cbind(cc_root$met, cc_root.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-cc_root.adon <- adonis2(cc_root.wuni~Soils, cc_root$met, permutations = 999, by = "terms")
-cc_root.adon
-
-# Perform Pairwise Permanova of the individual soil treatments # 
-cc_root.pair <- pairwise.adonis2(cc_root.wuni~Soils, cc_root$met, permutations = 9999, by = "terms")
-cc_root.pair
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 cc_root.bdis <- betadisper(cc_root.wuni, group = cc_root$met$Soils)
 anova(cc_root.bdis)
 TukeyHSD(cc_root.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-cc_root.man <- manova(cbind(MDS1,MDS2)~Soils, cc_root$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+cc_root.met <- filter(root_nmds.load, Plant.Species == "C. fasciculata")
+
+# Perform MANOVA on all samples #
+cc_root.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_root.met)
 summary(cc_root.man)
 
-# Subset by each comparison #
-cc_root_pvsn.met <- filter(cc_root$met, Soil.Origin != "Common Soil")
-cc_root_pvsn.man <- manova(cbind(MDS1,MDS2)~Soils, cc_root_pvsn.met)
+# Subset the data for pairwise MANOVA tests #
+## PSF vs. Non-PSF ##
+cc_root_pvsn.met <- filter(cc_root.met, Soil.Origin != "Common Soil")
+cc_root_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_root_pvsn.met)
 summary(cc_root_pvsn.man)
 
-cc_root_pvsc.met <- filter(cc_root$met, Soil.Origin != "Non-PSF Soil")
-cc_root_pvsc.man <- manova(cbind(MDS1,MDS2)~Soils, cc_root_pvsc.met)
+## PSF vs. Common ##
+cc_root_pvsc.met <- filter(cc_root.met, Soil.Origin != "Non-PSF Soil")
+cc_root_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_root_pvsc.met)
 summary(cc_root_pvsc.man)
 
-cc_root_nvsc.met <- filter(cc_root$met, Soil.Origin != "PSF Soil")
-cc_root_nvsc.man <- manova(cbind(MDS1,MDS2)~Soils, cc_root_nvsc.met)
+## Non-PSF vs. Common ##
+cc_root_nvsc.met <- filter(cc_root.met, Soil.Origin != "PSF Soil")
+cc_root_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_root_nvsc.met)
 summary(cc_root_nvsc.man)
 
 ## Desmodium ##
 ds_root.ps <- subset_samples(root.ps, Plant.Species == "D. illinoense")
 ds_root.ps <- subset_taxa(ds_root.ps, taxa_sums(ds_root.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(ds_root.ps, 'ds_root')
 ds_root_prop.ps <- transform_sample_counts(ds_root.ps, function(x) x/sum(x))
 set.seed(248)
 ds_root.wuni <- phyloseq::distance(ds_root_prop.ps, method = 'wunifrac')
-ds_root.pcoa <- phyloseq::ordinate(ds_root_prop.ps, 'PCoA', distance = ds_root.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-ds_root.nmds <- metaMDS(ds_root.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = ds_root.pcoa$vectors[,1:2])
-ds_root$met <- cbind(ds_root$met, ds_root.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-ds_root.adon <- adonis2(ds_root.wuni~Soils, ds_root$met, permutations = 999, by = "terms")
-ds_root.adon
-
-# Perform Pairwise Permanova of the individual soil treatments # 
-ds_root.pair <- pairwise.adonis2(ds_root.wuni~Soils, ds_root$met, permutations = 9999, by = "terms")
-ds_root.pair
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 ds_root.bdis <- betadisper(ds_root.wuni, group = ds_root$met$Soils)
 anova(ds_root.bdis)
 TukeyHSD(ds_root.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-ds_root.man <- manova(cbind(MDS1,MDS2)~Soils, ds_root$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+ds_root.met <- filter(root_nmds.load, Plant.Species == "D. illinoense")
+
+# Perform MANOVA on all samples #
+ds_root.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_root.met)
 summary(ds_root.man)
 
-# Subset by each comparison #
-ds_root_pvsn.met <- filter(ds_root$met, Soil.Origin != "Common Soil")
-ds_root_pvsn.man <- manova(cbind(MDS1,MDS2)~Soils, ds_root_pvsn.met)
+# Subset the data for pairwise MANOVA tests #
+## PSF vs. Non-PSF ##
+ds_root_pvsn.met <- filter(ds_root.met, Soil.Origin != "Common Soil")
+ds_root_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_root_pvsn.met)
 summary(ds_root_pvsn.man)
 
-ds_root_pvsc.met <- filter(ds_root$met, Soil.Origin != "Non-PSF Soil")
-ds_root_pvsc.man <- manova(cbind(MDS1,MDS2)~Soils, ds_root_pvsc.met)
+## PSF vs. Common ##
+ds_root_pvsc.met <- filter(ds_root.met, Soil.Origin != "Non-PSF Soil")
+ds_root_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_root_pvsc.met)
 summary(ds_root_pvsc.man)
 
-ds_root_nvsc.met <- filter(ds_root$met, Soil.Origin != "PSF Soil")
-ds_root_nvsc.man <- manova(cbind(MDS1,MDS2)~Soils, ds_root_nvsc.met)
+## Non-PSF vs. Common ##
+ds_root_nvsc.met <- filter(ds_root.met, Soil.Origin != "PSF Soil")
+ds_root_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_root_nvsc.met)
 summary(ds_root_nvsc.man)
 
 ## Hog Peanut ##
 hp_root.ps <- subset_samples(root.ps, Plant.Species == "A. bracteata")
 hp_root.ps <- subset_taxa(hp_root.ps, taxa_sums(hp_root.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(hp_root.ps, 'hp_root')
 hp_root_prop.ps <- transform_sample_counts(hp_root.ps, function(x) x/sum(x))
 set.seed(248)
 hp_root.wuni <- phyloseq::distance(hp_root_prop.ps, method = 'wunifrac')
-hp_root.pcoa <- phyloseq::ordinate(hp_root_prop.ps, 'PCoA', distance = hp_root.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-hp_root.nmds <- metaMDS(hp_root.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = hp_root.pcoa$vectors[,1:2])
-hp_root$met <- cbind(hp_root$met, hp_root.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-hp_root.adon <- adonis2(hp_root.wuni~Soils, hp_root$met, permutations = 999, by = "terms")
-hp_root.adon
-
-# Perform Pairwise Permanova of the individual soil treatments # 
-hp_root.pair <- pairwise.adonis2(hp_root.wuni~Soils, hp_root$met, permutations = 9999, by = "terms")
-hp_root.pair
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 hp_root.bdis <- betadisper(hp_root.wuni, group = hp_root$met$Soils)
 anova(hp_root.bdis)
 TukeyHSD(hp_root.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-hp_root.man <- manova(cbind(MDS1,MDS2)~Soils, hp_root$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+hp_root.met <- filter(root_nmds.load, Plant.Species == "A. bracteata")
+
+# Perform MANOVA on all samples #
+hp_root.man <- manova(cbind(NMDS1,NMDS2)~Soils, hp_root.met)
 summary(hp_root.man)
 
-# Subset by each comparison #
-hp_root_pvsn.met <- filter(hp_root$met, Soil.Origin != "Common Soil")
-hp_root_pvsn.man <- manova(cbind(MDS1,MDS2)~Soils, hp_root_pvsn.met)
+# Subset the data for pairwise MANOVA tests #
+## PSF vs. Non-PSF ##
+hp_root_pvsn.met <- filter(hp_root.met, Soil.Origin != "Common Soil")
+hp_root_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, hp_root_pvsn.met)
 summary(hp_root_pvsn.man)
 
-hp_root_pvsc.met <- filter(hp_root$met, Soil.Origin != "Non-PSF Soil")
-hp_root_pvsc.man <- manova(cbind(MDS1,MDS2)~Soils, hp_root_pvsc.met)
+## PSF vs. Common ##
+hp_root_pvsc.met <- filter(hp_root.met, Soil.Origin != "Non-PSF Soil")
+hp_root_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, hp_root_pvsc.met)
 summary(hp_root_pvsc.man)
 
-hp_root_nvsc.met <- filter(hp_root$met, Soil.Origin != "PSF Soil")
-hp_root_nvsc.man <- manova(cbind(MDS1,MDS2)~Soils, hp_root_nvsc.met)
+## Non-PSF vs. Common ##
+hp_root_nvsc.met <- filter(hp_root.met, Soil.Origin != "PSF Soil")
+hp_root_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, hp_root_nvsc.met)
 summary(hp_root_nvsc.man)
 
 ## Clover ##
 cl_root.ps <- subset_samples(root.ps, Plant.Species == "T. repens")
 cl_root.ps <- subset_taxa(cl_root.ps, taxa_sums(cl_root.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(cl_root.ps, 'cl_root')
 cl_root_prop.ps <- transform_sample_counts(cl_root.ps, function(x) x/sum(x))
 set.seed(248)
 cl_root.wuni <- phyloseq::distance(cl_root_prop.ps, method = 'wunifrac')
-cl_root.pcoa <- phyloseq::ordinate(cl_root_prop.ps, 'PCoA', distance = cl_root.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-cl_root.nmds <- metaMDS(cl_root.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = cl_root.pcoa$vectors[,1:2])
-cl_root$met <- cbind(cl_root$met, cl_root.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-cl_root.adon <- adonis2(cl_root.wuni~Soils, cl_root$met, permutations = 999, by = "terms")
-cl_root.adon
-
-# Perform Pairwise Permanova of the individual soil treatments # 
-cl_root.pair <- pairwise.adonis2(cl_root.wuni~Soils, cl_root$met, permutations = 9999, by = "terms")
-cl_root.pair
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 cl_root.bdis <- betadisper(cl_root.wuni, group = cl_root$met$Soils)
 anova(cl_root.bdis)
 TukeyHSD(cl_root.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-cl_root.man <- manova(cbind(MDS1,MDS2)~Soils, cl_root$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+cl_root.met <- filter(root_nmds.load, Plant.Species == "T. repens")
+
+# Perform MANOVA on all samples #
+cl_root.man <- manova(cbind(NMDS1,NMDS2)~Soils, cl_root.met)
 summary(cl_root.man)
 
-# Subset by each comparison #
-cl_root_pvsn.met <- filter(cl_root$met, Soil.Origin != "Common Soil")
-cl_root_pvsn.man <- manova(cbind(MDS1,MDS2)~Soils, cl_root_pvsn.met)
+# Subset the data for pairwise MANOVA tests #
+## PSF vs. Non-PSF ##
+cl_root_pvsn.met <- filter(cl_root.met, Soil.Origin != "Common Soil")
+cl_root_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, cl_root_pvsn.met)
 summary(cl_root_pvsn.man)
 
-cl_root_pvsc.met <- filter(cl_root$met, Soil.Origin != "Non-PSF Soil")
-cl_root_pvsc.man <- manova(cbind(MDS1,MDS2)~Soils, cl_root_pvsc.met)
+## PSF vs. Common ##
+cl_root_pvsc.met <- filter(cl_root.met, Soil.Origin != "Non-PSF Soil")
+cl_root_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, cl_root_pvsc.met)
 summary(cl_root_pvsc.man)
 
-cl_root_nvsc.met <- filter(cl_root$met, Soil.Origin != "PSF Soil")
-cl_root_nvsc.man <- manova(cbind(MDS1,MDS2)~Soils, cl_root_nvsc.met)
+## Non-PSF vs. Common ##
+cl_root_nvsc.met <- filter(cl_root.met, Soil.Origin != "PSF Soil")
+cl_root_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, cl_root_nvsc.met)
 summary(cl_root_nvsc.man)
 
 ## Medicago ##
 md_root.ps <- subset_samples(root.ps, Plant.Species == "M. truncatula")
 md_root.ps <- subset_taxa(md_root.ps, taxa_sums(md_root.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(md_root.ps, 'md_root')
 md_root_prop.ps <- transform_sample_counts(md_root.ps, function(x) x/sum(x))
 set.seed(248)
 md_root.wuni <- phyloseq::distance(md_root_prop.ps, method = 'wunifrac')
-md_root.pcoa <- phyloseq::ordinate(md_root_prop.ps, 'PCoA', distance = md_root.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-md_root.nmds <- metaMDS(md_root.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = md_root.pcoa$vectors[,1:2])
-md_root$met <- cbind(md_root$met, md_root.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-md_root.adon <- adonis2(md_root.wuni~Soils, md_root$met, permutations = 999, by = "terms")
-md_root.adon
-
-# Perform Pairwise Permanova of the individual soil treatments # 
-md_root.pair <- pairwise.adonis2(md_root.wuni~Soils, md_root$met, permutations = 9999, by = "terms")
-md_root.pair
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 md_root.bdis <- betadisper(md_root.wuni, group = md_root$met$Soils)
 anova(md_root.bdis)
 TukeyHSD(md_root.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-md_root.man <- manova(cbind(MDS1,MDS2)~Soils, md_root$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+md_root.met <- filter(root_nmds.load, Plant.Species == "M. truncatula")
+
+# Perform MANOVA on all samples #
+md_root.man <- manova(cbind(NMDS1,NMDS2)~Soils, md_root.met)
 summary(md_root.man)
 
-# Subset by each comparison #
-md_root_pvsn.met <- filter(md_root$met, Soil.Origin != "Common Soil")
-md_root_pvsn.man <- manova(cbind(MDS1,MDS2)~Soils, md_root_pvsn.met)
+# Subset the data for pairwise MANOVA tests #
+## PSF vs. Non-PSF ##
+md_root_pvsn.met <- filter(md_root.met, Soil.Origin != "Common Soil")
+md_root_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, md_root_pvsn.met)
 summary(md_root_pvsn.man)
 
-md_root_pvsc.met <- filter(md_root$met, Soil.Origin != "Non-PSF Soil")
-md_root_pvsc.man <- manova(cbind(MDS1,MDS2)~Soils, md_root_pvsc.met)
+## PSF vs. Common ##
+md_root_pvsc.met <- filter(md_root.met, Soil.Origin != "Non-PSF Soil")
+md_root_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, md_root_pvsc.met)
 summary(md_root_pvsc.man)
 
-md_root_nvsc.met <- filter(md_root$met, Soil.Origin != "PSF Soil")
-md_root_nvsc.man <- manova(cbind(MDS1,MDS2)~Soils, md_root_nvsc.met)
+## Non-PSF vs. Common ##
+md_root_nvsc.met <- filter(md_root.met, Soil.Origin != "PSF Soil")
+md_root_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, md_root_nvsc.met)
 summary(md_root_nvsc.man)
 
 # Root Endosphere for Natives #
@@ -4347,11 +4197,13 @@ TukeyHSD(npsf.bdis)
 
 # Make an object with the data to be plotted #
 npsf_nmds.load <- cbind(npsf$met, npsf_nmds.scores)
+npsf_nmds.load$Plants <- gsub("T. repens", "M. truncatula", npsf_nmds.load$Plants)
+npsf_nmds.load$Plants <- factor(npsf_nmds.load$Plants, levels = c("S. helvola", "C. fasciculata", "D. illinoense", "A. bracteata", "M. truncatula"))
 
 # plot the NMDS ordination of all samples that will be used to make a patchwork plot #
 npsf_nmds.plot <- ggplot(npsf_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape = Comps)) +
   geom_point(size = 8) +
-  scale_color_manual(name = "Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. illinoense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
+  scale_color_manual(name = "Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. illinoense')), expression(italic('A. bracteata')), expression(italic('M. truncatula'))), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00", "#6A3D9A")) +
   scale_shape_manual(name = "Compartment", labels = c("Bulk Soil", "Rhizosphere", "PSF Soil"), values = c(15,16)) +
   xlab(expression("NMDS1 (R"^2 ~ "= 0.6251)")) +
   ylab(expression("NMDS2 (R"^2 ~ "= 0.2766)")) +
@@ -4363,7 +4215,7 @@ npsf_nmds.plot <- ggplot(npsf_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
         axis.title = element_text(size=20, family = "Liberation Sans"),
         axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +
   annotate('text', x = -0.05, y = -0.3,
-           label = expression("(PERMANOVA) F"["7,27"] ~ "= 26.094, P = 0.001;  (PERMDISP) F"["7,27"] ~  "= 6.0835, P < 0.001"),
+           label = expression("(PERMANOVA) F"["7,27"] ~ "= 26.094, P = 0.001;  (PERMDISP) F"["7,27"] ~  "= 6.0835, P < 0.001; 3D Stress = 0.0083"),
            size = 8, family = 'Liberation Sans') +
   coord_cartesian(ylim = c(-0.29,0.23))
 
@@ -4371,167 +4223,146 @@ npsf_nmds.plot
 
 # Separate samples by plant species #
 ## Fuzzy Bean ##
-fb_npsf.ps <- subset_samples(npsf.ps, Plant == "S. helvola")
-fb_npsf.ps <- merge_phyloseq(fb_npsf.ps, subset_samples(npsf.ps, Plant == "C. fasciculata" & Compartment == "Bulk Soil")) 
+fb_npsf.ps <- subset_samples(npsf.ps, Plant == "S. helvola" | Plant == "C. fasciculata" & Compartment == "Bulk Soil")
 fb_npsf.ps <- subset_taxa(fb_npsf.ps, taxa_sums(fb_npsf.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(fb_npsf.ps, 'fb_npsf')
 fb_npsf_prop.ps <- transform_sample_counts(fb_npsf.ps, function(x) x/sum(x))
 set.seed(248)
 fb_npsf.wuni <- phyloseq::distance(fb_npsf_prop.ps, method = 'wunifrac')
-fb_npsf.pcoa <- phyloseq::ordinate(fb_npsf_prop.ps, 'PCoA', distance = fb_npsf.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-fb_npsf.nmds <- metaMDS(fb_npsf.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = fb_npsf.pcoa$vectors[,1:2])
-fb_npsf$met <- cbind(fb_npsf$met, fb_npsf.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-fb_npsf.adon <- adonis2(fb_npsf.wuni~Comps, fb_npsf$met, permutations = 999, by = "terms")
-fb_npsf.adon
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 fb_npsf.bdis <- betadisper(fb_npsf.wuni, group = fb_npsf$met$Comps)
 anova(fb_npsf.bdis)
 TukeyHSD(fb_npsf.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-fb_npsf.man <- manova(cbind(MDS1,MDS2)~Comps, fb_npsf$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+fb_npsf.met <- filter(npsf_nmds.load, Plant == "S. helvola" | Plant == "C. fasciculata" & Compartment == "Bulk Soil")
+
+# Perform MANOVA on all samples #
+fb_npsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, fb_npsf.met)
 summary(fb_npsf.man)
+
+# Subset the data for pairwise MANOVA tests #
+## Bulk Soil vs. Rhizosphere ##
+fb_npsf_pvsn.met <- filter(fb_npsf.met, Soil_Treatment != "Common Soil")
+fb_npsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, fb_npsf_pvsn.met)
+summary(fb_npsf_pvsn.man)
 
 ## Chamaecrista ##
 cc_npsf.ps <- subset_samples(npsf.ps, Plant == "C. fasciculata")
 cc_npsf.ps <- subset_taxa(cc_npsf.ps, taxa_sums(cc_npsf.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(cc_npsf.ps, 'cc_npsf')
 cc_npsf_prop.ps <- transform_sample_counts(cc_npsf.ps, function(x) x/sum(x))
 set.seed(248)
 cc_npsf.wuni <- phyloseq::distance(cc_npsf_prop.ps, method = 'wunifrac')
-cc_npsf.pcoa <- phyloseq::ordinate(cc_npsf_prop.ps, 'PCoA', distance = cc_npsf.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-cc_npsf.nmds <- metaMDS(cc_npsf.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = cc_npsf.pcoa$vectors[,1:2])
-cc_npsf$met <- cbind(cc_npsf$met, cc_npsf.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-cc_npsf.adon <- adonis2(cc_npsf.wuni~Comps, cc_npsf$met, permutations = 999, by = "terms")
-cc_npsf.adon
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 cc_npsf.bdis <- betadisper(cc_npsf.wuni, group = cc_npsf$met$Comps)
 anova(cc_npsf.bdis)
 TukeyHSD(cc_npsf.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-cc_npsf.man <- manova(cbind(MDS1,MDS2)~Comps, cc_npsf$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+cc_npsf.met <- filter(npsf_nmds.load, Plant == "C. fasciculata")
+
+# Perform MANOVA on all samples #
+cc_npsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, cc_npsf.met)
 summary(cc_npsf.man)
+
+# Subset the data for pairwise MANOVA tests #
+## Bulk Soil vs. Rhizosphere ##
+cc_npsf_pvsn.met <- filter(cc_npsf.met, Soil_Treatment != "Common Soil")
+cc_npsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, cc_npsf_pvsn.met)
+summary(cc_npsf_pvsn.man)
 
 ## Desmodium ##
 ds_npsf.ps <- subset_samples(npsf.ps, Plant == "D. illinoense")
 ds_npsf.ps <- subset_taxa(ds_npsf.ps, taxa_sums(ds_npsf.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(ds_npsf.ps, 'ds_npsf')
 ds_npsf_prop.ps <- transform_sample_counts(ds_npsf.ps, function(x) x/sum(x))
 set.seed(248)
 ds_npsf.wuni <- phyloseq::distance(ds_npsf_prop.ps, method = 'wunifrac')
-ds_npsf.pcoa <- phyloseq::ordinate(ds_npsf_prop.ps, 'PCoA', distance = ds_npsf.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-ds_npsf.nmds <- metaMDS(ds_npsf.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = ds_npsf.pcoa$vectors[,1:2])
-ds_npsf$met <- cbind(ds_npsf$met, ds_npsf.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-ds_npsf.adon <- adonis2(ds_npsf.wuni~Comps, ds_npsf$met, permutations = 999, by = "terms")
-ds_npsf.adon
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 ds_npsf.bdis <- betadisper(ds_npsf.wuni, group = ds_npsf$met$Comps)
 anova(ds_npsf.bdis)
 TukeyHSD(ds_npsf.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-ds_npsf.man <- manova(cbind(MDS1,MDS2)~Comps, ds_npsf$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+ds_npsf.met <- filter(npsf_nmds.load, Plant == "D. illinoense")
+
+# Perform MANOVA on all samples #
+ds_npsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, ds_npsf.met)
 summary(ds_npsf.man)
 
+# Subset the data for pairwise MANOVA tests #
+## Bulk Soil vs. Rhizosphere ##
+ds_npsf_pvsn.met <- filter(ds_npsf.met, Soil_Treatment != "Common Soil")
+ds_npsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, ds_npsf_pvsn.met)
+summary(ds_npsf_pvsn.man)
+
 ## Hog Peanut ##
-hp_npsf.ps <- subset_samples(npsf.ps, Plant == "A. bracteata")
-hp_npsf.ps <- merge_phyloseq(hp_npsf.ps, subset_samples(npsf.ps, Plant == "D. illinoense" & Compartment == "Bulk Soil")) 
+hp_npsf.ps <- subset_samples(npsf.ps, Plant == "A. bracteata" | Plant == "D. illinoense" & Compartment == "Bulk Soil")
 hp_npsf.ps <- subset_taxa(hp_npsf.ps, taxa_sums(hp_npsf.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(hp_npsf.ps, 'hp_npsf')
 hp_npsf_prop.ps <- transform_sample_counts(hp_npsf.ps, function(x) x/sum(x))
 set.seed(248)
 hp_npsf.wuni <- phyloseq::distance(hp_npsf_prop.ps, method = 'wunifrac')
-hp_npsf.pcoa <- phyloseq::ordinate(hp_npsf_prop.ps, 'PCoA', distance = hp_npsf.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-hp_npsf.nmds <- metaMDS(hp_npsf.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = hp_npsf.pcoa$vectors[,1:2])
-hp_npsf$met <- cbind(hp_npsf$met, hp_npsf.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-hp_npsf.adon <- adonis2(hp_npsf.wuni~Comps, hp_npsf$met, permutations = 999, by = "terms")
-hp_npsf.adon
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 hp_npsf.bdis <- betadisper(hp_npsf.wuni, group = hp_npsf$met$Comps)
 anova(hp_npsf.bdis)
 TukeyHSD(hp_npsf.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-hp_npsf.man <- manova(cbind(MDS1,MDS2)~Comps, hp_npsf$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+hp_npsf.met <- filter(npsf_nmds.load, Plant == "A. bracteata" | Plant == "D. illinoense" & Compartment == "Bulk Soil")
+
+# Perform MANOVA on all samples #
+hp_npsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, hp_npsf.met)
 summary(hp_npsf.man)
 
-## Clover ##
-cl_npsf.ps <- subset_samples(npsf.ps, Plant == "T. repens")
+# Subset the data for pairwise MANOVA tests #
+## Bulk Soil vs. Rhizosphere ##
+hp_npsf_pvsn.met <- filter(hp_npsf.met, Soil_Treatment != "Common Soil")
+hp_npsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, hp_npsf_pvsn.met)
+summary(hp_npsf_pvsn.man)
 
 ## Medicago ##
-md_npsf.ps <- subset_samples(npsf.ps, Plant == "M. truncatula")
-md_npsf.ps <- merge_phyloseq(md_npsf.ps, cl_npsf.ps)
+md_npsf.ps <- subset_samples(npsf.ps, Plant == "M. truncatula" | Plant == "T. repens" & Compartment == "Bulk Soil")
 md_npsf.ps <- subset_taxa(md_npsf.ps, taxa_sums(md_npsf.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(md_npsf.ps, 'md_npsf')
 md_npsf_prop.ps <- transform_sample_counts(md_npsf.ps, function(x) x/sum(x))
 set.seed(248)
 md_npsf.wuni <- phyloseq::distance(md_npsf_prop.ps, method = 'wunifrac')
-md_npsf.pcoa <- phyloseq::ordinate(md_npsf_prop.ps, 'PCoA', distance = md_npsf.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-md_npsf.nmds <- metaMDS(md_npsf.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = md_npsf.pcoa$vectors[,1:2])
-md_npsf$met <- cbind(md_npsf$met, md_npsf.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-md_npsf.adon <- adonis2(md_npsf.wuni~Comps, md_npsf$met, permutations = 999, by = "terms")
-md_npsf.adon
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 md_npsf.bdis <- betadisper(md_npsf.wuni, group = md_npsf$met$Comps)
 anova(md_npsf.bdis)
 TukeyHSD(md_npsf.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-md_npsf.man <- manova(cbind(MDS1,MDS2)~Comps, md_npsf$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+md_npsf.met <- filter(npsf_nmds.load, Plants == "M. truncatula")
+
+# Perform MANOVA on all samples #
+md_npsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, md_npsf.met)
 summary(md_npsf.man)
 
-# Bulk Soil vs Rhizosphere No Plant #
+# Subset the data for pairwise MANOVA tests #
+## Bulk Soil vs. Rhizosphere ##
+md_npsf_pvsn.met <- filter(md_npsf.met, Soil_Treatment != "Common Soil")
+md_npsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, md_npsf_pvsn.met)
+summary(md_npsf_pvsn.man)
+
+# Bulk Soil vs Rhizosphere PSF Soil #
 # Construct a phyloseq object containing only samples in the Non-PSF Soil #
 wpsf.ps <- subset_samples(soil.ps, Soil_Treatment == "PSF Soil")
 
@@ -4676,8 +4507,8 @@ wpsf_nmds.plot <- ggplot(wpsf_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
         legend.title = element_text(size = 16, family = "Liberation Sans"),
         axis.title = element_text(size=20, family = "Liberation Sans"),
         axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +
-  annotate('text', x = 0, y = -0.3,
-           label = expression("(PERMANOVA) F"["11,45"] ~ "= 31.072, P = 0.001;  (PERMDISP) F"["11,45"] ~  "= 9.1545, P < 0.001"),
+  annotate('text', x = -0.025, y = -0.3,
+           label = expression("(PERMANOVA) F"["11,45"] ~ "= 31.072, P = 0.001;  (PERMDISP) F"["11,45"] ~  "= 9.1545, P < 0.001; 3D Stress = 0.0143"),
            size = 8, family = 'Liberation Sans') +
   coord_cartesian(ylim = c(-0.29,0.23))
 
@@ -4688,186 +4519,158 @@ wpsf_nmds.plot
 fb_wpsf.ps <- subset_samples(wpsf.ps, Plant == "S. helvola")
 fb_wpsf.ps <- subset_taxa(fb_wpsf.ps, taxa_sums(fb_wpsf.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(fb_wpsf.ps, 'fb_wpsf')
 fb_wpsf_prop.ps <- transform_sample_counts(fb_wpsf.ps, function(x) x/sum(x))
 set.seed(248)
 fb_wpsf.wuni <- phyloseq::distance(fb_wpsf_prop.ps, method = 'wunifrac')
-fb_wpsf.pcoa <- phyloseq::ordinate(fb_wpsf_prop.ps, 'PCoA', distance = fb_wpsf.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-fb_wpsf.nmds <- metaMDS(fb_wpsf.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = fb_wpsf.pcoa$vectors[,1:2])
-fb_wpsf$met <- cbind(fb_wpsf$met, fb_wpsf.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-fb_wpsf.adon <- adonis2(fb_wpsf.wuni~Comps, fb_wpsf$met, permutations = 999, by = "terms")
-fb_wpsf.adon
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 fb_wpsf.bdis <- betadisper(fb_wpsf.wuni, group = fb_wpsf$met$Comps)
 anova(fb_wpsf.bdis)
 TukeyHSD(fb_wpsf.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-fb_wpsf.man <- manova(cbind(MDS1,MDS2)~Comps, fb_wpsf$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+fb_wpsf.met <- filter(wpsf_nmds.load, Plant == "S. helvola")
+
+# Perform MANOVA on all samples #
+fb_wpsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, fb_wpsf.met)
 summary(fb_wpsf.man)
+
+# Subset the data for pairwise MANOVA tests #
+## Bulk Soil vs. Rhizosphere ##
+fb_wpsf_pvsn.met <- filter(fb_wpsf.met, Soil_Treatment != "Common Soil")
+fb_wpsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, fb_wpsf_pvsn.met)
+summary(fb_wpsf_pvsn.man)
 
 ## Chamaecrista ##
 cc_wpsf.ps <- subset_samples(wpsf.ps, Plant == "C. fasciculata")
 cc_wpsf.ps <- subset_taxa(cc_wpsf.ps, taxa_sums(cc_wpsf.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(cc_wpsf.ps, 'cc_wpsf')
 cc_wpsf_prop.ps <- transform_sample_counts(cc_wpsf.ps, function(x) x/sum(x))
 set.seed(248)
 cc_wpsf.wuni <- phyloseq::distance(cc_wpsf_prop.ps, method = 'wunifrac')
-cc_wpsf.pcoa <- phyloseq::ordinate(cc_wpsf_prop.ps, 'PCoA', distance = cc_wpsf.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-cc_wpsf.nmds <- metaMDS(cc_wpsf.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = cc_wpsf.pcoa$vectors[,1:2])
-cc_wpsf$met <- cbind(cc_wpsf$met, cc_wpsf.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-cc_wpsf.adon <- adonis2(cc_wpsf.wuni~Comps, cc_wpsf$met, permutations = 999, by = "terms")
-cc_wpsf.adon
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 cc_wpsf.bdis <- betadisper(cc_wpsf.wuni, group = cc_wpsf$met$Comps)
 anova(cc_wpsf.bdis)
 TukeyHSD(cc_wpsf.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-cc_wpsf.man <- manova(cbind(MDS1,MDS2)~Comps, cc_wpsf$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+cc_wpsf.met <- filter(wpsf_nmds.load, Plant == "C. fasciculata")
+
+# Perform MANOVA on all samples #
+cc_wpsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, cc_wpsf.met)
 summary(cc_wpsf.man)
+
+# Subset the data for pairwise MANOVA tests #
+## Bulk Soil vs. Rhizosphere ##
+cc_wpsf_pvsn.met <- filter(cc_wpsf.met, Soil_Treatment != "Common Soil")
+cc_wpsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, cc_wpsf_pvsn.met)
+summary(cc_wpsf_pvsn.man)
+
 
 ## Desmodium ##
 ds_wpsf.ps <- subset_samples(wpsf.ps, Plant == "D. illinoense")
 ds_wpsf.ps <- subset_taxa(ds_wpsf.ps, taxa_sums(ds_wpsf.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(ds_wpsf.ps, 'ds_wpsf')
 ds_wpsf_prop.ps <- transform_sample_counts(ds_wpsf.ps, function(x) x/sum(x))
 set.seed(248)
 ds_wpsf.wuni <- phyloseq::distance(ds_wpsf_prop.ps, method = 'wunifrac')
-ds_wpsf.pcoa <- phyloseq::ordinate(ds_wpsf_prop.ps, 'PCoA', distance = ds_wpsf.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-ds_wpsf.nmds <- metaMDS(ds_wpsf.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = ds_wpsf.pcoa$vectors[,1:2])
-ds_wpsf$met <- cbind(ds_wpsf$met, ds_wpsf.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-ds_wpsf.adon <- adonis2(ds_wpsf.wuni~Comps, ds_wpsf$met, permutations = 999, by = "terms")
-ds_wpsf.adon
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 ds_wpsf.bdis <- betadisper(ds_wpsf.wuni, group = ds_wpsf$met$Comps)
 anova(ds_wpsf.bdis)
 TukeyHSD(ds_wpsf.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-ds_wpsf.man <- manova(cbind(MDS1,MDS2)~Comps, ds_wpsf$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+ds_wpsf.met <- filter(wpsf_nmds.load, Plant == "D. illinoense")
+
+# Perform MANOVA on all samples #
+ds_wpsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, ds_wpsf.met)
 summary(ds_wpsf.man)
+
+# Subset the data for pairwise MANOVA tests #
+## Bulk Soil vs. Rhizosphere ##
+ds_wpsf_pvsn.met <- filter(ds_wpsf.met, Soil_Treatment != "Common Soil")
+ds_wpsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, ds_wpsf_pvsn.met)
+summary(ds_wpsf_pvsn.man)
+
 
 ## Hog Peanut ##
 hp_wpsf.ps <- subset_samples(wpsf.ps, Plant == "A. bracteata")
 hp_wpsf.ps <- subset_taxa(hp_wpsf.ps, taxa_sums(hp_wpsf.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(hp_wpsf.ps, 'hp_wpsf')
 hp_wpsf_prop.ps <- transform_sample_counts(hp_wpsf.ps, function(x) x/sum(x))
 set.seed(248)
 hp_wpsf.wuni <- phyloseq::distance(hp_wpsf_prop.ps, method = 'wunifrac')
-hp_wpsf.pcoa <- phyloseq::ordinate(hp_wpsf_prop.ps, 'PCoA', distance = hp_wpsf.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-hp_wpsf.nmds <- metaMDS(hp_wpsf.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = hp_wpsf.pcoa$vectors[,1:2])
-hp_wpsf$met <- cbind(hp_wpsf$met, hp_wpsf.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-hp_wpsf.adon <- adonis2(hp_wpsf.wuni~Comps, hp_wpsf$met, permutations = 999, by = "terms")
-hp_wpsf.adon
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 hp_wpsf.bdis <- betadisper(hp_wpsf.wuni, group = hp_wpsf$met$Comps)
 anova(hp_wpsf.bdis)
 TukeyHSD(hp_wpsf.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-hp_wpsf.man <- manova(cbind(MDS1,MDS2)~Comps, hp_wpsf$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+hp_wpsf.met <- filter(wpsf_nmds.load, Plant == "A. bracteata")
+
+# Perform MANOVA on all samples #
+hp_wpsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, hp_wpsf.met)
 summary(hp_wpsf.man)
+
+# Subset the data for pairwise MANOVA tests #
+## Bulk Soil vs. Rhizosphere ##
+hp_wpsf_pvsn.met <- filter(hp_wpsf.met, Soil_Treatment != "Common Soil")
+hp_wpsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, hp_wpsf_pvsn.met)
+summary(hp_wpsf_pvsn.man)
 
 ## Clover ##
 cl_wpsf.ps <- subset_samples(wpsf.ps, Plant == "T. repens")
 cl_wpsf.ps <- subset_taxa(cl_wpsf.ps, taxa_sums(cl_wpsf.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(cl_wpsf.ps, 'cl_wpsf')
 cl_wpsf_prop.ps <- transform_sample_counts(cl_wpsf.ps, function(x) x/sum(x))
 set.seed(248)
 cl_wpsf.wuni <- phyloseq::distance(cl_wpsf_prop.ps, method = 'wunifrac')
-cl_wpsf.pcoa <- phyloseq::ordinate(cl_wpsf_prop.ps, 'PCoA', distance = cl_wpsf.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-cl_wpsf.nmds <- metaMDS(cl_wpsf.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = cl_wpsf.pcoa$vectors[,1:2])
-cl_wpsf$met <- cbind(cl_wpsf$met, cl_wpsf.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-cl_wpsf.adon <- adonis2(cl_wpsf.wuni~Comps, cl_wpsf$met, permutations = 999, by = "terms")
-cl_wpsf.adon
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 cl_wpsf.bdis <- betadisper(cl_wpsf.wuni, group = cl_wpsf$met$Comps)
 anova(cl_wpsf.bdis)
 TukeyHSD(cl_wpsf.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-cl_wpsf.man <- manova(cbind(MDS1,MDS2)~Comps, cl_wpsf$met)
+# Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
+cl_wpsf.met <- filter(wpsf_nmds.load, Plant == "T. repens")
+
+# Perform MANOVA on all samples #
+cl_wpsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, cl_wpsf.met)
 summary(cl_wpsf.man)
 
 ## Medicago ##
 md_wpsf.ps <- subset_samples(wpsf.ps, Plant == "M. truncatula")
 md_wpsf.ps <- subset_taxa(md_wpsf.ps, taxa_sums(md_wpsf.ps) > 0)
 
-# Create a distance matrix based on Weighted Unifrac Distances #
+# Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
 decompose_ps(md_wpsf.ps, 'md_wpsf')
 md_wpsf_prop.ps <- transform_sample_counts(md_wpsf.ps, function(x) x/sum(x))
 set.seed(248)
 md_wpsf.wuni <- phyloseq::distance(md_wpsf_prop.ps, method = 'wunifrac')
-md_wpsf.pcoa <- phyloseq::ordinate(md_wpsf_prop.ps, 'PCoA', distance = md_wpsf.wuni)
 
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-md_wpsf.nmds <- metaMDS(md_wpsf.wuni, 
-                        k = 2, try = 20, trymax = 1000, maxit = 999,
-                        model = 'global', 
-                        autotransform = FALSE, previous.best = md_wpsf.pcoa$vectors[,1:2])
-md_wpsf$met <- cbind(md_wpsf$met, md_wpsf.nmds$points)
-
-# Perform PermANOVA on all of the soils #
-md_wpsf.adon <- adonis2(md_wpsf.wuni~Comps, md_wpsf$met, permutations = 999, by = "terms")
-md_wpsf.adon
-
-# Perform PermDISP analysis to test for homegenity of variance #
+# Perform a PermDISP with TukeyHSD to test the homogeneity of the variance #
 md_wpsf.bdis <- betadisper(md_wpsf.wuni, group = md_wpsf$met$Comps)
 anova(md_wpsf.bdis)
 TukeyHSD(md_wpsf.bdis)
 
-# Perform MANOVA on all samples within compartment and plant species # 
-md_wpsf.man <- manova(cbind(MDS1,MDS2)~Comps, md_wpsf$met)
+# Subset the NMDS plot metadata and scores to only inmdude samples of the specified compartment and plant species #
+md_wpsf.met <- filter(wpsf_nmds.load, Plant == "M. truncatula")
+
+# Perform MANOVA on all samples #
+md_wpsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, md_wpsf.met)
 summary(md_wpsf.man)
 
 #### Non-Nodule Stacked Histograms ####
@@ -7246,7 +7049,7 @@ cl_bulk_meso.plot <- ggplot(cl_bulk.meso, aes(x = Comps, y = `ASV2(Agrobacterium
   coord_cartesian(ylim = c(0, 0.01)) +
   scale_y_continuous(limits = c(0,0.01), breaks = seq(0,0.01, by = 0.002), sec.axis = dup_axis(name = "")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Bulk Soil<br>ASV1(*Agrobacterium*)") +
+  scale_x_discrete(labels = "Bulk Soil<br>ASV2(*Agrobacterium*)") +
   ylab('Relative Abundance') +
   xlab('') +
   theme_prism() +
@@ -7299,7 +7102,7 @@ cl_rhiz_meso.plot <- ggplot(cl_rhiz.meso, aes(x = Comps, y = `ASV2(Agrobacterium
   coord_cartesian(ylim = c(0, 0.01)) +
   scale_y_continuous(limits = c(0,0.01), breaks = seq(0,0.01, by = 0.0025), sec.axis = dup_axis(name = "")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Rhizosphere<br>ASV1(*Agrobacterium*)") +
+  scale_x_discrete(labels = "Rhizosphere<br>ASV2(*Agrobacterium*)") +
   ylab('') +
   xlab('') +
   theme_prism() +
@@ -7564,3 +7367,7 @@ md_root_meso2.plot <- ggplot(md_root.meso, aes(x = Comps, y = `ASV2(Sinorhizobiu
               textsize = 20,
               vjust = 0.65)
 md_root_meso2.plot
+
+(md_root_meso.plot | md_root_meso2.plot) +
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom")
