@@ -49,7 +49,7 @@ nodnbio.data$Soil_Treatment <- gsub('Non-PSF Soil', 'Non PSF Soil', nodnbio.data
 fb_nod.data <- filter(nodnbio.data, Plant_Sample == 'S. helvola')
 cc_nod.data <- filter(nodnbio.data, Plant_Sample == 'C. fasciculata')
 ds_nod.data <- filter(nodnbio.data, Plant_Sample == 'D. illinoense')
-hp_nod.data <- filter(nodnbio.data, Plant_Sample == 'A. braceteata')
+hp_nod.data <- filter(nodnbio.data, Plant_Sample == 'A. bracteata')
 cl_nod.data <- filter(nodnbio.data, Plant_Sample == 'T. repens')
 md_nod.data <- filter(nodnbio.data, Plant_Sample == 'M. truncatula')
 
@@ -107,7 +107,7 @@ nod.data <- cbind(nodnbio.mnsd, nod.let)
 nod.data$nod.let[3] <- 'a'
 nod.data$nod.let[1:2] <- 'b'
 nod.data[1,3:6] <- 0
-nod.data$Group <- factor(nod.data$Plant_Sample, levels = c('T. repens', 'M. truncatula', 'S. helvola', 'C. fasciculata', 'D. illinoense', 'A. braceteata'))
+nod.data$Group <- factor(nod.data$Plant_Sample, levels = c('T. repens', 'M. truncatula', 'S. helvola', 'C. fasciculata', 'D. illinoense', 'A. bracteata'))
 
 # Plot the results #
 library(ggplot2); packageVersion('ggplot2')
@@ -138,7 +138,7 @@ nod.plot <- ggplot(nod.data, aes(x = Group, y = nod.mean, fill = Soil_Treatment,
 fb_bio.data <- filter(nodnbio.data, Plant_Sample == 'S. helvola')
 cc_bio.data <- filter(nodnbio.data, Plant_Sample == 'C. fasciculata')
 ds_bio.data <- filter(nodnbio.data, Plant_Sample == 'D. illinoense')
-hp_bio.data <- filter(nodnbio.data, Plant_Sample == 'A. braceteata')
+hp_bio.data <- filter(nodnbio.data, Plant_Sample == 'A. bracteata')
 cl_bio.data <- filter(nodnbio.data, Plant_Sample == 'T. repens')
 md_bio.data <- filter(nodnbio.data, Plant_Sample == 'M. truncatula')
 
@@ -191,7 +191,7 @@ bio.data[1,3:6] <- 0
 bio.data[3,7] <- 'a'
 bio.data[1:2,7] <- 'b'
 
-bio.data$Group <- factor(bio.data$Plant_Sample, levels = c('T. repens', 'M. truncatula', 'S. helvola', 'C. fasciculata', 'D. illinoense', 'A. braceteata'))
+bio.data$Group <- factor(bio.data$Plant_Sample, levels = c('T. repens', 'M. truncatula', 'S. helvola', 'C. fasciculata', 'D. illinoense', 'A. bracteata'))
 bio.plot <- ggplot(bio.data, aes(x = Group, y = bio.mean, fill = Soil_Treatment, color = Soil_Treatment)) +
   geom_bar(stat = 'summary', position = 'dodge', width = 0.7) +
   geom_errorbar(aes(ymin = bio.mean, ymax = bio.mean + bio.sd), show.legend = FALSE, position = position_dodge(width = 0.7), width = 0.2) +
@@ -199,8 +199,8 @@ bio.plot <- ggplot(bio.data, aes(x = Group, y = bio.mean, fill = Soil_Treatment,
   ylab('Aboveground Biomass (grams)') +
   xlab("") +
   theme_prism() +
-  scale_fill_manual(values = c('white', "gray", '#4D4D4D')) +
-  scale_color_manual(values = c('black', 'black', 'black')) +
+  scale_fill_manual(labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c('white', "gray", '#4D4D4D')) +
+  scale_color_manual(labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c('black', 'black', 'black')) +
   scale_y_continuous(limits = c(0,1.6),expand = expansion(mult = c(0, 0.05)), sec.axis = dup_axis()) +
   theme(legend.position = 'bottom',
         legend.text = element_text(size = 24, family = 'Liberation Sans', face = 'bold'),
@@ -549,19 +549,20 @@ fb_soil_nod.plot <- ggplot(fb_soil_nod.df, aes(x = Soil, y = Abundance, fill = A
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
-  scale_fill_manual(values = fb_soil_nod.colr) +
+  scale_fill_manual(name = "Soil ASV", values = fb_soil_nod.colr) +
   scale_y_continuous(sec.axis = dup_axis(name = "S. helvola")) +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18),
-        axis.title = element_text(size = 22),
+  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
+        axis.text.x.bottom = element_text(color = "black", size = 18, family = "Liberation Sans", angle = -45, vjust = 0.6, hjust = 0.1),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size =18),
-        legend.text = element_text(size = 18),
-        legend.title = element_blank(),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
         legend.position = 'right') +
-  labs(tag = "A.")
+  labs(tag = "B.")
 fb_soil_nod.plot
 
 ## Chamaecrista ##
@@ -578,14 +579,15 @@ cc_soil_nod.plot <- ggplot(cc_soil_nod.df, aes(x = Soil, y = Abundance, fill = A
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
-  scale_fill_manual(values = cc_soil_nod.colr) +
+  scale_fill_manual(name = "Soil ASV", values = cc_soil_nod.colr) +
   scale_y_continuous(sec.axis = dup_axis(name = "C. fasciculata")) +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18),
-        axis.title = element_text(size = 22),
-        strip.text = element_text(size =18),
-        legend.text = element_text(size = 18),
-        legend.title = element_blank(),
+  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
+        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size =18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
@@ -606,19 +608,20 @@ ds_soil_nod.plot <- ggplot(ds_soil_nod.df, aes(x = Soil, y = Abundance, fill = A
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
-  scale_fill_manual(values = ds_soil_nod.colr) +
+  scale_fill_manual(name = "Soil ASV", values = ds_soil_nod.colr) +
   scale_y_continuous(sec.axis = dup_axis(name = "D. illinoense")) +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18),
-        axis.title = element_text(size = 22),
-        strip.text = element_text(size =18),
-        legend.text = element_text(size = 18),
-        legend.title = element_blank(),
+  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
+        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size =18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
         legend.position = 'right') +
-  labs(tag = "C.")
+  labs(tag = "B.")
 ds_soil_nod.plot
 
 ## Hog Peanut ##
@@ -634,19 +637,20 @@ hp_soil_nod.plot <- ggplot(hp_soil_nod.df, aes(x = Soil, y = Abundance, fill = A
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
-  scale_fill_manual(values = hp_soil_nod.colr) +
+  scale_fill_manual(name = "Soil ASV", values = hp_soil_nod.colr) +
   scale_y_continuous(sec.axis = dup_axis(name = "A. bracteata")) +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18),
-        axis.title = element_text(size = 22),
-        strip.text = element_text(size =18),
-        legend.text = element_text(size = 18),
-        legend.title = element_blank(),
+  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
+        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size =18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
         legend.position = 'right') +
-  labs(tag = "D.")
+  labs(tag = "B.")
 hp_soil_nod.plot
 
 ## Clover ##
@@ -663,19 +667,20 @@ cl_soil_nod.plot <- ggplot(cl_soil_nod.df, aes(x = Soil, y = Abundance, fill = A
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
-  scale_fill_manual(values = cl_soil_nod.colr) +
+  scale_fill_manual(name = "Soil ASV", values = cl_soil_nod.colr) +
   scale_y_continuous(sec.axis = dup_axis(name = "T. repens")) +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18),
-        axis.title = element_text(size = 22),
-        strip.text = element_text(size =18),
-        legend.text = element_text(size = 18),
-        legend.title = element_blank(),
+  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
+        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size =18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
         legend.position = 'right') +
-  labs(tag = "F.")
+  labs(tag = "B.")
 cl_soil_nod.plot
 
 ## Medicago ##
@@ -692,19 +697,20 @@ md_soil_nod.plot <- ggplot(md_soil_nod.df, aes(x = Soil, y = Abundance, fill = A
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
-  scale_fill_manual(values = md_soil_nod.colr) +
+  scale_fill_manual(name = "Soil ASV", values = md_soil_nod.colr) +
   scale_y_continuous(sec.axis = dup_axis(name = "M. truncatula")) +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18),
-        axis.title = element_text(size = 22),
-        strip.text = element_text(size =18),
-        legend.text = element_text(size = 18),
-        legend.title = element_blank(),
+  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
+        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size =18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
         legend.position = 'right') +
-  labs(tag = "G.")
+  labs(tag = "B.")
 md_soil_nod.plot
 
 #### Root Primer Removal ####
@@ -989,22 +995,23 @@ fb_root_nod.plot <- ggplot(fb_root_nod.df, aes(x = Soil, y = Abundance, fill = A
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
-  scale_fill_manual(values = fb_root_nod.colr) +
+  scale_fill_manual(name = "Root ASV", values = fb_root_nod.colr) +
   scale_y_continuous(sec.axis = dup_axis(name = "S. helvola")) +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18),
-        axis.title = element_text(size = 22),
-        strip.text = element_text(size =18),
-        legend.text = element_text(size = 18),
-        legend.title = element_blank(),
+  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
+        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size =18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
         legend.position = 'right') +
-  labs(tag = "A.")
+  labs(tag = "C.")
 fb_root_nod.plot
 
-(fb_soil_nod.plot | fb_root_nod.plot)
+fb_nod.plot <- (fb_soil_nod.plot | fb_root_nod.plot)
 
 ## Chamaecrista ##
 cc_root_nod.ps <- subset_samples(root_nod.ps, Plant.Species == "C. fasciculata")
@@ -1020,19 +1027,20 @@ cc_root_nod.plot <- ggplot(cc_root_nod.df, aes(x = Soil, y = Abundance, fill = A
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
-  scale_fill_manual(values = cc_root_nod.colr) +
+  scale_fill_manual(name = "Root ASV", values = cc_root_nod.colr) +
   scale_y_continuous(sec.axis = dup_axis(name = "C. fasciculata")) +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18),
-        axis.title = element_text(size = 22),
-        strip.text = element_text(size =18),
-        legend.text = element_text(size = 18),
-        legend.title = element_blank(),
+  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
+        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size =18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
-        legend.position = 'right') +
-  labs(tag = "B.")
+        legend.position = 'right')+
+  labs(tag = "C.")
 cc_root_nod.plot
 
 (cc_soil_nod.plot | cc_root_nod.plot)
@@ -1051,14 +1059,15 @@ ds_root_nod.plot <- ggplot(ds_root_nod.df, aes(x = Soil, y = Abundance, fill = A
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
-  scale_fill_manual(values = ds_root_nod.colr) +
+  scale_fill_manual(name = "Root ASV", values = ds_root_nod.colr) +
   scale_y_continuous(sec.axis = dup_axis(name = "D. illinoense")) +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18),
-        axis.title = element_text(size = 22),
-        strip.text = element_text(size =18),
-        legend.text = element_text(size = 18),
-        legend.title = element_blank(),
+  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
+        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size =18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
@@ -1081,19 +1090,20 @@ hp_root_nod.plot <- ggplot(hp_root_nod.df, aes(x = Soil, y = Abundance, fill = A
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
-  scale_fill_manual(values = hp_root_nod.colr) +
+  scale_fill_manual(name = "Root ASV",values = hp_root_nod.colr) +
   scale_y_continuous(sec.axis = dup_axis(name = "A. bracteata")) +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18),
-        axis.title = element_text(size = 22),
-        strip.text = element_text(size =18),
-        legend.text = element_text(size = 18),
-        legend.title = element_blank(),
+  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
+        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size =18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
         legend.position = 'right') +
-  labs(tag = "D.")
+  labs(tag = "C.")
 hp_root_nod.plot
 
 (hp_soil_nod.plot | hp_root_nod.plot)
@@ -1112,19 +1122,20 @@ cl_root_nod.plot <- ggplot(cl_root_nod.df, aes(x = Soil, y = Abundance, fill = A
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
-  scale_fill_manual(values = cl_root_nod.colr) +
+  scale_fill_manual(name = "Root ASV", values = cl_root_nod.colr) +
   scale_y_continuous(sec.axis = dup_axis(name = "T. repens")) +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18),
-        axis.title = element_text(size = 22),
-        strip.text = element_text(size =18),
-        legend.text = element_text(size = 18),
-        legend.title = element_blank(),
+  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
+        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size =18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
         legend.position = 'right') +
-  labs(tag = "F.")
+  labs(tag = "C.")
 cl_root_nod.plot
 
 (cl_soil_nod.plot | cl_root_nod.plot)
@@ -1143,19 +1154,20 @@ md_root_nod.plot <- ggplot(md_root_nod.df, aes(x = Soil, y = Abundance, fill = A
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
-  scale_fill_manual(values = md_root_nod.colr) +
+  scale_fill_manual(name = "Root ASV", values = md_root_nod.colr) +
   scale_y_continuous(sec.axis = dup_axis(name = "M. truncatula")) +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18),
-        axis.title = element_text(size = 22),
-        strip.text = element_text(size =18),
-        legend.text = element_text(size = 18),
-        legend.title = element_blank(),
+  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
+        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size =18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
         legend.position = 'right') +
-  labs(tag = "G.")
+  labs(tag = "C.")
 md_root_nod.plot
 
 (md_soil_nod.plot | md_root_nod.plot)
@@ -1388,22 +1400,23 @@ rhiz.rich <- cbind(rhiz.rich, sha_rhiz.let)
 sha_rhiz.plot <- ggplot(rhiz.rich, aes(x = `Plant Species`, y = sha.mean, fill = `Soil Type`, color = `Soil Type`)) +
   geom_bar(stat = 'summary', position = 'dodge', width = 0.7) +
   geom_errorbar(aes(ymin = sha.mean - sha.sd, ymax = sha.mean + sha.sd), show.legend = FALSE, position = position_dodge(width = 0.7), width = 0.2) +
-  geom_text(aes(label = sha_rhiz.let, y = sha.mean + sha.sd + 0.1), show.legend = FALSE, position = position_dodge(width = 0.7), vjust = 0, size = 4) +
+  geom_text(aes(label = sha_rhiz.let, y = sha.mean + sha.sd + 0.1), show.legend = FALSE, position = position_dodge(width = 0.7), vjust = 0, size = 8) +
   ylab('Shannon Diversity (H)') +
   xlab("") +
   theme_prism() +
-  scale_fill_manual(values = c('white', "gray", '#4D4D4D')) +
-  scale_color_manual(values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,6),expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ .,name = "Rhizosphere")) +
-  theme(legend.position = 'none',
-        legend.text = element_text(size = 24),
-        axis.text.x = element_blank(),
+  scale_fill_manual(labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c('white', "gray", '#4D4D4D')) +
+  scale_color_manual(labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c('black', 'black', 'black')) +
+  scale_y_continuous(limits = c(0,6.3), breaks = seq(0,6.25, by = 1.25), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ .,name = "Rhizosphere")) +
+  theme(legend.position = 'bottom',
+        legend.text = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
+        axis.text.x = element_text(size = 24, face = 'bold.italic', family = "Liberation Sans"),
         axis.title.y = element_text(size = 12),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         legend.key.width = unit(1, 'cm'),
         legend.key.height = unit(1, 'cm'),
-        legend.key.spacing.x = unit(6, 'cm'))
+        legend.key.spacing.x = unit(6, 'cm')) +
+    labs(tag = "C.")
 
 sha_rhiz.plot
 
@@ -1487,13 +1500,13 @@ rhiz.rich <- cbind(rhiz.rich, evn_rhiz.let)
 evn_rhiz.plot <- ggplot(rhiz.rich, aes(x = `Plant Species`, y = evn.mean, fill = `Soil Type`, color = `Soil Type`)) +
   geom_bar(stat = 'summary', position = 'dodge', width = 0.7) +
   geom_errorbar(aes(ymin = evn.mean - evn.sd, ymax = evn.mean + evn.sd), show.legend = FALSE, position = position_dodge(width = 0.7), width = 0.2) +
-  geom_text(aes(label = evn_rhiz.let, y = evn.mean + evn.sd + 0.02), show.legend = FALSE, position = position_dodge(width = 0.7), vjust = 0, size = 4) +
+  geom_text(aes(label = evn_rhiz.let, y = evn.mean + evn.sd + 0.02), show.legend = FALSE, position = position_dodge(width = 0.7), vjust = 0, size = 8) +
   ylab('Shannon Evenness (H/ln(S))') +
   xlab("") +
   theme_prism() +
-  scale_fill_manual(values = c('white', "gray", '#4D4D4D')) +
-  scale_color_manual(values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,1),expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "")) +
+  scale_fill_manual(labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c('white', "gray", '#4D4D4D')) +
+  scale_color_manual(labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c('black', 'black', 'black')) +
+  scale_y_continuous(limits = c(0,1.1),breaks = seq(0,1,by = 0.25), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "Rhizosphere")) +
   theme(legend.position = 'none',
         legend.text = element_text(size = 24),
         axis.text.x = element_blank(),
@@ -1502,7 +1515,9 @@ evn_rhiz.plot <- ggplot(rhiz.rich, aes(x = `Plant Species`, y = evn.mean, fill =
         axis.ticks.y.right = element_blank(),
         legend.key.width = unit(1, 'cm'),
         legend.key.height = unit(1, 'cm'),
-        legend.key.spacing.x = unit(6, 'cm'))
+        legend.key.spacing.x = unit(6, 'cm')) +
+  labs(tag = "B.")
+  
 
 evn_rhiz.plot
 # Chao1 Observed ASVs #
@@ -1585,13 +1600,13 @@ rhiz.rich <- cbind(rhiz.rich, cha_rhiz.let)
 cha_rhiz.plot <- ggplot(rhiz.rich, aes(x = `Plant Species`, y = cha.mean, fill = `Soil Type`, color = `Soil Type`)) +
   geom_bar(stat = 'summary', position = 'dodge', width = 0.7) +
   geom_errorbar(aes(ymin = cha.mean - cha.sd, ymax = cha.mean + cha.sd), show.legend = FALSE, position = position_dodge(width = 0.7), width = 0.2) +
-  geom_text(aes(label = cha_rhiz.let, y = cha.mean + cha.sd + 10), show.legend = FALSE, position = position_dodge(width = 0.7), vjust = 0, size = 4) +
+  geom_text(aes(label = cha_rhiz.let, y = cha.mean + cha.sd + 10), show.legend = FALSE, position = position_dodge(width = 0.7), vjust = 0, size = 8) +
   ylab('Observed ASV Richness (S)') +
   xlab("") +
   theme_prism() +
-  scale_fill_manual(values = c('white', "gray", '#4D4D4D')) +
-  scale_color_manual(values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,500),expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "")) +
+  scale_fill_manual(labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c('white', "gray", '#4D4D4D')) +
+  scale_color_manual(labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c('black', 'black', 'black')) +
+  scale_y_continuous(limits = c(0,500),expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "Rhizosphere")) +
   theme(legend.position = 'none',
         legend.text = element_text(size = 24),
         axis.text.x = element_blank(),
@@ -1600,9 +1615,16 @@ cha_rhiz.plot <- ggplot(rhiz.rich, aes(x = `Plant Species`, y = cha.mean, fill =
         axis.ticks.y.right = element_blank(),
         legend.key.width = unit(1, 'cm'),
         legend.key.height = unit(1, 'cm'),
-        legend.key.spacing.x = unit(6, 'cm'))
+        legend.key.spacing.x = unit(6, 'cm')) +
+  labs(tag = "A.")
 
 cha_rhiz.plot
+
+# All Rhizosphere Sample Plots #
+(cha_rhiz.plot) / 
+  (evn_rhiz.plot) / 
+  (sha_rhiz.plot) &
+  theme(plot.tag = element_text(size = 22))
 
 # All Bulk Soil Samples #
 bulk.rich <- filter(all_rich.mnsd, Compartment == "Bulk Soil")
@@ -1724,22 +1746,23 @@ bulk.rich <- cbind(bulk.rich, sha_bulk.let)
 sha_bulk.plot <- ggplot(bulk.rich, aes(x = `Plant Species`, y = sha.mean, fill = `Soil Type`, color = `Soil Type`)) +
   geom_bar(stat = 'summary', position = 'dodge', width = 0.7) +
   geom_errorbar(aes(ymin = sha.mean - sha.sd, ymax = sha.mean + sha.sd), show.legend = FALSE, position = position_dodge(width = 0.7), width = 0.2) +
-  geom_text(aes(label = sha_bulk.let, y = sha.mean + sha.sd + 0.1), show.legend = FALSE, position = position_dodge(width = 0.7), vjust = 0, size = 4) +
+  geom_text(aes(label = sha_bulk.let, y = sha.mean + sha.sd + 0.1), show.legend = FALSE, position = position_dodge(width = 0.7), vjust = 0, size = 8) +
   ylab('Shannon Diversity (H)') +
   xlab("") +
   theme_prism() +
-  scale_fill_manual(values = c('white', "gray", '#4D4D4D')) +
-  scale_color_manual(values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,7.5),expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "Bulk Soil")) +
-  theme(legend.position = 'none',
-        legend.text = element_text(size = 24),
-        axis.text.x = element_blank(),
-        axis.title.y = element_text(size = 12),
+  scale_fill_manual(labels = c("Common Soil", "Non-PSF Soil","PSF Soil"), values = c('white', "gray", '#4D4D4D')) +
+  scale_color_manual(labels = c("Common Soil", "Non-PSF Soil","PSF Soil"), values = c('black', 'black', 'black')) +
+  scale_y_continuous(limits = c(0,8), breaks = seq(0,8, by = 2), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "Bulk Soil")) +
+  theme(legend.position = 'bottom',
+        legend.text = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
+        axis.text.x = element_text(size = 24, face = 'bold.italic', family = "Liberation Sans"),
+        axis.title.y.left = element_text(size = 14, hjust = 0.5),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         legend.key.width = unit(1, 'cm'),
         legend.key.height = unit(1, 'cm'),
-        legend.key.spacing.x = unit(6, 'cm'))
+        legend.key.spacing.x = unit(6, 'cm')) +
+  labs(tag = "C.")
 
 sha_bulk.plot
 
@@ -1818,24 +1841,26 @@ bulk.rich <- cbind(bulk.rich, evn_bulk.let)
 evn_bulk.plot <- ggplot(bulk.rich, aes(x = `Plant Species`, y = evn.mean, fill = `Soil Type`, color = `Soil Type`)) +
   geom_bar(stat = 'summary', position = 'dodge', width = 0.7) +
   geom_errorbar(aes(ymin = evn.mean - evn.sd, ymax = evn.mean + evn.sd), show.legend = FALSE, position = position_dodge(width = 0.7), width = 0.2) +
-  geom_text(aes(label = evn_bulk.let, y = evn.mean + evn.sd + 0.02), show.legend = FALSE, position = position_dodge(width = 0.7), vjust = 0, size = 4) +
+  geom_text(aes(label = evn_bulk.let, y = evn.mean + evn.sd + 0.02), show.legend = FALSE, position = position_dodge(width = 0.7), vjust = 0, size = 8) +
   ylab('Shannon Evenness (H/ln(S))') +
   xlab("") +
   theme_prism() +
   scale_fill_manual(values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,1),expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ .,name = "")) +
+  scale_y_continuous(limits = c(0,1), breaks = seq(0,1,by = 0.25), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ .,name = "Bulk Soil")) +
   theme(legend.position = 'none',
         legend.text = element_text(size = 24),
         axis.text.x = element_blank(),
-        axis.title.y = element_text(size = 12),
+        axis.title.y.left = element_text(size = 14, hjust = 1),
         axis.ticks.y.right = element_blank(),
         axis.text.y.right = element_blank(),
         legend.key.width = unit(1, 'cm'),
         legend.key.height = unit(1, 'cm'),
-        legend.key.spacing.x = unit(6, 'cm'))
+        legend.key.spacing.x = unit(6, 'cm')) +
+  labs(tag = "B.")
 
 evn_bulk.plot
+
 # Chao1 Observed ASVs #
 ## Strophostyles ##
 fb_bulk_cha.aov <- aov(Chao1 ~ Soils, data = fb_bulk.richraw)
@@ -1910,24 +1935,32 @@ bulk.rich <- cbind(bulk.rich, cha_bulk.let)
 cha_bulk.plot <- ggplot(bulk.rich, aes(x = `Plant Species`, y = cha.mean, fill = `Soil Type`, color = `Soil Type`)) +
   geom_bar(stat = 'summary', position = 'dodge', width = 0.7) +
   geom_errorbar(aes(ymin = cha.mean - cha.sd, ymax = cha.mean + cha.sd), show.legend = FALSE, position = position_dodge(width = 0.7), width = 0.2) +
-  geom_text(aes(label = cha_bulk.let, y = cha.mean + cha.sd + 10), show.legend = FALSE, position = position_dodge(width = 0.7), vjust = 0, size = 4) +
+  geom_text(aes(label = cha_bulk.let, y = cha.mean + cha.sd + 10), show.legend = FALSE, position = position_dodge(width = 0.7), vjust = 0, size = 8) +
   ylab('Observed ASV Richness (S)') +
   xlab("") +
   theme_prism() +
   scale_fill_manual(values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,400),expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "")) +
+  scale_y_continuous(limits = c(0,400), breaks = seq(0,400, by = 100), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "Bulk Soil")) +
   theme(legend.position = 'none',
         legend.text = element_text(size = 24),
         axis.text.x = element_blank(),
-        axis.title.y = element_text(size = 12),
+        axis.title.y.left = element_text(size = 14, hjust = 1),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         legend.key.width = unit(1, 'cm'),
         legend.key.height = unit(1, 'cm'),
-        legend.key.spacing.x = unit(6, 'cm'))
+        legend.key.spacing.x = unit(6, 'cm')) +
+  labs(tag = "A.")
 
 cha_bulk.plot
+
+# All Bulk Soil Sample Plots #
+(cha_bulk.plot) / 
+(evn_bulk.plot) / 
+(sha_bulk.plot) &
+  theme(plot.tag = element_text(size = 22))
+  
 
 # All Root Samples #
 root.rich <- filter(all_rich.mnsd, Compartment == "Root Endosphere")
@@ -2786,7 +2819,7 @@ library(ggplot2);packageVersion('ggplot2')
 
 # plot the NMDS ordination of all samples that will be used to make a patchwork plot #
 bulk_nmds.plot <- ggplot(bulk_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape = Soils)) +
-  geom_point(size = 8) +
+  geom_point(size = 12) +
   scale_color_manual(name = "Bulk Soil Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. illinoense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
   scale_shape_manual(name = "PSF History", labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c(15,17,16)) +
   xlab(expression("NMDS1 (R"^2 ~ "= 0.8167)")) +
@@ -2794,13 +2827,13 @@ bulk_nmds.plot <- ggplot(bulk_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
   theme_bw() +
   theme(legend.position = 'right',
         panel.grid = element_blank(),
-        legend.text = element_text(size = 12, family = "Liberation Sans"),
-        legend.title = element_text(size = 16, family = "Liberation Sans"),
-        axis.title = element_text(size=20, family = "Liberation Sans"),
+        legend.text = element_text(size = 20, family = "Liberation Sans"),
+        legend.title = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
+        axis.title = element_text(size= 24, face = 'bold', family = "Liberation Sans"),
         axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +
   annotate('text', x = 0.06, y = -0.15,
            label = expression("(PERMANOVA) F"["9,29"] ~ "= 39.918, P < 0.001;  (PERMDISP) F"["9,29"] ~  "= 0.3344, P = 0.9526; 3D Stress = 0.0127"),
-           size = 8, family = 'Liberation Sans') +
+           size = 6, family = 'Liberation Sans') +
   coord_cartesian(ylim = c(-0.145,0.2))
 
 bulk_nmds.plot
@@ -3173,13 +3206,13 @@ rhiz_nmds.plot <- ggplot(rhiz_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
   theme_bw() +
   theme(legend.position = 'right',
         panel.grid = element_blank(),
-        legend.text = element_text(size = 12, family = "Liberation Sans"),
-        legend.title = element_text(size = 16, family = "Liberation Sans"),
-        axis.title = element_text(size=20, family = "Liberation Sans"),
+        legend.text = element_text(size = 20, family = "Liberation Sans"),
+        legend.title = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
+        axis.title = element_text(size= 24, face = 'bold', family = "Liberation Sans"),
         axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +
   annotate('text', x = -0.1, y = -0.29,
            label = expression("(PERMANOVA) F"["16,70"] ~ "= 25.443, P = 0.001;  (PERMDISP) F"["16,70"] ~  "= 4.9933, P < 0.001; 3D Stress = 0.0224"),
-           size = 8, family = 'Liberation Sans') +
+           size = 6, family = 'Liberation Sans') +
   coord_cartesian(ylim = c(-0.28, 0.15))
 
 rhiz_nmds.plot
@@ -4210,14 +4243,15 @@ npsf_nmds.plot <- ggplot(npsf_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
   theme_bw() +
   theme(legend.position = 'right',
         panel.grid = element_blank(),
-        legend.text = element_text(size = 12, family = "Liberation Sans"),
-        legend.title = element_text(size = 16, family = "Liberation Sans"),
-        axis.title = element_text(size=20, family = "Liberation Sans"),
-        axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +
+        legend.text = element_text(size = 20, family = "Liberation Sans"),
+        legend.title = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
+        axis.title = element_text(size= 24, face = 'bold', family = "Liberation Sans"),
+        axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +  
   annotate('text', x = -0.05, y = -0.3,
            label = expression("(PERMANOVA) F"["7,27"] ~ "= 26.094, P = 0.001;  (PERMDISP) F"["7,27"] ~  "= 6.0835, P < 0.001; 3D Stress = 0.0083"),
            size = 8, family = 'Liberation Sans') +
-  coord_cartesian(ylim = c(-0.29,0.23))
+  coord_cartesian(ylim = c(-0.31,0.23))+
+  labs(tag = "B.")
 
 npsf_nmds.plot
 
@@ -4503,14 +4537,15 @@ wpsf_nmds.plot <- ggplot(wpsf_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
   theme_bw() +
   theme(legend.position = 'right',
         panel.grid = element_blank(),
-        legend.text = element_text(size = 12, family = "Liberation Sans"),
-        legend.title = element_text(size = 16, family = "Liberation Sans"),
-        axis.title = element_text(size=20, family = "Liberation Sans"),
-        axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +
+        legend.text = element_text(size = 20, family = "Liberation Sans"),
+        legend.title = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
+        axis.title = element_text(size= 24, face = 'bold', family = "Liberation Sans"),
+        axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +  
   annotate('text', x = -0.025, y = -0.3,
            label = expression("(PERMANOVA) F"["11,45"] ~ "= 31.072, P = 0.001;  (PERMDISP) F"["11,45"] ~  "= 9.1545, P < 0.001; 3D Stress = 0.0143"),
            size = 8, family = 'Liberation Sans') +
-  coord_cartesian(ylim = c(-0.29,0.23))
+  coord_cartesian(ylim = c(-0.31,0.23)) +
+  labs(tag = "A.")
 
 wpsf_nmds.plot
 
@@ -4673,6 +4708,12 @@ md_wpsf.met <- filter(wpsf_nmds.load, Plant == "M. truncatula")
 md_wpsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, md_wpsf.met)
 summary(md_wpsf.man)
 
+# PSF vs. Non-PSF Soil Plot #
+(wpsf_nmds.plot) / 
+(npsf_nmds.plot) +
+  plot_layout(guides = "collect") &
+  theme(plot.tag = element_text(size = 22, face = "bold", family = "Liberation Sans"))
+
 #### Non-Nodule Stacked Histograms ####
 library(microbiome); packageVersion('microbiome')
 library(microbiomeutilities); packageVersion("microbiomeutilities")
@@ -4722,25 +4763,37 @@ fb_top.colr <- all.colr[fb_top.name,]
 
 fb_top.df <- psmelt(fb_top.ps)
 fb_top.df$Genera <- factor(fb_top.df$Genus, levels = fb_top.name)
+fb_top.df$Group <- factor(fb_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-fb_top.plot <- ggplot(fb_top.df, aes(x = Soils, y = Abundance, fill = Genera)) +
+fb_top.plot <- ggplot(fb_top.df, aes(x = Group, y = Abundance, fill = Genera)) +
   geom_bar(stat='identity', position = 'fill') +
   facet_wrap(~Comps, scales = "fixed") +
   xlab('') +
-  ylab('Relative Abudnance') +
+  ylab('Relative Abundance') +
   scale_fill_manual(values = fb_top.colr) +
   scale_y_continuous(sec.axis = dup_axis(name = expression(italic('S. helvola')))) +
   theme_bw() +
-  theme(axis.text.x.bottom = element_text(color = "black", size = 18, angle = -45, hjust = 0),
-        axis.title = element_text(size = 22),
-        strip.text = element_text(size =18),
-        legend.text = element_text(size = 18),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18, angle = -45, hjust = 0),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90)) +
+  labs(tags = "A.")
 fb_top.plot
+
+# Joining histograms #
+(fb_top.plot) /
+(fb_soil_nod.plot | fb_root_nod.plot) +
+  plot_layout(guides = "keep") &
+  theme(plot.tag = element_text(size = 22, face = "bold", family = "Liberation Sans"))
 
 ## Chamaecrista ##
 cc_all.ps <- subset_samples(all.ps, Plant == "C. fasciculata")
@@ -4752,25 +4805,37 @@ cc_top.colr <- all.colr[cc_top.name,]
 
 cc_top.df <- psmelt(cc_top.ps)
 cc_top.df$Genera <- factor(cc_top.df$Genus, levels = cc_top.name)
+cc_top.df$Group <- factor(cc_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-cc_top.plot <- ggplot(cc_top.df, aes(x = Soils, y = Abundance, fill = Genera)) +
+cc_top.plot <- ggplot(cc_top.df, aes(x = Group, y = Abundance, fill = Genera)) +
   geom_bar(stat='identity', position = 'fill') +
   facet_wrap(~Comps, scales = "fixed") +
   xlab('') +
-  ylab('Relative Abudnance') +
+  ylab('Relative Abundance') +
   scale_fill_manual(values = cc_top.colr) +
   scale_y_continuous(sec.axis = dup_axis(name = expression(italic('C. fasciculata')))) +
   theme_bw() +
-  theme(axis.text.x.bottom = element_text(color = "black", size = 18, angle = -45, hjust = 0),
-        axis.title = element_text(size = 22),
-        strip.text = element_text(size =18),
-        legend.text = element_text(size = 18),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18, angle = -45, hjust = 0),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90)) +
+  labs(tags = "A.")
 cc_top.plot
+
+# Joining histograms #
+(cc_top.plot) /
+  (cc_soil_nod.plot | cc_root_nod.plot) +
+  plot_layout(guides = "keep") &
+  theme(plot.tag = element_text(size = 22, face = "bold", family = "Liberation Sans"))
 
 ## Desmodium ##
 ds_all.ps <- subset_samples(all.ps, Plant == "D. illinoense")
@@ -4782,25 +4847,37 @@ ds_top.colr <- all.colr[ds_top.name,]
 
 ds_top.df <- psmelt(ds_top.ps)
 ds_top.df$Genera <- factor(ds_top.df$Genus, levels = ds_top.name)
+ds_top.df$Group <- factor(ds_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-ds_top.plot <- ggplot(ds_top.df, aes(x = Soils, y = Abundance, fill = Genera)) +
+ds_top.plot <- ggplot(ds_top.df, aes(x = Group, y = Abundance, fill = Genera)) +
   geom_bar(stat='identity', position = 'fill') +
   facet_wrap(~Comps, scales = "fixed") +
   xlab('') +
-  ylab('Relative Abudnance') +
+  ylab('Relative Abundance') +
   scale_fill_manual(values = ds_top.colr) +
   scale_y_continuous(sec.axis = dup_axis(name = expression(italic('D. illinoense')))) +
   theme_bw() +
-  theme(axis.text.x.bottom = element_text(color = "black", size = 18, angle = -45, hjust = 0),
-        axis.title = element_text(size = 22),
-        strip.text = element_text(size =18),
-        legend.text = element_text(size = 18),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18, angle = -45, hjust = 0),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90)) +
+  labs(tags = "A.")
 ds_top.plot
+
+# Joining histograms #
+(ds_top.plot) /
+  (ds_soil_nod.plot | ds_root_nod.plot) +
+  plot_layout(guides = "keep") &
+  theme(plot.tag = element_text(size = 22, face = "bold", family = "Liberation Sans"))
 
 ## Hog Peanut ##
 hp_all.ps <- subset_samples(all.ps, Plant == "A. bracteata")
@@ -4814,25 +4891,37 @@ hp_top.colr <- all.colr[hp_top.name,]
 
 hp_top.df <- psmelt(hp_top.ps)
 hp_top.df$Genera <- factor(hp_top.df$Genus, levels = hp_top.name)
+hp_top.df$Group <- factor(hp_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-hp_top.plot <- ggplot(hp_top.df, aes(x = Soils, y = Abundance, fill = Genera)) +
+hp_top.plot <- ggplot(hp_top.df, aes(x = Group, y = Abundance, fill = Genera)) +
   geom_bar(stat='identity', position = 'fill') +
   facet_wrap(~Comps, scales = "fixed") +
   xlab('') +
-  ylab('Relative Abudnance') +
+  ylab('Relative Abundance') +
   scale_fill_manual(values = hp_top.colr) +
   scale_y_continuous(sec.axis = dup_axis(name = expression(italic('A. bracteata')))) +
   theme_bw() +
-  theme(axis.text.x.bottom = element_text(color = "black", size = 18, angle = -45, hjust = 0),
-        axis.title = element_text(size = 22),
-        strip.text = element_text(size =18),
-        legend.text = element_text(size = 18),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18, angle = -45, hjust = 0),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90)) +
+  labs(tags = "A.")
 hp_top.plot
+
+# Joining histograms #
+(hp_top.plot) /
+  (hp_soil_nod.plot | hp_root_nod.plot) +
+  plot_layout(guides = "keep") &
+  theme(plot.tag = element_text(size = 22, face = "bold", family = "Liberation Sans"))
 
 ## Clover ##
 cl_all.ps <- subset_samples(all.ps, Plant == "T. repens")
@@ -4846,25 +4935,37 @@ cl_top.colr <- all.colr[cl_top.name,]
 
 cl_top.df <- psmelt(cl_top.ps)
 cl_top.df$Genera <- factor(cl_top.df$Genus, levels = cl_top.name)
+cl_top.df$Group <- factor(cl_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-cl_top.plot <- ggplot(cl_top.df, aes(x = Soils, y = Abundance, fill = Genera)) +
+cl_top.plot <- ggplot(cl_top.df, aes(x = Group, y = Abundance, fill = Genera)) +
   geom_bar(stat='identity', position = 'fill') +
   facet_wrap(~Comps, scales = "fixed") +
   xlab('') +
-  ylab('Relative Abudnance') +
+  ylab('Relative Abundance') +
   scale_fill_manual(values = cl_top.colr) +
   scale_y_continuous(sec.axis = dup_axis(name = expression(italic('T. repens')))) +
   theme_bw() +
-  theme(axis.text.x.bottom = element_text(color = "black", size = 18, angle = -45, hjust = 0),
-        axis.title = element_text(size = 22),
-        strip.text = element_text(size =18),
-        legend.text = element_text(size = 18),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18, angle = -45, hjust = 0),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90)) +
+  labs(tags = "A.")
 cl_top.plot
+
+# Joining histograms #
+(cl_top.plot) /
+  (cl_soil_nod.plot | cl_root_nod.plot) +
+  plot_layout(guides = "keep") &
+  theme(plot.tag = element_text(size = 22, face = "bold", family = "Liberation Sans"))
 
 ## Medicago ##
 md_all.ps <- subset_samples(all.ps, Plant == "M. truncatula")
@@ -4878,25 +4979,37 @@ md_top.colr <- all.colr[md_top.name,]
 
 md_top.df <- psmelt(md_top.ps)
 md_top.df$Genera <- factor(md_top.df$Genus, levels = md_top.name)
+md_top.df$Group <- factor(md_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-md_top.plot <- ggplot(md_top.df, aes(x = Soils, y = Abundance, fill = Genera)) +
+md_top.plot <- ggplot(md_top.df, aes(x = Group, y = Abundance, fill = Genera)) +
   geom_bar(stat='identity', position = 'fill') +
   facet_wrap(~Comps, scales = "fixed") +
   xlab('') +
-  ylab('Relative Abudnance') +
+  ylab('Relative Abundance') +
   scale_fill_manual(values = md_top.colr) +
   scale_y_continuous(sec.axis = dup_axis(name = expression(italic('M. truncatula')))) +
   theme_bw() +
-  theme(axis.text.x.bottom = element_text(color = "black", size = 18, angle = -45, hjust = 0),
-        axis.title = element_text(size = 22),
-        strip.text = element_text(size =18),
-        legend.text = element_text(size = 18),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18, angle = -45, hjust = 0),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90)) +
+  labs(tags = "A.")
 md_top.plot
+
+# Joining histograms #
+(md_top.plot) /
+  (md_soil_nod.plot | md_root_nod.plot) +
+  plot_layout(guides = "keep") &
+  theme(plot.tag = element_text(size = 22, face = "bold", family = "Liberation Sans"))
 
 #### Differential Abundance ####
 library(Maaslin2); packageVersion("Maaslin2")
@@ -6362,7 +6475,8 @@ fb_bulk_meso.plot <- ggplot(fb_bulk.meso, aes(x = Comps, y = `ASV9(Mesorhizobium
   geom_signif(annotation = fb_bulk.nvsc,
               y_position = 0.0025, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
-              textsize = 12)
+              textsize = 12) +
+  labs(tag = "A.")
 fb_bulk_meso.plot
 
 ### Fuzzy Bean Rhizosphere ###
@@ -6414,7 +6528,8 @@ fb_rhiz_meso.plot <- ggplot(fb_rhiz.meso, aes(x = Comps, y = `ASV9(Mesorhizobium
               y_position = 0.0055, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 20,
-              vjust = 0.65)
+              vjust = 0.65) +
+  labs(tag = "B.")
 fb_rhiz_meso.plot
 
 ### Fuzzy Bean Root Endosphere ###
@@ -6466,11 +6581,13 @@ fb_root_meso.plot <- ggplot(fb_root.meso, aes(x = Comps, y = `ASV12(Mesorhizobiu
   geom_signif(annotation = fb_root.nvsc,
               y_position = 0.01, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
-              textsize = 12)
+              textsize = 12) +
+  labs(tag = "C.")
 fb_root_meso.plot
 
 # Make a patchwork plot for all compartments #
-(fb_bulk_meso.plot | fb_rhiz_meso.plot | fb_root_meso.plot)
+(fb_bulk_meso.plot | fb_rhiz_meso.plot | fb_root_meso.plot) &
+  theme(plot.tag = element_text(size = 22, face = 'bold', family = "Liberation Sans"))
 
 
 ### Chamaecrista Bulk Soil ###
@@ -6523,7 +6640,8 @@ cc_bulk_meso.plot <- ggplot(cc_bulk.meso, aes(x = Comps, y = `ASV1(Bradyrhizobiu
               y_position = 0.095, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 20,
-              vjust = 0.65)
+              vjust = 0.65) +
+  labs(tag = "A.")
 cc_bulk_meso.plot
 
 ### Chamaecrista Rhizosphere ###
@@ -6576,7 +6694,8 @@ cc_rhiz_meso.plot <- ggplot(cc_rhiz.meso, aes(x = Comps, y = `ASV1(Bradyrhizobiu
               y_position = 0.7, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 20,
-              vjust = 0.65)
+              vjust = 0.65) +
+  labs(tag = "B.")
 cc_rhiz_meso.plot
 
 ### Chamaecrista Root Endosphere ###
@@ -6628,11 +6747,13 @@ cc_root_meso.plot <- ggplot(cc_root.meso, aes(x = Comps, y = `ASV3(Bradyrhizobiu
               y_position = 0.9, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 20,
-              vjust = 0.65)
+              vjust = 0.65) +
+  labs(tag = "C.")
 cc_root_meso.plot
 
 # Make a patchwork plot for all compartments #
-(cc_bulk_meso.plot | cc_rhiz_meso.plot | cc_root_meso.plot)
+(cc_bulk_meso.plot | cc_rhiz_meso.plot | cc_root_meso.plot) &
+  theme(plot.tag = element_text(size = 22, face = 'bold', family = "Liberation Sans"))
 
 ## Bonus Plots for other noduel rhizobia in roots ##
 # Plot the differential abundance #
@@ -6667,7 +6788,8 @@ cc_root_meso6.plot <- ggplot(cc_root.meso, aes(x = Comps, y = `ASV6(Bradyrhizobi
               y_position = 0.35, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 20,
-              vjust = 0.65)
+              vjust = 0.65) +
+  labs(tag = "A.")
 cc_root_meso6.plot
 
 # Plot the differential abundance #
@@ -6702,7 +6824,8 @@ cc_root_meso14.plot <- ggplot(cc_root.meso, aes(x = Comps, y = `ASV14(Bradyrhizo
               y_position = 0.35, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 20,
-              vjust = 0.65)
+              vjust = 0.65) +
+  lab(tags = "B.")
 cc_root_meso14.plot
 
 (cc_root_meso.plot | cc_root_meso6.plot | cc_root_meso14.plot)
@@ -6758,7 +6881,8 @@ ds_bulk_meso.plot <- ggplot(ds_bulk.meso, aes(x = Comps, y = `ASV1(Bradyrhizobiu
               y_position = 0.07, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 20,
-              vjust = 0.65)
+              vjust = 0.65) +
+  labs(tag = "A.")
 ds_bulk_meso.plot
 
 ### Desmodium Rhizosphere ###
@@ -6811,7 +6935,8 @@ ds_rhiz_meso.plot <- ggplot(ds_rhiz.meso, aes(x = Comps, y = `ASV1(Bradyrhizobiu
               y_position = 0.09, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 20,
-              vjust = 0.65)
+              vjust = 0.65) +
+  labs(tag = "B.")
 ds_rhiz_meso.plot
 
 ### Desmodium Root Endosphere ###
@@ -6861,11 +6986,13 @@ ds_root_meso.plot <- ggplot(ds_root.meso, aes(x = Comps, y = `ASV7(Bradyrhizobiu
   geom_signif(annotation = ds_root.nvsc,
               y_position = 0.33, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
-              textsize = 12)
+              textsize = 12) +
+  labs(tag = "C.")
 ds_root_meso.plot
 
 # Make a patchwork plot for all compartments #
-(ds_bulk_meso.plot | ds_rhiz_meso.plot | ds_root_meso.plot)
+(ds_bulk_meso.plot | ds_rhiz_meso.plot | ds_root_meso.plot) &
+  theme(plot.tag = element_text(size = 22, face = 'bold', family = "Liberation Sans"))
 
 ### Hog Peanut Bulk Soil ###
 ## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
@@ -6917,7 +7044,8 @@ hp_bulk_meso.plot <- ggplot(hp_bulk.meso, aes(x = Comps, y = `ASV1(Bradyrhizobiu
               y_position = 0.042, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 20,
-              vjust = 0.65)
+              vjust = 0.65) +
+  labs(tag = "A.")
 hp_bulk_meso.plot
 
 ### Hog Peanut Rhizosphere ###
@@ -6968,7 +7096,8 @@ hp_rhiz_meso.plot <- ggplot(hp_rhiz.meso, aes(x = Comps, y = `ASV1(Bradyrhizobiu
   geom_signif(annotation = hp_rhiz.nvsc,
               y_position = 0.09, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
-              textsize = 12)
+              textsize = 12) +
+  labs(tag = "B.")
 hp_rhiz_meso.plot
 
 ### Hog Peanut Root Endosphere ###
@@ -6984,16 +7113,19 @@ hp_root.meso <- cbind(hp_root_prop$met, t(hp_root_prop$otu["ASV7(Bradyrhizobium)
 hp_root.meso$Soils <- factor(hp_root.meso$Soil.Origin, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 # Make annotations for significant differences #
-hp_root.pvsn <- "***"
+hp_root.pvsn <- "ns"
 hp_root.pvsc <- "ns"
-hp_root.nvsc <- "***"
+hp_root.nvsc <- "ns"
+
+# Since ASV9 was not found in the root endosphere samples, just make a column of zeros #
+hp_root.meso$`ASV9(Bradyrhizobium)` <- 0
 
 # Plot the differential abundance #
-hp_root_meso.plot <- ggplot(hp_root.meso, aes(x = Comps, y = `ASV7(Bradyrhizobium)`)) +
+hp_root_meso.plot <- ggplot(hp_root.meso, aes(x = Comps, y = `ASV9(Bradyrhizobium)`)) +
   geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
   scale_y_continuous(limits = c(0,0.8), breaks = seq(0,0.8, by = 0.2), sec.axis = dup_axis(name = "A. bracteata")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Root Endosphere<br>ASV7(*Bradyrhizobium*)") +
+  scale_x_discrete(labels = "Root Endosphere<br>ASV9(*Bradyrhizobium*)") +
   ylab('') +
   xlab('') +
   theme_prism() +
@@ -7007,24 +7139,12 @@ hp_root_meso.plot <- ggplot(hp_root.meso, aes(x = Comps, y = `ASV7(Bradyrhizobiu
         legend.title = element_blank(),
         legend.key.spacing.x = unit(2,'cm'),
         legend.position = 'none') +
-  geom_signif(annotation = hp_root.pvsn,
-              y_position = 0.7, xmin = 1, xmax = 1.25,
-              tip_length = c(0.01, 0.01),
-              textsize = 20,
-              vjust = 0.65) +
-  geom_signif(annotation = hp_root.pvsc,
-              y_position = 0.8, xmin = 0.75, xmax = 1.25,
-              tip_length = c(0.01, 0.01),
-              textsize = 12) +
-  geom_signif(annotation = hp_root.nvsc,
-              y_position = 0.75, xmin = 0.75, xmax = 1,
-              tip_length = c(0.01, 0.01),
-              textsize = 20,
-              vjust = 0.65)
+  labs(tag = "C.")
 hp_root_meso.plot
 
 # Make a patchwork plot for all compartments #
-(hp_bulk_meso.plot | hp_rhiz_meso.plot | hp_root_meso.plot)
+(hp_bulk_meso.plot | hp_rhiz_meso.plot | hp_root_meso.plot) &
+  theme(plot.tag = element_text(size = 22, face = 'bold', family = "Liberation Sans"))
 
 ### Clover Bulk Soil ###
 ## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
@@ -7062,7 +7182,7 @@ cl_bulk_meso.plot <- ggplot(cl_bulk.meso, aes(x = Comps, y = `ASV2(Agrobacterium
         legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
         legend.title = element_blank(),
         legend.key.spacing.x = unit(2,'cm'),
-        legend.position = 'none') +
+        legend.position = 'bottom') +
   geom_signif(annotation = cl_bulk.pvsn,
               y_position = 0.038, xmin = 1, xmax = 1.25,
               tip_length = c(0.01, 0.01),
@@ -7076,7 +7196,8 @@ cl_bulk_meso.plot <- ggplot(cl_bulk.meso, aes(x = Comps, y = `ASV2(Agrobacterium
               y_position = 0.042, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 20,
-              vjust = 0.65)
+              vjust = 0.65) +
+  labs(tag = "A.")
 cl_bulk_meso.plot
 
 ### Clover Rhizosphere ###
@@ -7115,7 +7236,8 @@ cl_rhiz_meso.plot <- ggplot(cl_rhiz.meso, aes(x = Comps, y = `ASV2(Agrobacterium
         legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
         legend.title = element_blank(),
         legend.key.spacing.x = unit(2,'cm'),
-        legend.position = 'bottom')
+        legend.position = 'none') +
+  labs(tag = "B.")
 cl_rhiz_meso.plot
 
 ### Hog Peanut Root Endosphere ###
@@ -7165,11 +7287,14 @@ cl_root_meso.plot <- ggplot(cl_root.meso, aes(x = Comps, y = `ASV1(Rhizobium)`))
   geom_signif(annotation = cl_root.nvsc,
               y_position = 0.9, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
-              textsize = 12)
+              textsize = 12) +
+  labs(tag = "C.")
 cl_root_meso.plot
 
 # Make a patchwork plot for all compartments #
-(cl_bulk_meso.plot | cl_rhiz_meso.plot | cl_root_meso.plot)
+(cl_bulk_meso.plot + plot_layout(guides = "keep") & theme(legend.position = "bottom", legend.justification = c(-0.85,0)) | cl_rhiz_meso.plot   | cl_root_meso.plot) &
+  theme(plot.tag = element_text(size = 22, face = 'bold', family = "Liberation Sans"))
+
 
 ### Medicago Bulk Soil ###
 ## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
@@ -7221,7 +7346,8 @@ md_bulk_meso.plot <- ggplot(md_bulk.meso, aes(x = Comps, y = `ASV2(Agrobacterium
               y_position = 0.042, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 20,
-              vjust = 0.65)
+              vjust = 0.65) +
+  labs(tag = "A.")
 md_bulk_meso.plot
 
 ### Medicago Rhizosphere ###
@@ -7272,7 +7398,8 @@ md_rhiz_meso.plot <- ggplot(md_rhiz.meso, aes(x = Comps, y = `ASV2(Agrobacterium
   geom_signif(annotation = md_rhiz.nvsc,
               y_position = 0.09, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
-              textsize = 12)
+              textsize = 12) +
+  labs(tag = "B.")
 md_rhiz_meso.plot
 
 ### Medicago Root Endosphere ###
@@ -7325,11 +7452,13 @@ md_root_meso.plot <- ggplot(md_root.meso, aes(x = Comps, y = `ASV4(Sinorhizobium
   geom_signif(annotation = md_root.nvsc,
               y_position = 0.55, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
-              textsize = 12)
+              textsize = 12) +
+  labs(tag = "C.")
 md_root_meso.plot
 
 # Make a patchwork plot for all compartments #
-(md_bulk_meso.plot | md_rhiz_meso.plot | md_root_meso.plot)
+(md_bulk_meso.plot | md_rhiz_meso.plot | md_root_meso.plot) &
+  theme(plot.tag = element_text(size = 22, face = 'bold', family = "Liberation Sans"))
 
 # Plot the differential abundance #
 md_root_meso2.plot <- ggplot(md_root.meso, aes(x = Comps, y = `ASV2(Sinorhizobium)`)) +
