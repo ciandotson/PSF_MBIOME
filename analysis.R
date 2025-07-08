@@ -7500,3 +7500,60 @@ md_root_meso2.plot
 (md_root_meso.plot | md_root_meso2.plot) +
   plot_layout(guides = "collect") &
   theme(legend.position = "bottom")
+
+#### Alpha Rarefaction Curve ####
+library(amplicon); packageVersion('amplicon')
+
+# Perform the rarefaction using all soil samples # 
+soild <- alpha_rare_all(otu = soil$otu, map = soil$met, method = "diversity_shannon", start = 0, step = 2500, group = "Plants", ps = soil.ps)
+soil.radf <- soil.rare[[2]]
+
+# Join the metadata to the rarefaction dataframe joined based on ID of the sample #
+soil.rfdf <- c()
+for(i in 1:nrow(soil.radf)){
+  if(soil.radf$ID[i] %in% rownames(soil$met)){
+    hold <- cbind(soil.radf[i,], soil$met[soil.radf$ID[i],])
+    soil.rfdf <- rbind(soil.rfdf, hold)
+    hold <- c()
+  }
+}
+soil.radf <- soil.rfdf
+
+# Plot the Alpha-rarefaction Curve #
+ggplot(soil.radf, aes(x = i, y = index, group = ID, color = Group)) +
+  geom_smooth(span = 0.7, se = FALSE, method = "loess") +
+  theme_bw() +
+  xlab('Sequencing Coverage') +
+  ylab("Shannon Diversity") +
+  scale_color_manual(name = "Plant Species", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. illinoense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A")) +
+  theme(axis.title = element_text(size = 22, color = 'black', face = 'bold', family = 'Liberation Sans'),
+        axis.text = element_text(size = 18, color = 'black', face = 'bold', family = 'Liberation Sans'),
+        legend.title = element_text(size = 22, color = 'black', face = 'bold', family = 'Liberation Sans'),
+        legend.text = element_text(size = 18, color = 'black', face = 'bold.italic'))
+  
+# Perform the rarefaction using all root endosphere samples # 
+root.rare <- alpha_rare_all(otu = root$otu, map = root$met, method = "diversity_shannon", start = 0, step = 2500, group = "Plants", ps = root.ps)
+root.radf <- root.rare[[2]]
+
+# Join the metadata to the rarefaction dataframe joined based on ID of the sample #
+root.rfdf <- c()
+for(i in 1:nrow(root.radf)){
+  if(root.radf$ID[i] %in% rownames(root$met)){
+    hold <- cbind(root.radf[i,], root$met[root.radf$ID[i],])
+    root.rfdf <- rbind(root.rfdf, hold)
+    hold <- c()
+  }
+}
+root.radf <- root.rfdf
+
+# Plot the Alpha-rarefaction Curve #
+ggplot(root.radf, aes(x = i, y = index, group = ID, color = Group)) +
+  geom_smooth(span = 0.7, se = FALSE, method = "loess") +
+  theme_bw() +
+  xlab('Sequencing Coverage') +
+  ylab("Shannon Diversity") +
+  scale_color_manual(name = "Plant Species", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. illinoense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A")) +
+  theme(axis.title = element_text(size = 22, color = 'black', face = 'bold', family = 'Liberation Sans'),
+        axis.text = element_text(size = 18, color = 'black', face = 'bold', family = 'Liberation Sans'),
+        legend.title = element_text(size = 22, color = 'black', face = 'bold', family = 'Liberation Sans'),
+        legend.text = element_text(size = 18, color = 'black', face = 'bold.italic'))
