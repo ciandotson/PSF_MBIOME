@@ -22,7 +22,7 @@ for(i in 1:nrow(nodnbio.data)){
 }
 
 # Group all observations by Plant Species and Soil Treatment and find the group mean and standard error # 
-if(!requireNamespace('dply')) installed.packages('dplyr')
+if(!requireNamespace('dplyr')) installed.packages('dplyr')
 library(dplyr); packageVersion('dplyr')
 nodnbio.mnsd <- nodnbio.data %>%
   group_by(Plant_Sample, Soil_Treatment) %>%
@@ -7543,3 +7543,5 @@ ggplot(root.radf, aes(x = i, y = index, group = ID, color = Group)) +
         axis.text = element_text(size = 18, color = 'black', face = 'bold', family = 'Liberation Sans'),
         legend.title = element_text(size = 22, color = 'black', face = 'bold', family = 'Liberation Sans'),
         legend.text = element_text(size = 18, color = 'black', face = 'bold.italic'))
+
+save.image("PSF.RData")
