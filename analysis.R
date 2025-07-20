@@ -1,6 +1,7 @@
 # Rscript ~/PSF_MBIOME/analysis.R --raw_soil ~/test_PSF/reads/soil_reads --raw_root ~/test_PSF/reads/endo_reads | cat > PSF_log.txt #
 
 #### Argument Parsing ####
+if(!requireNamespace('optparse', quietly = TRUE)) install.packages("optparse")
 library(optparse); packageVersion("optparse")
 option_list <- list(
   make_option("--raw_soil", type = "character", help = "filepath containing the raw, untrimmed reads for the reads generated from the v4 primers (bulk soil, rhizosphere, and some nodule samples)"),
@@ -21,7 +22,7 @@ for(i in 1:nrow(nodnbio.data)){
 }
 
 # Group all observations by Plant Species and Soil Treatment and find the group mean and standard error # 
-if(!requireNamespace())
+if(!requireNamespace('dply')) installed.packages('dplyr')
 library(dplyr); packageVersion('dplyr')
 nodnbio.mnsd <- nodnbio.data %>%
   group_by(Plant_Sample, Soil_Treatment) %>%
