@@ -1,29 +1,20 @@
-# Rscript ~/PSF_MBIOME/analysis.R --raw_soil ~/test_PSF/reads/soil_reads --raw_root ~/test_PSF/reads/endo_reads --soil_metadata ~/PSF_MBIOME/metadata/soil_metadata.csv --pheno ~/PSF_MBIOME/nodnbio.csv --reference ~/PSF_MBIOME/reference/rdp_19_toGenus_trainset.fa.gz | cat > PSF_log.txt #
+# Rscript ~/PSF_MBIOME/analysis.R --raw_soil ~/test_PSF/reads/soil_reads --raw_root ~/test_PSF/reads/endo_reads | cat > PSF_log.txt #
 
 #### Argument Parsing ####
+if(!requireNamespace("optparse")) install.packages("optparse")
 library(optparse); packageVersion("optparse")
 option_list <- list(
   make_option("--raw_soil", type = "character", help = "filepath containing the raw, untrimmed reads for the reads generated from the v4 primers (bulk soil, rhizosphere, and some nodule samples)"),
-  make_option("--soil_metadata", type = "character", help = "filepath that contains the Comma Separated Values (csv) file of the soil metadata"),
-  make_option("--pheno", type = "character", help = "filepath that contains the Comma Separated Values (csv) file of the phenotype data (biomass and nodule counts)"),
-  make_option("--reference", type = "character", help = "filepath that contains the reference database to assign taxonomy to the reads"),
-  make_option("--raw_root", type = "character", help = "filepath containing the raw, untrimmed reads for the reads generated from the v5-v7 primers( root endosphere and some nodule samples)"),
-  make_option("--root_metadata", type = "character", help = "filepath that contains the Comma Separated Values (csv) file of the root metadata"),
-  make_option("--zymo", type = "character", help = "filepath to where the reference fasta files are for the ZYMO mock culture"))
+  make_option("--raw_root", type = "character", help = "filepath containing the raw, untrimmed reads for the reads generated from the v5-v7 primers( root endosphere and some nodule samples)"))
 
 opt <- parse_args(OptionParser(option_list=option_list))
 
 soil.dir <- opt$raw_soil
-soil.met <- opt$soil_metadata
-nodnbio <- opt$pheno
-reference <- opt$reference
 root.dir <- opt$raw_root
-root.met <- opt$root_metadata
-zymo <- opt$zymo
 
 #### Nodule Count and Biomass Data Visualization ####
 # Read in the phenotypic data and clean it for analysis #
-nodnbio.data <- read.csv2(nodnbio, sep = ',')
+nodnbio.data <- read.csv2("./nodnbio.csv", sep = ',')
 colnames(nodnbio.data) <- c('Plant_Sample', 'Soil_Treatment', 'Nodule_Count', 'Aboveground_Biomass')
 nodnbio.data$Aboveground_Biomass <- as.numeric(nodnbio.data$Aboveground_Biomass)
 for(i in 1:nrow(nodnbio.data)){
@@ -31,6 +22,7 @@ for(i in 1:nrow(nodnbio.data)){
 }
 
 # Group all observations by Plant Species and Soil Treatment and find the group mean and standard error # 
+if(!requireNamespace())
 library(dplyr); packageVersion('dplyr')
 nodnbio.mnsd <- nodnbio.data %>%
   group_by(Plant_Sample, Soil_Treatment) %>%
@@ -245,6 +237,7 @@ soil.names <- sapply(strsplit(basename(raw_soil.ffp), "_"), `[`, 1)
 soil.names <- as.character(soil.names)
 
 # Find all orientations of each primer for primer trimming #
+if(!requireNamespace("Biostrings")) install.packages("Biostrings")
 library(Biostrings); packageVersion('Biostrings')
 allOrients <- function(primer) {
   # Create all orientations of the input sequence #
@@ -268,6 +261,7 @@ pre_soil.ffp <- file.path('./reads/pretrim/soil_pretrim', paste0(soil.names, '_p
 pre_soil.rfp <- file.path('./reads/pretrim/soil_pretrim', paste0(soil.names, '_pretrim_R2.fastq.gz'))
 
 # Filter reads less than 75 bp and save the filtered fastqs to the pretrim filepaths #
+if(!requireNamespace("dada2")) BiocManager::install("dada2")
 library(dada2); packageVersion('dada2')
 soil_prefilt.track <- filterAndTrim(raw_soil.ffp, pre_soil.ffp, raw_soil.rfp, pre_soil.rfp, minLen = 75,
                                     compress = TRUE, multithread = TRUE)
@@ -341,11 +335,11 @@ rownames(soil_final.track) <- soil.names
 soil_final.track <- as.data.frame(soil_final.track)
 
 # Assign Taxonomy #
-soil_rdp.taxa <- assignTaxonomy(rownames(soil_nochim.st), refFasta = reference, multithread = TRUE, verbose = TRUE)
+soil_rdp.taxa <- assignTaxonomy(rownames(soil_nochim.st), refFasta = './reference/rdp_19_toGenus_trainset.fa.gz', multithread = TRUE, verbose = TRUE)
 soil_rdp.taxa <- as.matrix(soil_rdp.taxa)
 
 # Load the metadata #
-soil_raw.met <- read.csv2(soil.met, sep = ',')
+soil_raw.met <- read.csv2('./metadata/soil_metadata.csv', sep = ',')
 rownames(soil_raw.met) <- soil_raw.met$Sample
 soil_raw.met <- soil_raw.met[,c('Sample', 'Plant', 'Soil_Treatment', 'Compartment')]
 
@@ -353,7 +347,7 @@ soil_raw.met <- soil_raw.met[,c('Sample', 'Plant', 'Soil_Treatment', 'Compartmen
 unqs.mock <- soil_nochim.st[,"ZymoMockDNA"]
 unqs.mock <- sort(unqs.mock[unqs.mock>0], decreasing=TRUE)
 cat("DADA2 inferred", length(unqs.mock), "sample sequences present in the Mock community.\n")
-mock.ref <- getSequences(zymo)
+mock.ref <- getSequences('./reference/ssrRNAs/')
 match.ref <- sum(sapply(names(unqs.mock), function(x) any(grepl(x, mock.ref))))
 cat("Of those,", sum(match.ref), "were exact matches to the expected reference sequences.\n")
 
@@ -399,7 +393,8 @@ decompose_ps <- function(ps, label){
 
 decompose_ps(raw_soil.ps, 'raw_soil')
 #### Cross-Validation of Soil Reads Using BLAST ####
-library(rBLAST)
+if(!requireNamespace('rBLAST')) BiocManager::install('rBLAST')
+library(rBLAST);packageVersion('rBLAST')
 
 # Create local blast database from the 16S rRNA database using rBLAST #
 blast.tar <- blast_db_get("16S_ribosomal_RNA.tar.gz", baseURL = 'https://ftp.ncbi.nlm.nih.gov/blast/db/', check_update = TRUE)
@@ -418,7 +413,6 @@ for(i in 1:length(raw_soil$dna)){
 }
 
 # Filter out reads that do not correspond to a NCBI entry #
-library(dplyr); packageVersion('dplyr')
 filt_soil.tax <- filter(raw_soil$tax, !is.na(raw_soil$tax$Best_Hit))
 
 # Output the resulting NCBI entry names to a list #
@@ -494,6 +488,7 @@ system('mafft --auto --thread -1 ./reads/soil_input.fasta > ./reads/soils_aligne
 system('iqtree -s ./reads/soils_aligned.fasta -m GTR+G+I -nt AUTO')
 
 # Read the tree using ape and check that the tip labels match #
+if(!requireNamespace('ape')) install.packages('ape')
 library(ape); packageVersion('ape')
 soil.tre <- read.tree("./reads/soils_aligned.fasta.treefile")
 soil.tre$tip.label <- sub("^(ASV[0-9]+)_([^_]+)_$", "\\1(\\2)", soil.tre$tip.label)
@@ -726,15 +721,6 @@ root.names <- sub("^([^_]+_[^_]+)_.*$", "\\1", basename(raw_root.ffp))
 root.names <- as.character(root.names)
 
 # Find all orientations of each primer for primer trimming #
-library(Biostrings); packageVersion('Biostrings')
-allOrients <- function(primer) {
-  # Create all orientations of the input sequence #
-  require(Biostrings)
-  dna <- DNAString(primer)  # The Biostrings works w/ DNAString objects rather than character vectors
-  orients <- c(Forward = dna, Complement = Biostrings::complement(dna), Reverse = Biostrings::reverse(dna),
-               RevComp = Biostrings::reverseComplement(dna))
-  return(sapply(orients, toString))  # Convert back to character vector
-}
 
 root.fprimer <- "AACMGGATTAGATACCCKG"
 root.rprimer <- "ACGTCATCCCCACCTTCC"
@@ -817,11 +803,11 @@ rownames(root_final.track) <- root.names
 root_final.track <- as.data.frame(root_final.track)
 
 # Assign Taxonomy #
-root_rdp.taxa <- assignTaxonomy(rownames(root_nochim.st), refFasta = reference, multithread = TRUE, verbose = TRUE)
+root_rdp.taxa <- assignTaxonomy(rownames(root_nochim.st), refFasta = './reference/rdp_19_toGenus_trainset.fa.gz', multithread = TRUE, verbose = TRUE)
 root_rdp.taxa <- as.matrix(root_rdp.taxa)
 
 # Load the metadata #
-root_raw.met <- read.csv2(root.met, sep = ',')
+root_raw.met <- read.csv2('./metadata/endo_metadata.csv', sep = ',')
 rownames(root_raw.met) <- root_raw.met$Sample
 root_raw.met <- root_raw.met[,c('Sample.Name', 'Plant.Species', 'Soil.Origin', 'Compartment')]
 rownames(root_raw.met) <- sub("^([^_]+_[^_]+)_.*$", "\\1", rownames(root_raw.met))
