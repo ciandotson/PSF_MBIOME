@@ -392,6 +392,7 @@ decompose_ps <- function(ps, label){
 }
 
 decompose_ps(raw_soil.ps, 'raw_soil')
+save(raw_soil.ps, file = './psf_abirdged.RData'
 #### Cross-Validation of Soil Reads Using BLAST ####
 if(!requireNamespace('rBLAST')) BiocManager::install('rBLAST')
 library(rBLAST);packageVersion('rBLAST')
