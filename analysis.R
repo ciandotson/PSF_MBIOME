@@ -255,6 +255,7 @@ soil.fori <- allOrients(soil.fprimer)
 soil.rori <- allOrients(soil.rprimer)
 
 # Make filepaths for pretrimmed fastqs #
+system('mkdir ./reads')
 system('mkdir ./reads/pretrim')
 system('mkdir ./reads/pretrim/soil_pretrim')
 pre_soil.ffp <- file.path('./reads/pretrim/soil_pretrim', paste0(soil.names, '_pretrim_R1.fastq.gz'))
