@@ -223,16 +223,6 @@ nodnbio.plot <- (nod.plot) /
   plot_layout(guides = 'keep') &
   theme(plot.tag = element_text(size = 20))
 
-#### FastQC on the reads ####
-# Call fastqc to do quality control from the command line #
-system('mkdir QC')
-system('mkdir ./QC/raw_qc')
-system('mkdir ./QC/raw_qc/raw_soil_qc')
-system(paste0("fastqc --noextract ",soil.dir, "*fastq.gz -o ./QC/raw_qc/raw_soil_qc"))
-system('mkdir ./QC/raw_qc/raw_root_qc')
-system(paste0("fastqc --noextract ",root.dir, "*fastq.gz -o ./QC/raw_qc/raw_root_qc"))
-system("rm ./QC/raw_qc/raw_soil_qc/*.zip")
-system("rm ./QC/raw_qc/raw_root_qc/*.zip")
 
 #### Soil Primer Removal ####
 # Ensure you have the right files #
