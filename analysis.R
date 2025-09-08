@@ -12,6 +12,13 @@ opt <- parse_args(OptionParser(option_list=option_list))
 soil.dir <- opt$raw_soil
 root.dir <- opt$raw_root
 
+# Save the outputs and messages to a log file # 
+sink(file = './psf.log', append = TRUE, type = c("output", "message")) # Redirects stdout (e.g., print, cat) and stderr (e.g., warnings, message) #
+cat("## Script started at", Sys.time(), "\n\n")
+
+# Set the working directory to the cloned github repository #
+setwd("~/PSF_MBIOME")
+
 #### Nodule Count and Biomass Data Visualization ####
 # Read in the phenotypic data and clean it for analysis #
 nodnbio.data <- read.csv2("./nodnbio.csv", sep = ',')
@@ -22,7 +29,7 @@ for(i in 1:nrow(nodnbio.data)){
 }
 
 # Group all observations by Plant Species and Soil Treatment and find the group mean and standard error # 
-if(!requireNamespace('dplyr')) installed.packages('dplyr')
+if(!requireNamespace('dplyr')) install.packages('dplyr')
 library(dplyr); packageVersion('dplyr')
 nodnbio.mnsd <- nodnbio.data %>%
   group_by(Plant_Sample, Soil_Treatment) %>%
@@ -102,7 +109,9 @@ nod.data[1,3:6] <- 0
 nod.data$Group <- factor(nod.data$Plant_Sample, levels = c('T. repens', 'M. truncatula', 'S. helvola', 'C. fasciculata', 'D. illinoense', 'A. bracteata'))
 
 # Plot the results #
+if(!requireNamespace('ggplot2')) install.packages('ggplot2')
 library(ggplot2); packageVersion('ggplot2')
+if(!requireNamespace('ggprism')) install.packages('ggprism')
 library(ggprism); packageVersion('ggprism')
 nod.plot <- ggplot(nod.data, aes(x = Group, y = nod.mean, fill = Soil_Treatment, color = Soil_Treatment)) +
   geom_bar(stat = 'summary', position = 'dodge', width = 0.7) +
@@ -207,6 +216,7 @@ bio.plot <- ggplot(bio.data, aes(x = Group, y = bio.mean, fill = Soil_Treatment,
   labs(tag = "B.")
 
 # Join the nodule count and biomass plots into one plot #
+if(!requireNamespace('patchwork')) install.packages('patchwork')
 library(patchwork); packageVersion('patchwork')
 nodnbio.plot <- (nod.plot) /
   (bio.plot) +
@@ -392,7 +402,7 @@ decompose_ps <- function(ps, label){
 }
 
 decompose_ps(raw_soil.ps, 'raw_soil')
-save(raw_soil.ps, file = './psf_abirdged.RData'
+save(raw_soil.ps, file = './psf_abridged.RData')
 #### Cross-Validation of Soil Reads Using BLAST ####
 if(!requireNamespace('rBLAST')) BiocManager::install('rBLAST')
 library(rBLAST);packageVersion('rBLAST')
@@ -507,6 +517,11 @@ soil.ps <- phyloseq(otu_table(soil$otu, taxa_are_rows = TRUE),
                     refseq(soil$dna),
                     phy_tree(soil.tre))
 
+# Save the soil phyloseq object in the abridged .RData file # 
+if(!requireNamespace('cgwtools')) install.packages('cgwtools')
+library(cgwtools); packageVersion("cgwtools")
+resave(soil.ps, file = './psf_abridged.RData')
+
 #### Soil Nodule Stacked Histograms ####
 # Create a nodule specifc phyloseq object #
 soil_nod.ps <- subset_samples(soil.ps, Compartment == "Nodule")
@@ -514,7 +529,8 @@ soil_nod.ps <- subset_taxa(soil_nod.ps, taxa_sums(soil_nod.ps) > 0)
 decompose_ps(soil_nod.ps, "soil_nod")
 
 # Create a color palette for each ASV #
-library(Polychrome)
+if(!requireNamespace('Polychrome')) install.packages('Polychrome')
+library(Polychrome); packageVersion('Polychrome')
 soil_nod.colr <- createPalette(ntaxa(soil_nod.ps),  c("#ff0000", "#00ff00", "#0000ff"))
 soil_nod.colr <- as.data.frame(soil_nod.colr)
 rownames(soil_nod.colr) <- rownames(soil_nod$tax)
@@ -834,6 +850,8 @@ colnames(tax_table(raw_root.ps)) <- c('rdp_Kingdom', 'rdp_Phylum', 'rdp_Class', 
 
 taxa_names(raw_root.ps) <- paste0("ASV", seq(ntaxa(raw_root.ps)))
 decompose_ps(raw_root.ps, 'raw_root')
+resave(raw_root.ps, file = './psf_abridged.RData')
+
 #### Cross-Validation of root Reads Using BLAST ####
 
 # Performs the blast for each read and returns the best hit # 
@@ -943,6 +961,7 @@ root.ps <- phyloseq(otu_table(root$otu, taxa_are_rows = TRUE),
                     tax_table(root$tax),
                     refseq(root$dna),
                     phy_tree(root.tre))
+resave(root.ps, file = './psf_abridged.RData')
 
 #### Root Nodule Stacked Histograms ####
 # Create a nodule specifc phyloseq object #
