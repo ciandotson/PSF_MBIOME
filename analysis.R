@@ -7565,3 +7565,8 @@ ggplot(root.radf, aes(x = i, y = index, group = ID, color = Group)) +
         legend.text = element_text(size = 18, color = 'black', face = 'bold.italic'))
 
 save.image("PSF.RData")
+
+# This just outputs the final time in which the Rscript finishes running #
+cat("\n## Script finished at", Sys.time(), "\n")
+sink(type = "message")
+sink()
