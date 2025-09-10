@@ -481,7 +481,7 @@ decompose_ps(soil.ps, 'soil')
 
 #### Phylogenetic Tree Construction for Soils ####
 # Output the reads into a fasta file #
-writeXStringSet(soil$dna, "./reads/soil_input.fasta", use.names = TRUE)
+writeXStringSet(soil$dna, "./reads/soil_input.fasta")
 
 # Perform a multiple sequence alignment using MAFFT #
 system('mafft --auto --thread -1 ./reads/soil_input.fasta > ./reads/soils_aligned.fasta')
@@ -922,7 +922,7 @@ decompose_ps(root.ps, 'root')
 
 #### Phylogenetic Tree Construction for roots ####
 # Output the reads into a fasta file #
-writeXStringSet(as.character(root$dna, "./reads/root_input.fasta", use.names = TRUE))
+writeXStringSet(root$dna, "./reads/root_input.fasta")
 
 # Perform a multiple sequence alignment using MAFFT #
 system('mafft --auto --thread -1 ./reads/root_input.fasta > ./reads/roots_aligned.fasta')
