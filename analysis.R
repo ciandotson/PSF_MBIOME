@@ -353,7 +353,8 @@ match.ref <- sum(sapply(names(unqs.mock), function(x) any(grepl(x, mock.ref))))
 cat("Of those,", sum(match.ref), "were exact matches to the expected reference sequences.\n")
 
 #### Phyloseq Object Construction and Filtering for Soils ####
-library(phyloseq)
+if(requireNamespace('phyloseq')) BiocManager::install('phyloseq')
+library(phyloseq); packageVersion('phyloseq')
 raw_soil.ps <- phyloseq(otu_table(soil_nochim.st, taxa_are_rows = TRUE),
                         sample_data(soil_raw.met),
                         tax_table(soil_rdp.taxa))
@@ -494,9 +495,6 @@ if(!requireNamespace('ape')) install.packages('ape')
 library(ape); packageVersion('ape')
 soil.tre <- read.tree("./reads/soils_aligned.fasta.treefile")
 soil.tre$tip.label <- sub("^(ASV[0-9]+)_([^_]+)_$", "\\1(\\2)", soil.tre$tip.label)
-soil.tre$tip.label <- gsub("ASV47_Enterobacter", "ASV47(Enterobacter cloacae complex)", soil.tre$tip.label)
-soil.tre$tip.label <- gsub("ASV32_Streptomyces", "ASV32(Streptomyces aurantiacus group)", soil.tre$tip.label)
-soil.tre$tip.label <- gsub("ASV53_Streptomyces", "ASV53(Streptomyces aurantiacus group)", soil.tre$tip.label)
 
 # Combine final phyloseq object for soil samples #
 decompose_ps(soil.ps, 'soil')
@@ -530,7 +528,7 @@ rownames(soil_nod.colr)[118] <- "Other"
 
 # Create a tree for ASVs that are found in the nodules and are in the Order Hyphomicrobiales #
 soil_hyph.ps <- subset_taxa(soil_nod.ps, Order == "Hyphomicrobiales")
-plot_tree(soil_hyph.ps, label.tips = "taxa_names", ladderize = TRUE, color = "Family")
+soil_hyph_tre.plot <- plot_tree(soil_hyph.ps, label.tips = "taxa_names", ladderize = TRUE, color = "Family")
 
 # save a new phyloseq object without the nodules #
 soil.ps <- subset_samples(soil.ps, Compartment != "Nodule")
@@ -538,6 +536,22 @@ soil.ps <- subset_taxa(soil.ps, taxa_sums(soil.ps) > 0)
 decompose_ps(soil.ps, 'soil')
 
 # Construct a phyloseq object for each individual plant taxon's nodule community # 
+if(requireNamespace("microbiomeutilities")) BiocManager::install("microbiomeutilities")
+library(microbiomeutilities); packageVersion("microbiomeutilities")
+
+aggregate_top_taxa2 <- function(x, top, level){
+  # function that works like aggregate_top_taxa2() without downloading the package #
+  x <- aggregate_taxa(x, level)
+  tops <- top_taxa(x, top)
+  tax <- tax_table(x)
+  inds <- which(!rownames(tax) %in% tops)
+  tax[inds, level] <- "Other"
+  tax_table(x) <- tax
+  tt <- tax_table(x)[, level]
+  tax_table(x) <- tax_table(tt)
+  aggregate_taxa(x, level)
+}
+
 ## Fuzzy bean ##
 fb_soil_nod_raw.ps <- subset_samples(soil_nod.ps, Plant == "S. helvola")
 fb_soil_nod_raw.ps <- subset_taxa(fb_soil_nod_raw.ps, taxa_sums(fb_soil_nod_raw.ps) > 0)
