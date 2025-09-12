@@ -370,7 +370,7 @@ raw_soil.ps <- subset_samples(raw_soil.ps, Plant != 'N/A')
 raw_soil.ps <- subset_samples(raw_soil.ps, Compartment != 'Leaf')
 raw_soil.ps <- subset_samples(raw_soil.ps, Plant != 'Lupine')
 
-raw_soil.ps <- subset_taxa(raw_soil.ps, taxa_sums(raw_soil.ps) > 1000)
+raw_soil.ps <- subset_taxa(raw_soil.ps, taxa_sums(raw_soil.ps) > 100)
 colnames(tax_table(raw_soil.ps)) <- c('rdp_Kingdom', 'rdp_Phylum', 'rdp_Class', 'rdp_Order', 'rdp_Family', 'rdp_Genus')
 
 taxa_names(raw_soil.ps) <- paste0("ASV", seq(ntaxa(raw_soil.ps)))
@@ -460,7 +460,7 @@ soil.ps <- phyloseq(otu_table(filt_soil$otu, taxa_are_rows = TRUE),
                         tax_table(filt_soil$tax),
                         refseq(filt_soil$dna))
 
-soil.ps <- subset_taxa(soil.ps, taxa_sums(soil.ps) > 1000)
+soil.ps <- subset_taxa(soil.ps, taxa_sums(soil.ps) > 100)
 
 # Change the taxa names to represent comparative abundance and lowest identification level #
 taxa_names(soil.ps) <- paste0('ASV', seq(ntaxa(soil.ps)))
@@ -520,11 +520,14 @@ decompose_ps(soil_nod.ps, "soil_nod")
 # Create a color palette for each ASV #
 if(!requireNamespace('Polychrome')) install.packages('Polychrome')
 library(Polychrome); packageVersion('Polychrome')
-soil_nod.colr <- createPalette(ntaxa(soil_nod.ps),  c("#ff0000", "#00ff00", "#0000ff"))
+set.seed(248)
+soil_nod.colr <- createPalette(ntaxa(soil.ps),  c("#ff0000", "#00ff00", "#0000ff"))
 soil_nod.colr <- as.data.frame(soil_nod.colr)
-rownames(soil_nod.colr) <- rownames(soil_nod$tax)
+rownames(soil_nod.colr) <- taxa_names(soil_nod.ps)
 soil_nod.colr[ntaxa(soil_nod.ps) + 1,] <- "#D4D4D4" 
 rownames(soil_nod.colr)[ntaxa(soil_nod.ps) + 1] <- "Other" 
+
+save.image('./test.RData')
 
 # Create a tree for ASVs that are found in the nodules and are in the Order Hyphomicrobiales #
 soil_hyph.ps <- subset_taxa(soil_nod.ps, Order == "Hyphomicrobiales")
