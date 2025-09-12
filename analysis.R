@@ -523,8 +523,8 @@ library(Polychrome); packageVersion('Polychrome')
 soil_nod.colr <- createPalette(ntaxa(soil_nod.ps),  c("#ff0000", "#00ff00", "#0000ff"))
 soil_nod.colr <- as.data.frame(soil_nod.colr)
 rownames(soil_nod.colr) <- rownames(soil_nod$tax)
-soil_nod.colr[118,] <- "#D4D4D4" 
-rownames(soil_nod.colr)[118] <- "Other" 
+soil_nod.colr[ntaxa(soil_nod.ps) + 1,] <- "#D4D4D4" 
+rownames(soil_nod.colr)[ntaxa(soil_nod.ps) + 1] <- "Other" 
 
 # Create a tree for ASVs that are found in the nodules and are in the Order Hyphomicrobiales #
 soil_hyph.ps <- subset_taxa(soil_nod.ps, Order == "Hyphomicrobiales")
@@ -536,8 +536,8 @@ soil.ps <- subset_taxa(soil.ps, taxa_sums(soil.ps) > 0)
 decompose_ps(soil.ps, 'soil')
 
 # Construct a phyloseq object for each individual plant taxon's nodule community # 
-if(requireNamespace("microbiomeutilities")) BiocManager::install("microbiomeutilities")
-library(microbiomeutilities); packageVersion("microbiomeutilities")
+if(requireNamespace("microbiome")) BiocManager::install("microbiome")
+library(microbiome); packageVersion("microbiome")
 
 aggregate_top_taxa2 <- function(x, top, level){
   # function that works like aggregate_top_taxa2() without downloading the package #
@@ -947,15 +947,6 @@ system('iqtree -s ./reads/roots_aligned.fasta -m GTR+G+I -nt AUTO')
 # Read the tree using ape and check that the tip labels match #
 root.tre <- read.tree("./reads/roots_aligned.fasta.treefile")
 root.tre$tip.label <- sub("^(ASV[0-9]+)_([^_]+)_$", "\\1(\\2)", root.tre$tip.label)
-root.tre$tip.label <- gsub("_Enterobacter", "(Enterobacter cloacae complex)", root.tre$tip.label)
-root.tre$tip.label <- gsub("ASV110_Streptomyces", "ASV110(Streptomyces phaeochromogenes group)", root.tre$tip.label)
-root.tre$tip.label <- gsub("_Streptomyces", "(Streptomyces aurantiacus group)", root.tre$tip.label)
-root.tre$tip.label <- gsub("_Bacillus", "(Bacillus cereus group)", root.tre$tip.label)
-root.tre$tip.label <- gsub("_Citrobacter", "(Citrobacter freundii complex)", root.tre$tip.label)
-root.tre$tip.label <- gsub("_Pantoea", "(Pantoea agglomerans group)", root.tre$tip.label)
-root.tre$tip.label <- gsub("_Candidatus", "(Candidatus Protochlamydia)", root.tre$tip.label)
-
-
 
 # Combine final phyloseq object for root samples #
 decompose_ps(root.ps, 'root')
@@ -979,12 +970,12 @@ set.seed(248)
 root_nod.colr <- createPalette(ntaxa(root_nod.ps),  c("#ff0000", "#00ff00", "#0000ff"))
 root_nod.colr <- as.data.frame(root_nod.colr)
 rownames(root_nod.colr) <- rownames(root_nod$tax)
-root_nod.colr[252,] <- "#D4D4D4" 
-rownames(root_nod.colr)[252] <- "Other" 
+root_nod.colr[ntaxa(root_nod.ps) + 1,] <- "#D4D4D4" 
+rownames(root_nod.colr)[ntaxa(root_nod.ps) + 1] <- "Other" 
 
 # Create a tree for ASVs that are found in the nodules and are in the Order Hyphomicrobiales #
 root_hyph.ps <- subset_taxa(root_nod.ps, Order == "Hyphomicrobiales")
-plot_tree(root_hyph.ps, label.tips = "taxa_names", ladderize = TRUE, color = "Family")
+root_hyph_tre.plot <- plot_tree(root_hyph.ps, label.tips = "taxa_names", ladderize = TRUE, color = "Family")
 
 # save a new phyloseq object without the nodules #
 root.ps <- subset_samples(root.ps, Compartment != "Nodule")
