@@ -339,6 +339,8 @@ soil_final.track <- as.data.frame(soil_final.track)
 soil_rdp.taxa <- assignTaxonomy(rownames(soil_nochim.st), refFasta = './reference/rdp_19_toGenus_trainset.fa.gz', multithread = TRUE, verbose = TRUE)
 soil_rdp.taxa <- as.matrix(soil_rdp.taxa)
 
+save.image("./test.RData")
+
 # Load the metadata #
 soil_raw.met <- read.csv2('./metadata/soil_metadata.csv', sep = ',')
 rownames(soil_raw.met) <- soil_raw.met$Sample
@@ -359,6 +361,7 @@ raw_soil.ps <- phyloseq(otu_table(soil_nochim.st, taxa_are_rows = TRUE),
                         sample_data(soil_raw.met),
                         tax_table(soil_rdp.taxa))
 
+save.image("./test.RData")
 raw_soil.dna <- Biostrings::DNAStringSet(taxa_names(raw_soil.ps))
 names(raw_soil.dna) <- taxa_names(raw_soil.ps)
 raw_soil.ps <- merge_phyloseq(raw_soil.ps, raw_soil.dna)
@@ -418,6 +421,7 @@ for(i in 1:length(raw_soil$dna)){
 # Filter out reads that do not correspond to a NCBI entry #
 filt_soil.tax <- filter(raw_soil$tax, !is.na(raw_soil$tax$Best_Hit))
 
+save.image("./test.RData")
 # Output the resulting NCBI entry names to a list #
 if(!dir.exists("./blast_hits")){
   dir.create('./blast_hits')
@@ -454,6 +458,7 @@ filt_soil$dna <- DNAStringSet(soil_dna.df$x)
 names(filt_soil$dna) <- rownames(filt_soil$tax)
 filt_soil$tax <- as.matrix(filt_soil$tax)
 
+save.image("./test.RData")
 # Make phyloseq object with filtered tables #
 soil.ps <- phyloseq(otu_table(filt_soil$otu, taxa_are_rows = TRUE),
                         sample_data(filt_soil$met),
@@ -480,6 +485,7 @@ for(i in 1:nrow(soil$tax)){
 # produce final decomposed phyloseq object
 decompose_ps(soil.ps, 'soil')
 
+save.image("./test.RData")
 #### Phylogenetic Tree Construction for Soils ####
 # Output the reads into a fasta file #
 writeXStringSet(soil$dna, "./reads/soil_input.fasta")
@@ -510,6 +516,9 @@ soil.ps <- phyloseq(otu_table(soil$otu, taxa_are_rows = TRUE),
 if(!requireNamespace('cgwtools')) install.packages('cgwtools')
 library(cgwtools); packageVersion("cgwtools")
 resave(soil.ps, file = './psf_abridged.RData')
+
+
+save.image("./test.RData")
 
 #### Soil Nodule Stacked Histograms ####
 # Create a nodule specifc phyloseq object #
@@ -555,6 +564,7 @@ aggregate_top_taxa2 <- function(x, top, level){
   aggregate_taxa(x, level)
 }
 
+save.image("./test.RData")
 ## Fuzzy bean ##
 fb_soil_nod_raw.ps <- subset_samples(soil_nod.ps, Plant == "S. helvola")
 fb_soil_nod_raw.ps <- subset_taxa(fb_soil_nod_raw.ps, taxa_sums(fb_soil_nod_raw.ps) > 0)
@@ -733,6 +743,7 @@ md_soil_nod.plot <- ggplot(md_soil_nod.df, aes(x = Soil, y = Abundance, fill = A
   labs(tag = "B.")
 md_soil_nod.plot
 
+save.image("./test.RData")
 #### Root Primer Removal ####
 # Ensure you have the right files #
 list.files(root.dir)
@@ -827,9 +838,11 @@ colnames(root_final.track) <- c("pre-cutadapt", "post-cutadapt", "filtered", "de
 rownames(root_final.track) <- root.names
 root_final.track <- as.data.frame(root_final.track)
 
+save.image("./test.RData")
 # Assign Taxonomy #
 root_rdp.taxa <- assignTaxonomy(rownames(root_nochim.st), refFasta = './reference/rdp_19_toGenus_trainset.fa.gz', multithread = TRUE, verbose = TRUE)
 root_rdp.taxa <- as.matrix(root_rdp.taxa)
+save.image("./test.RData")
 
 # Load the metadata #
 root_raw.met <- read.csv2('./metadata/endo_metadata.csv', sep = ',')
@@ -843,7 +856,7 @@ root_rdp.taxa <- as.matrix(root_rdp.taxa)
 raw_root.ps <- phyloseq(otu_table(root_nochim.st, taxa_are_rows = TRUE),
                         sample_data(root_raw.met),
                         tax_table(root_rdp.taxa))
-
+save.image("./test.RData")
 raw_root.dna <- Biostrings::DNAStringSet(taxa_names(raw_root.ps))
 names(raw_root.dna) <- taxa_names(raw_root.ps)
 raw_root.ps <- merge_phyloseq(raw_root.ps, raw_root.dna)
@@ -896,6 +909,7 @@ for(i in 1:nrow(root_ncbi_fin.tax)){
     root_ncbi_fin.tax$Genus[i] <- root_ncbi_fin.tax$hold[i]
   }
 }
+save.image("./test.RData")
 
 # Filter otu table and refseq object such that all reads without a BLAST assignment are removed #
 root_ncbi_fin.tax <- root_ncbi_fin.tax[,1:7]
@@ -934,6 +948,7 @@ for(i in 1:nrow(root$tax)){
   }
 }
 
+save.image("./test.RData")
 # produce final decomposed phyloseq object
 decompose_ps(root.ps, 'root')
 
@@ -961,6 +976,7 @@ root.ps <- phyloseq(otu_table(root$otu, taxa_are_rows = TRUE),
                     refseq(root$dna),
                     phy_tree(root.tre))
 resave(root.ps, file = './psf_abridged.RData')
+save.image("./test.RData")
 
 #### Root Nodule Stacked Histograms ####
 # Create a nodule specifc phyloseq object #
@@ -1177,6 +1193,7 @@ md_root_nod.plot
 
 (md_soil_nod.plot | md_root_nod.plot)
 
+save.image("./test.RData")
 #### Alpha Diversity Analysis and Visualization ####
 # Add additional variables as factors for Soils #
 soil$met$Soils <- factor(soil$met$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
