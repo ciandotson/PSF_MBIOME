@@ -34,127 +34,12 @@ library(ggprism)
 library(rBLAST)
 library(Polychrome)
 
-#### Root Primer Removal ####
-# Ensure you have the right files #
-list.files(root.dir)
-
-# Create a list of the files that are corresponding to the forward and reverse reads #
-raw_root.ffp <- sort(list.files(root.dir, pattern = "_R1_001.fastq.gz", full.names = TRUE))
-raw_root.rfp <- sort(list.files(root.dir, pattern = "_R2_001.fastq.gz", full.names = TRUE))
-
-# Save the names based on the file names #
-root.names <- sub("^([^_]+_[^_]+)_.*$", "\\1", basename(raw_root.ffp))
-root.names <- as.character(root.names)
-
-# Find all orientations of each primer for primer trimming #
-
-root.fprimer <- "AACMGGATTAGATACCCKG"
-root.rprimer <- "ACGTCATCCCCACCTTCC"
-
-root.fori <- allOrients(root.fprimer)
-root.rori <- allOrients(root.rprimer)
-
-# Make filepaths for pretrimmed fastqs #
-system('mkdir ./reads/pretrim/root_pretrim')
-pre_root.ffp <- file.path('./reads/pretrim/root_pretrim', paste0(root.names, '_pretrim_R1.fastq.gz'))
-pre_root.rfp <- file.path('./reads/pretrim/root_pretrim', paste0(root.names, '_pretrim_R2.fastq.gz'))
-
-# Filter reads less than 75 bp and save the filtered fastqs to the pretrim filepaths #
-root_prefilt.track <- filterAndTrim(raw_root.ffp, pre_root.ffp, raw_root.rfp, pre_root.rfp, minLen = 75,
-                                    compress = TRUE, multithread = TRUE)
-
-# Take reverse complements of the forward and reverse primers #
-root_fprim.rc <- dada2::rc(root.fprimer)
-root_rprim.rc <- dada2::rc(root.fprimer)
-
-# Create filepaths for the forward and reverse fastqs with primers trimmed #
-system('mkdir ./reads/ptrimmed/root_ptrimmed')
-pt_root.ffp <- file.path("./reads/ptrimmed/root_ptrimmed", paste0(root.names, "_ptrimmed_R1.fastq.gz"))
-pt_root.rfp <- file.path("./reads/ptrimmed/root_ptrimmed", paste0(root.names, "_ptrimmed_R2.fastq.gz"))
-
-# Perform primmer trimming using cutadapt #
-for(i in seq_along(pre_root.ffp)){
-  system(paste0('cutadapt -g ', root.fprimer, ' -a ', root_rprim.rc, ' -G ', root.rprimer, ' -A ', root_fprim.rc, ' --pair-filter=any -m 50:50 -o ', pt_root.ffp[i], ' -p ', pt_root.rfp[i], ' ', pre_root.ffp[i], ' ', pre_root.rfp[i]))
-}
-
-# Perform additional filtering prior to dada2 algorithm #
-system('mkdir ./reads/postfilt/root_postfilt')
-post_root.ffp <- file.path('./reads/postfilt/root_postfilt', paste0(root.names, '_filt_R1.fastq.gz'))
-post_root.rfp <- file.path('./reads/postfilt/root_postfilt', paste0(root.names, '_filt_R2.fastq.gz'))
-
-root_postfilt.track <- filterAndTrim(pt_root.ffp, post_root.ffp, pt_root.rfp, post_root.rfp, truncLen=c(230,200),
-                                     maxN=0, maxEE=c(2,2), truncQ=2, rm.phix=TRUE,
-                                     compress=TRUE, multithread=TRUE)
-
-save.image("./test.RData")
-#### dada2 Implementation for the Root Samples ####
-# Learn the error rates that are specific to your data #
-root_for.er <- learnErrors(post_root.ffp, multithread=TRUE, verbose = TRUE)
-root_rev.er <- learnErrors(post_root.rfp, multithread=TRUE, verbose = TRUE)
-
-# Plot the learned errors #
-plotErrors(root_for.er, nominalQ=TRUE)
-plotErrors(root_rev.er, nominalQ=TRUE)
-
-# Dereplicate the reads #
-root.fderep <- derepFastq(post_root.ffp, verbose=TRUE)
-root.rderep <- derepFastq(post_root.rfp, verbose=TRUE)
-
-# Construct the dada-class object #
-root.fdada <- dada(root.fderep, err=root_for.er, multithread=TRUE, verbose = TRUE)
-root.rdada <- dada(root.rderep, err=root_rev.er, multithread=TRUE, verbose = TRUE)
-
-save.image("./test.RData")
-# Merge the denoised forward and reversed reads #
-root.remerged <- mergePairs(root.fdada, post_root.ffp, root.rdada, post_root.rfp, verbose=TRUE)
-
-# Construct Sequence (ASV) Table #
-root.st <- makeSequenceTable(root.remerged)
-dim(root.st)
-table(nchar(getSequences(root.st)))
-
-# Remove chimeras #
-root_nochim.st <- removeBimeraDenovo(root.st, method="consensus", multithread=TRUE, verbose=TRUE)
-dim(root_nochim.st)
-
-# Determine the ratio of non-chimeras to all reads #
-sum(root_nochim.st)/sum(root.st)
-root_nochim.st <- t(root_nochim.st)
-
-# track reads through the pipeline #
-getN <- function(x) sum(getUniques(x))
-root_final.track <- cbind(root_prefilt.track[,1], root_prefilt.track[,2], root_postfilt.track[,2], sapply(root.fdada, getN), sapply(root.rdada, getN), sapply(root.remerged, getN), colSums(root_nochim.st))
-colnames(root_final.track) <- c("pre-cutadapt", "post-cutadapt", "filtered", "denoisedF", "denoisedR", "merged", "nonchim")
-rownames(root_final.track) <- root.names
-root_final.track <- as.data.frame(root_final.track)
-
-save.image("./test.RData")
-# Assign Taxonomy #
-root_rdp.taxa <- assignTaxonomy(rownames(root_nochim.st), refFasta = './reference/rdp_19_toGenus_trainset.fa.gz', multithread = TRUE, verbose = TRUE)
-root_rdp.taxa <- as.matrix(root_rdp.taxa)
-save.image("./test.RData")
-
-# Load the metadata #
-root_raw.met <- read.csv2('./metadata/endo_metadata.csv', sep = ',')
-rownames(root_raw.met) <- root_raw.met$Sample
-root_raw.met <- root_raw.met[,c('Sample.Name', 'Plant.Species', 'Soil.Origin', 'Compartment')]
-rownames(root_raw.met) <- sub("^([^_]+_[^_]+)_.*$", "\\1", rownames(root_raw.met))
-colnames(root_nochim.st) <- rownames(root_raw.met)
-
-#### Phyloseq Object Construction and Filtering for roots ####
-root_rdp.taxa <- as.matrix(root_rdp.taxa)
-raw_root.ps <- phyloseq(otu_table(root_nochim.st, taxa_are_rows = TRUE),
-                        sample_data(root_raw.met),
-                        tax_table(root_rdp.taxa))
-save.image("./test.RData")
 raw_root.dna <- Biostrings::DNAStringSet(taxa_names(raw_root.ps))
 names(raw_root.dna) <- taxa_names(raw_root.ps)
 raw_root.ps <- merge_phyloseq(raw_root.ps, raw_root.dna)
 
 raw_root.ps <- subset_taxa(raw_root.ps, Phylum != "Cyanobacteriota")
 raw_root.ps <- subset_taxa(raw_root.ps, Phylum != "Plantae")
-
-raw_root.ps <- subset_samples(raw_root.ps, Compartment != 'Leaf Endosphere')
 
 raw_root.ps <- subset_taxa(raw_root.ps, taxa_sums(raw_root.ps) > 100)
 colnames(tax_table(raw_root.ps)) <- c('rdp_Kingdom', 'rdp_Phylum', 'rdp_Class', 'rdp_Order', 'rdp_Family', 'rdp_Genus')
