@@ -530,7 +530,7 @@ decompose_ps(soil_nod.ps, "soil_nod")
 if(!requireNamespace('Polychrome')) install.packages('Polychrome')
 library(Polychrome); packageVersion('Polychrome')
 set.seed(248)
-soil_nod.colr <- createPalette(ntaxa(soil.ps),  c("#ff0000", "#00ff00", "#0000ff"))
+soil_nod.colr <- createPalette(ntaxa(soil_nod.ps),  c("#ff0000", "#00ff00", "#0000ff"))
 soil_nod.colr <- as.data.frame(soil_nod.colr)
 rownames(soil_nod.colr) <- taxa_names(soil_nod.ps)
 soil_nod.colr[ntaxa(soil_nod.ps) + 1,] <- "#D4D4D4" 
