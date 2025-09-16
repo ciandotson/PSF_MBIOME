@@ -465,7 +465,7 @@ soil.ps <- phyloseq(otu_table(filt_soil$otu, taxa_are_rows = TRUE),
                         tax_table(filt_soil$tax),
                         refseq(filt_soil$dna))
 
-soil.ps <- subset_taxa(soil.ps, taxa_sums(soil.ps) > 100)
+soil.ps <- subset_taxa(soil.ps, taxa_sums(soil.ps) > 1000)
 
 # Change the taxa names to represent comparative abundance and lowest identification level #
 taxa_names(soil.ps) <- paste0('ASV', seq(ntaxa(soil.ps)))
@@ -525,6 +525,7 @@ save.image("./test.RData")
 soil_nod.ps <- subset_samples(soil.ps, Compartment == "Nodule")
 soil_nod.ps <- subset_taxa(soil_nod.ps, taxa_sums(soil_nod.ps) > 0)
 decompose_ps(soil_nod.ps, "soil_nod")
+resave(soil_nod.ps, './psf_abridged.RData')
 
 # Create a color palette for each ASV #
 if(!requireNamespace('Polychrome')) install.packages('Polychrome')
@@ -546,6 +547,7 @@ soil_hyph_tre.plot <- plot_tree(soil_hyph.ps, label.tips = "taxa_names", ladderi
 soil.ps <- subset_samples(soil.ps, Compartment != "Nodule")
 soil.ps <- subset_taxa(soil.ps, taxa_sums(soil.ps) > 0)
 decompose_ps(soil.ps, 'soil')
+soil$fra <- arrange(soil$fra, desc(rowSums(soil$fra[,16:ncol(soil$fra)])))
 
 # Construct a phyloseq object for each individual plant taxon's nodule community # 
 if(requireNamespace("microbiome")) BiocManager::install("microbiome")
@@ -864,8 +866,6 @@ raw_root.ps <- merge_phyloseq(raw_root.ps, raw_root.dna)
 raw_root.ps <- subset_taxa(raw_root.ps, Phylum != "Cyanobacteriota")
 raw_root.ps <- subset_taxa(raw_root.ps, Phylum != "Plantae")
 
-raw_root.ps <- subset_samples(raw_root.ps, Compartment != 'Leaf Endosphere')
-
 raw_root.ps <- subset_taxa(raw_root.ps, taxa_sums(raw_root.ps) > 100)
 colnames(tax_table(raw_root.ps)) <- c('rdp_Kingdom', 'rdp_Phylum', 'rdp_Class', 'rdp_Order', 'rdp_Family', 'rdp_Genus')
 
@@ -933,7 +933,7 @@ root.ps <- phyloseq(otu_table(filt_root$otu, taxa_are_rows = TRUE),
 
 root.ps <- subset_taxa(root.ps, taxa_sums(root.ps) > 100)
 
-# Change the taxa names to represent comparatiove abundance and lowest identification level #
+# Change the taxa names to represent comparative abundance and lowest identification level #
 decompose_ps(root.ps, 'root')
 taxa_names(root.ps) <- paste0('ASV', seq(ntaxa(root.ps)))
 for(i in 1:nrow(root$tax)){
@@ -2297,7 +2297,7 @@ cha_root.plot
 #### Beta Diversity Measurements and Visualizations ####
 # All Soil Samples #
 # Construct a Weighted Unifrac distance matrix and PCoA ordination #
-soil_prop.ps <- transform_sample_counts(soil.ps, function(x) x/sum(x))
+soil_prop.ps <- transform_sample_counts(soil_sub.ps, function(x) x/sum(x))
 
 set.seed(248)
 soil.wuni <- phyloseq::distance(soil_prop.ps, method = 'wunifrac')
@@ -2350,7 +2350,8 @@ for(i in 1:ncol(soil_nmds.scores)){
 }
 
 ### Calculating Variance Components ###
-library(lme4); packageVersion('lme4')
+if(!requireNamespace('lmerTest')) install.packages('lmerTest')
+library(lmerTest); packageVersion('lmerTest')
 
 # Construct a data.frame that has sample info and their loading scores #
 decompose_ps(soil.ps, 'soil')
@@ -2424,7 +2425,7 @@ soil.adon_by
 soil.man <- manova(cbind(NMDS1, NMDS2) ~ Soils*Plants*Comps, soil_nmds.load)
 
 # Perform PermDISP using all samples # 
-soil.bdis <- betadisper(soil.wuni, group = soil$met$PS)
+soil.bdis <- betadisper(soil.wuni, group = soil$met$PSC)
 anova(soil.bdis)
 TukeyHSD(soil.bdis)
 
@@ -2484,9 +2485,6 @@ naty_nmds.axisr <- c()
 for(i in 1:ncol(naty_nmds.scores)){
   naty_nmds.axisr[i] <- (get(paste0('naty_nmds.r', i)) / naty_nmds.comb) * naty_nmds.totr2 
 }
-
-### Calculating Variance Components ###
-library(lme4); packageVersion('lme4')
 
 # Construct a data.frame that has sample info and their loading scores #
 decompose_ps(naty.ps, 'naty')
@@ -2558,7 +2556,7 @@ naty.adon
 naty.adon_by
 
 # Perform PermDISP using all samples # 
-naty.bdis <- betadisper(naty.wuni, group = naty$met$PS)
+naty.bdis <- betadisper(naty.wuni, group = naty$met$PSC)
 anova(naty.bdis)
 TukeyHSD(naty.bdis)
 
@@ -2574,9 +2572,9 @@ nnat.pcoa <- phyloseq::ordinate(nnat_prop.ps, 'PCoA', distance = nnat.wuni)
 
 # Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
 nnat.nmds <- metaMDS(nnat.wuni, 
-                     k = 7, try = 100, trymax = 1000, maxit = 999,
+                     k = 5, try = 100, trymax = 1000, maxit = 999,
                      model = 'global', 
-                     autotransform = FALSE, previous.best = nnat.pcoa$vectors[,1:7])
+                     autotransform = FALSE, previous.best = nnat.pcoa$vectors[,1:5])
 
 # Save the loading scores for all axes and make a distance matrix from these scores #
 nnat_nmds.scores <- scores(nnat.nmds, display = 'sites')
@@ -2609,25 +2607,14 @@ nnat_nmds.dist5 <- dist(nnat_nmds.scores[,5])
 nnat_nmds.fit5 <- lm(as.vector(nnat_nmds.dist5)~as.vector(nnat.wuni))
 nnat_nmds.r5 <- summary(nnat_nmds.fit5)$r.squared
 
-nnat_nmds.dist6 <- dist(nnat_nmds.scores[,6])
-nnat_nmds.fit6 <- lm(as.vector(nnat_nmds.dist6)~as.vector(nnat.wuni))
-nnat_nmds.r6 <- summary(nnat_nmds.fit6)$r.squared
-
-nnat_nmds.dist7 <- dist(nnat_nmds.scores[,7])
-nnat_nmds.fit7 <- lm(as.vector(nnat_nmds.dist7)~as.vector(nnat.wuni))
-nnat_nmds.r7 <- summary(nnat_nmds.fit7)$r.squared
-
 # Take the sum the R^2 value from each axis #
-nnat_nmds.comb <- nnat_nmds.r1 + nnat_nmds.r2 + nnat_nmds.r3 + nnat_nmds.r4 + nnat_nmds.r5 + nnat_nmds.r6 + nnat_nmds.r7
+nnat_nmds.comb <- nnat_nmds.r1 + nnat_nmds.r2 + nnat_nmds.r3 + nnat_nmds.r4 + nnat_nmds.r5
 
 # Divide each axis R^2 by the total of all axes and then multiply by the variation explained by the whole model
 nnat_nmds.axisr <- c()
 for(i in 1:ncol(nnat_nmds.scores)){
   nnat_nmds.axisr[i] <- (get(paste0('nnat_nmds.r', i)) / nnat_nmds.comb) * nnat_nmds.totr2 
 }
-
-### Calculating Variance Components ###
-library(lme4); packageVersion('lme4')
 
 # Construct a data.frame that has sample info and their loading scores #
 decompose_ps(nnat.ps, 'nnat')
@@ -2717,7 +2704,7 @@ bulk.pcoa <- phyloseq::ordinate(bulk_prop.ps, 'PCoA', distance = bulk.wuni)
 
 # Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
 bulk.nmds <- metaMDS(bulk.wuni, 
-                    k = 4, try = 20, trymax = 1000, maxit = 999,
+                    k = 5, try = 100, trymax = 1000, maxit = 999,
                     model = 'global', 
                     autotransform = FALSE, previous.best = bulk.pcoa$vectors[,1:5])
 
@@ -2731,7 +2718,7 @@ summary(bulk_nmds.ffit)
 bulk_nmds.totr2 <- summary(bulk_nmds.ffit)$r.squared
 
 # Axes Variance Calculation #
-# Fit linear models as before expect to preidtc the distance matrix of each individual axis #
+# Fit linear models as before expect to predict the distance matrix of each individual axis #
 bulk_nmds.dist1 <- dist(bulk_nmds.scores[,1])
 bulk_nmds.fit1 <- lm(as.vector(bulk_nmds.dist1)~as.vector(bulk.wuni))
 bulk_nmds.r1 <- summary(bulk_nmds.fit1)$r.squared
@@ -2748,17 +2735,18 @@ bulk_nmds.dist4 <- dist(bulk_nmds.scores[,4])
 bulk_nmds.fit4 <- lm(as.vector(bulk_nmds.dist4)~as.vector(bulk.wuni))
 bulk_nmds.r4 <- summary(bulk_nmds.fit4)$r.squared
 
+bulk_nmds.dist5 <- dist(bulk_nmds.scores[,5])
+bulk_nmds.fit5 <- lm(as.vector(bulk_nmds.dist5)~as.vector(bulk.wuni))
+bulk_nmds.r5 <- summary(bulk_nmds.fit5)$r.squared
+
 # Take the sum the R^2 value from each axis #
-bulk_nmds.comb <- bulk_nmds.r1 + bulk_nmds.r2 + bulk_nmds.r3 + bulk_nmds.r4
+bulk_nmds.comb <- bulk_nmds.r1 + bulk_nmds.r2 + bulk_nmds.r3 + bulk_nmds.r4 + bulk_nmds.r5
 
 # Divide each axis R^2 by the total of all axes and then multiply by the variation explained by the whole model
 bulk_nmds.axisr <- c()
 for(i in 1:ncol(bulk_nmds.scores)){
   bulk_nmds.axisr[i] <- (get(paste0('bulk_nmds.r', i)) / bulk_nmds.comb) * bulk_nmds.totr2 
 }
-
-### Calculating Variance Components ###
-library(lme4); packageVersion('lme4')
 
 # Construct a data.frame that has sample info and their loading scores #
 decompose_ps(bulk.ps, 'bulk')
@@ -2837,7 +2825,6 @@ TukeyHSD(bulk.bdis)
 
 # Make an object with the data to be plotted #
 bulk_nmds.load <- cbind(bulk$met, bulk_nmds.scores)
-library(ggplot2);packageVersion('ggplot2')
 
 # plot the NMDS ordination of all samples that will be used to make a patchwork plot #
 bulk_nmds.plot <- ggplot(bulk_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape = Soils)) +
@@ -2853,8 +2840,8 @@ bulk_nmds.plot <- ggplot(bulk_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
         legend.title = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
         axis.title = element_text(size= 24, face = 'bold', family = "Liberation Sans"),
         axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +
-  annotate('text', x = 0.06, y = -0.15,
-           label = expression("(PERMANOVA) F"["9,29"] ~ "= 39.918, P < 0.001;  (PERMDISP) F"["9,29"] ~  "= 0.3344, P = 0.9526; 3D Stress = 0.0127"),
+  annotate(geom = 'text', x = 0.06, y = -0.15,
+           label = expression("(PERMANOVA) F"["9,29"] ~ "= 39.918, P < 0.001  (PERMDISP) F"["9,29"] ~  "= 0.3344, P = 0.9526 3D Stress = 0.0127"),
            size = 6, family = 'Liberation Sans') +
   coord_cartesian(ylim = c(-0.145,0.2))
 
