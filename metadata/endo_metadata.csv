@@ -26,21 +26,21 @@ ClRHno_1_S108,ClRHno_1_S108,T. repens,PSF Soil,Nodule
 ClRHrt_1_S105,ClRHrt_1_S105,T. repens,PSF Soil,Root Endosphere
 ClRHrt_2_S106,ClRHrt_2_S106,T. repens,PSF Soil,Root Endosphere
 ClRHrt_3_S107,ClRHrt_3_S107,T. repens,PSF Soil,Root Endosphere
-DsCSno_1_S81,DsCSno_1_S81,D. illinoense,Common Soil,Nodule
-DsCSrt_1_S77,DsCSrt_1_S77,D. illinoense,Common Soil,Root Endosphere
-DsCSrt_2_S78,DsCSrt_2_S78,D. illinoense,Common Soil,Root Endosphere
-DsCSrt_3_S79,DsCSrt_3_S79,D. illinoense,Common Soil,Root Endosphere
-DsCSrt_4_S80,DsCSrt_4_S80,D. illinoense,Common Soil,Root Endosphere
-DsNPno_1_S72,DsNPno_1_S72,D. illinoense,Non-PSF Soil,Nodule
-DsNPrt_1_S68,DsNPrt_1_S68,D. illinoense,Non-PSF Soil,Root Endosphere
-DsNPrt_2_S69,DsNPrt_2_S69,D. illinoense,Non-PSF Soil,Root Endosphere
-DsNPrt_3_S70,DsNPrt_3_S70,D. illinoense,Non-PSF Soil,Root Endosphere
-DsNPrt_4_S71,DsNPrt_4_S71,D. illinoense,Non-PSF Soil,Root Endosphere
-DsRHno_1_S63,DsRHno_1_S63,D. illinoense,PSF Soil,Nodule
-DsRHrt_1_S59,DsRHrt_1_S59,D. illinoense,PSF Soil,Root Endosphere
-DsRHrt_2_S60,DsRHrt_2_S60,D. illinoense,PSF Soil,Root Endosphere
-DsRHrt_3_S61,DsRHrt_3_S61,D. illinoense,PSF Soil,Root Endosphere
-DsRHrt_4_S62,DsRHrt_4_S62,D. illinoense,PSF Soil,Root Endosphere
+DsCSno_1_S81,DsCSno_1_S81,D. canadense,Common Soil,Nodule
+DsCSrt_1_S77,DsCSrt_1_S77,D. canadense,Common Soil,Root Endosphere
+DsCSrt_2_S78,DsCSrt_2_S78,D. canadense,Common Soil,Root Endosphere
+DsCSrt_3_S79,DsCSrt_3_S79,D. canadense,Common Soil,Root Endosphere
+DsCSrt_4_S80,DsCSrt_4_S80,D. canadense,Common Soil,Root Endosphere
+DsNPno_1_S72,DsNPno_1_S72,D. canadense,Non-PSF Soil,Nodule
+DsNPrt_1_S68,DsNPrt_1_S68,D. canadense,Non-PSF Soil,Root Endosphere
+DsNPrt_2_S69,DsNPrt_2_S69,D. canadense,Non-PSF Soil,Root Endosphere
+DsNPrt_3_S70,DsNPrt_3_S70,D. canadense,Non-PSF Soil,Root Endosphere
+DsNPrt_4_S71,DsNPrt_4_S71,D. canadense,Non-PSF Soil,Root Endosphere
+DsRHno_1_S63,DsRHno_1_S63,D. canadense,PSF Soil,Nodule
+DsRHrt_1_S59,DsRHrt_1_S59,D. canadense,PSF Soil,Root Endosphere
+DsRHrt_2_S60,DsRHrt_2_S60,D. canadense,PSF Soil,Root Endosphere
+DsRHrt_3_S61,DsRHrt_3_S61,D. canadense,PSF Soil,Root Endosphere
+DsRHrt_4_S62,DsRHrt_4_S62,D. canadense,PSF Soil,Root Endosphere
 FbCSno_1_S27,FbCSno_1_S27,S. helvola,Common Soil,Nodule
 FbCSrt_1_S23,FbCSrt_1_S23,S. helvola,Common Soil,Root Endosphere
 FbCSrt_2_S24,FbCSrt_2_S24,S. helvola,Common Soil,Root Endosphere
