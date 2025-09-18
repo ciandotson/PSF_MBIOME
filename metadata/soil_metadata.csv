@@ -1,5 +1,4 @@
 ,Sample,Plant,Soil_Treatment,Compartment
-1158,1158,Hog Peanut,No Plant,Leaf
 3008,3008,S. helvola,PSF Soil,Rhizosphere
 3015,3015,S. helvola,PSF Soil,Rhizosphere
 3017,3017,S. helvola,PSF Soil,Rhizosphere
@@ -23,18 +22,18 @@
 3091,3091,C. fasciculata,Common Soil,Rhizosphere
 3099,3099,C. fasciculata,Common Soil,Rhizosphere
 3100,3100,C. fasciculata,Common Soil,Rhizosphere
-3108,3108,D. illinoense,PSF Soil,Rhizosphere
-3109,3109,D. illinoense,PSF Soil,Rhizosphere
-3116,3116,D. illinoense,PSF Soil,Rhizosphere
-3118,3118,D. illinoense,PSF Soil,Rhizosphere
-3124,3124,D. illinoense,Non-PSF Soil,Rhizosphere
-3125,3125,D. illinoense,Non-PSF Soil,Rhizosphere
-3127,3127,D. illinoense,Non-PSF Soil,Rhizosphere
-3134,3134,D. illinoense,Non-PSF Soil,Rhizosphere
-3141,3141,D. illinoense,Common Soil,Rhizosphere
-3142,3142,D. illinoense,Common Soil,Rhizosphere
-3150,3150,D. illinoense,Common Soil,Rhizosphere
-3151,3151,D. illinoense,Common Soil,Rhizosphere
+3108,3108,D. canadense,PSF Soil,Rhizosphere
+3109,3109,D. canadense,PSF Soil,Rhizosphere
+3116,3116,D. canadense,PSF Soil,Rhizosphere
+3118,3118,D. canadense,PSF Soil,Rhizosphere
+3124,3124,D. canadense,Non-PSF Soil,Rhizosphere
+3125,3125,D. canadense,Non-PSF Soil,Rhizosphere
+3127,3127,D. canadense,Non-PSF Soil,Rhizosphere
+3134,3134,D. canadense,Non-PSF Soil,Rhizosphere
+3141,3141,D. canadense,Common Soil,Rhizosphere
+3142,3142,D. canadense,Common Soil,Rhizosphere
+3150,3150,D. canadense,Common Soil,Rhizosphere
+3151,3151,D. canadense,Common Soil,Rhizosphere
 3158-1,3158-1,A. bracteata,PSF Soil,Rhizosphere
 3158-2,3158-2,A. bracteata,PSF Soil,Rhizosphere
 3158-3,3158-3,A. bracteata,PSF Soil,Rhizosphere
@@ -85,9 +84,9 @@
 4059,4059,C. fasciculata,PSF Soil,Nodule
 4075,4075,C. fasciculata,Non-PSF Soil,Nodule
 4090,4090,C. fasciculata,Common Soil,Nodule
-4108,4108,D. illinoense,PSF Soil,Nodule
-4124,4124,D. illinoense,Non-PSF Soil,Nodule
-4141,4141,D. illinoense,Common Soil,Nodule
+4108,4108,D. canadense,PSF Soil,Nodule
+4124,4124,D. canadense,Non-PSF Soil,Nodule
+4141,4141,D. canadense,Common Soil,Nodule
 4155,4155,A. bracteata,PSF Soil,Nodule
 4190,4190,T. repens,PSF Soil,Nodule
 4218,4218,T. repens,Non-PSF Soil,Nodule
@@ -111,12 +110,12 @@
 5076,5076,C. fasciculata,Non-PSF Soil,Bulk Soil
 5077,5077,C. fasciculata,Non-PSF Soil,Bulk Soil
 5078,5078,C. fasciculata,Non-PSF Soil,Bulk Soil
-5110,5110,D. illinoense,PSF Soil,Bulk Soil
-5111,5111,D. illinoense,PSF Soil,Bulk Soil
-5112,5112,D. illinoense,PSF Soil,Bulk Soil
-5129-1,5129-1,D. illinoense,Non-PSF Soil,Bulk Soil
-5129-2,5129-2,D. illinoense,Non-PSF Soil,Bulk Soil
-5129-3,5129-3,D. illinoense,Non-PSF Soil,Bulk Soil
+5110,5110,D. canadense,PSF Soil,Bulk Soil
+5111,5111,D. canadense,PSF Soil,Bulk Soil
+5112,5112,D. canadense,PSF Soil,Bulk Soil
+5129-1,5129-1,D. canadense,Non-PSF Soil,Bulk Soil
+5129-2,5129-2,D. canadense,Non-PSF Soil,Bulk Soil
+5129-3,5129-3,D. canadense,Non-PSF Soil,Bulk Soil
 5155,5155,A. bracteata,PSF Soil,Bulk Soil
 5156,5156,A. bracteata,PSF Soil,Bulk Soil
 5157,5157,A. bracteata,PSF Soil,Bulk Soil
