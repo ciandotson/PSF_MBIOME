@@ -517,7 +517,6 @@ if(!requireNamespace('cgwtools')) install.packages('cgwtools')
 library(cgwtools); packageVersion("cgwtools")
 resave(soil.ps, file = './psf_abridged.RData')
 
-
 save.image("./test.RData")
 
 #### Soil Nodule Stacked Histograms ####
@@ -525,7 +524,7 @@ save.image("./test.RData")
 soil_nod.ps <- subset_samples(soil.ps, Compartment == "Nodule")
 soil_nod.ps <- subset_taxa(soil_nod.ps, taxa_sums(soil_nod.ps) > 0)
 decompose_ps(soil_nod.ps, "soil_nod")
-resave(soil_nod.ps, './psf_abridged.RData')
+resave(soil_nod.ps, file ='./psf_abridged.RData')
 
 # Create a color palette for each ASV #
 if(!requireNamespace('Polychrome')) install.packages('Polychrome')
@@ -2839,7 +2838,8 @@ bulk_nmds.plot <- ggplot(bulk_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
         legend.text = element_text(size = 20, family = "Liberation Sans"),
         legend.title = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
         axis.title = element_text(size= 24, face = 'bold', family = "Liberation Sans"),
-        axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +
+        axis.text = element_text(color = "black", size = 8, family = "Liberation Sans"))
+  
   annotate(geom = 'text', x = 0.06, y = -0.15,
            label = expression("(PERMANOVA) F"["9,29"] ~ "= 39.918, P < 0.001  (PERMDISP) F"["9,29"] ~  "= 0.3344, P = 0.9526 3D Stress = 0.0127"),
            size = 6, family = 'Liberation Sans') +
