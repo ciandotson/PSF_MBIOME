@@ -396,8 +396,13 @@ decompose_ps <- function(ps, label){
   invisible(decomposed)
 }
 
+# Save both the raw phyloseq object and decompose_ps() to ./psf_abridged.RData) #
 decompose_ps(raw_soil.ps, 'raw_soil')
 save(raw_soil.ps, file = './psf_abridged.RData')
+if(!requireNamespace('cgwtools')) install.packages('cgwtools')
+library(cgwtools); packageVersion("cgwtools")
+resave(decompose_ps, file = './psf_abridged.RData')
+
 #### Cross-Validation of Soil Reads Using BLAST ####
 if(!requireNamespace('rBLAST')) BiocManager::install('rBLAST')
 library(rBLAST);packageVersion('rBLAST')
@@ -565,6 +570,7 @@ aggregate_top_taxa2 <- function(x, top, level){
   aggregate_taxa(x, level)
 }
 
+resave(aggregate_top_taxa2, file = './psf_abridged.RData')
 save.image("./test.RData")
 ## Fuzzy bean ##
 fb_soil_nod_raw.ps <- subset_samples(soil_nod.ps, Plant == "S. helvola")
