@@ -1,10 +1,10 @@
-# Rscript ~/PSF_MBIOME/analysis.R --raw_soil ~/test_PSF/reads/soil_reads --raw_root ~/test_PSF/reads/endo_reads | cat > PSF_log.txt #
+# Rscript ~/PSF_MBIOME/analysis.R --raw_soil ~/test_PSF/reads/soil_reads --raw_root ~/test_PSF/reads/endo_reads #
 
 #### Argument Parsing ####
 if(!requireNamespace('optparse', quietly = TRUE)) install.packages("optparse")
 library(optparse); packageVersion("optparse")
 option_list <- list(
-  make_option("--raw_soil", type = "character", help = "filepath containing the raw, untrimmed reads for the reads generated from the v4 primers (bulk soil, rhizosphere, and some nodule samples)"),
+  make_option("--raw_soil", type = "character", help = "filepath containing the raw, untrimmed reads for the reads generated from the v4 primers (Source Community, rhizosphere, and some nodule samples)"),
   make_option("--raw_root", type = "character", help = "filepath containing the raw, untrimmed reads for the reads generated from the v5-v7 primers( root endosphere and some nodule samples)"))
 
 opt <- parse_args(OptionParser(option_list=option_list))
@@ -47,7 +47,7 @@ nodnbio.data$Soil_Treatment <- gsub('Non-PSF Soil', 'Non PSF Soil', nodnbio.data
 # subset each set of values by plant species #
 fb_nod.data <- filter(nodnbio.data, Plant_Sample == 'S. helvola')
 cc_nod.data <- filter(nodnbio.data, Plant_Sample == 'C. fasciculata')
-ds_nod.data <- filter(nodnbio.data, Plant_Sample == 'D. illinoense')
+ds_nod.data <- filter(nodnbio.data, Plant_Sample == 'D. canadense')
 hp_nod.data <- filter(nodnbio.data, Plant_Sample == 'A. bracteata')
 cl_nod.data <- filter(nodnbio.data, Plant_Sample == 'T. repens')
 md_nod.data <- filter(nodnbio.data, Plant_Sample == 'M. truncatula')
@@ -106,7 +106,7 @@ nod.data <- cbind(nodnbio.mnsd, nod.let)
 nod.data$nod.let[3] <- 'a'
 nod.data$nod.let[1:2] <- 'b'
 nod.data[1,3:6] <- 0
-nod.data$Group <- factor(nod.data$Plant_Sample, levels = c('T. repens', 'M. truncatula', 'S. helvola', 'C. fasciculata', 'D. illinoense', 'A. bracteata'))
+nod.data$Group <- factor(nod.data$Plant_Sample, levels = c('T. repens', 'M. truncatula', 'S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata'))
 
 # Plot the results #
 if(!requireNamespace('ggplot2')) install.packages('ggplot2')
@@ -138,7 +138,7 @@ nod.plot <- ggplot(nod.data, aes(x = Group, y = nod.mean, fill = Soil_Treatment,
 # Do the same for biomass as seen in lines 74-159 #
 fb_bio.data <- filter(nodnbio.data, Plant_Sample == 'S. helvola')
 cc_bio.data <- filter(nodnbio.data, Plant_Sample == 'C. fasciculata')
-ds_bio.data <- filter(nodnbio.data, Plant_Sample == 'D. illinoense')
+ds_bio.data <- filter(nodnbio.data, Plant_Sample == 'D. canadense')
 hp_bio.data <- filter(nodnbio.data, Plant_Sample == 'A. bracteata')
 cl_bio.data <- filter(nodnbio.data, Plant_Sample == 'T. repens')
 md_bio.data <- filter(nodnbio.data, Plant_Sample == 'M. truncatula')
@@ -192,7 +192,7 @@ bio.data[1,3:6] <- 0
 bio.data[3,7] <- 'a'
 bio.data[1:2,7] <- 'b'
 
-bio.data$Group <- factor(bio.data$Plant_Sample, levels = c('T. repens', 'M. truncatula', 'S. helvola', 'C. fasciculata', 'D. illinoense', 'A. bracteata'))
+bio.data$Group <- factor(bio.data$Plant_Sample, levels = c('T. repens', 'M. truncatula', 'S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata'))
 bio.plot <- ggplot(bio.data, aes(x = Group, y = bio.mean, fill = Soil_Treatment, color = Soil_Treatment)) +
   geom_bar(stat = 'summary', position = 'dodge', width = 0.7) +
   geom_errorbar(aes(ymin = bio.mean, ymax = bio.mean + bio.sd), show.legend = FALSE, position = position_dodge(width = 0.7), width = 0.2) +
@@ -633,7 +633,7 @@ cc_soil_nod.plot <- ggplot(cc_soil_nod.df, aes(x = Soil, y = Abundance, fill = A
 cc_soil_nod.plot
 
 ## Desmodium ##
-ds_soil_nod.ps <- subset_samples(soil_nod.ps, Plant == "D. illinoense")
+ds_soil_nod.ps <- subset_samples(soil_nod.ps, Plant == "D. canadense")
 ds_soil_nod.ps <- subset_taxa(ds_soil_nod.ps, taxa_sums(ds_soil_nod.ps) > 0)
 ds_nod_soil.name <- names(sort(taxa_sums(ds_soil_nod.ps), decreasing = TRUE))
 ds_soil_nod.colr <- soil_nod.colr[ds_nod_soil.name,]
@@ -646,7 +646,7 @@ ds_soil_nod.plot <- ggplot(ds_soil_nod.df, aes(x = Soil, y = Abundance, fill = A
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Soil ASV", values = ds_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "D. illinoense")) +
+  scale_y_continuous(sec.axis = dup_axis(name = "D. canadense")) +
   theme_bw() +
   theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
         axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
@@ -1072,7 +1072,7 @@ cc_root_nod.plot
 (cc_soil_nod.plot | cc_root_nod.plot)
 
 ## Desmodium ##
-ds_root_nod.ps <- subset_samples(root_nod.ps, Plant.Species == "D. illinoense")
+ds_root_nod.ps <- subset_samples(root_nod.ps, Plant.Species == "D. canadense")
 ds_root_nod.ps <- subset_taxa(ds_root_nod.ps, taxa_sums(ds_root_nod.ps) > 0)
 ds_root_nod.ps <- aggregate_top_taxa2(ds_root_nod.ps, 8, "ASV")
 ds_nod_root.name <- names(sort(taxa_sums(ds_root_nod.ps), decreasing = TRUE))
@@ -1086,7 +1086,7 @@ ds_root_nod.plot <- ggplot(ds_root_nod.df, aes(x = Soil, y = Abundance, fill = A
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Root ASV", values = ds_root_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "D. illinoense")) +
+  scale_y_continuous(sec.axis = dup_axis(name = "D. canadense")) +
   theme_bw() +
   theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
         axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
@@ -1203,8 +1203,8 @@ save.image("./test.RData")
 # Add additional variables as factors for Soils #
 soil$met$Soils <- factor(soil$met$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 soil$met$Soils <- gsub("Non-PSF Soil", "Non PSF Soil", soil$met$Soils)
-soil$met$Comps <- factor(soil$met$Compartment, levels = c("Bulk Soil", "Rhizosphere"))
-soil$met$Plants <- factor(soil$met$Plant, levels = c("T. repens", "M. truncatula", "S. helvola", "C. fasciculata", "D. illinoense", "A. bracteata"))
+soil$met$Comps <- factor(soil$met$Compartment, levels = c("Source Community", "Rhizosphere"))
+soil$met$Plants <- factor(soil$met$Plant, levels = c("T. repens", "M. truncatula", "S. helvola", "C. fasciculata", "D. canadense", "A. bracteata"))
 for(i in 1:nrow(soil$met)){
   soil$met$Tri[i] <- paste0(substr(soil$met$Plant[i],1,1), substr(soil$met$Soil_Treatment[i],1,1), substr(soil$met$Compartment[i],1,2)) 
 }
@@ -1213,7 +1213,7 @@ for(i in 1:nrow(soil$met)){
 root$met$Soils <- factor(root$met$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 root$met$Soils <- gsub("Non-PSF Soil", "Non PSF Soil", root$met$Soils)
 root$met$Comps <- factor(root$met$Compartment, levels = "Root Endosphere")
-root$met$Plants <- factor(root$met$Plant.Species, levels = c("T. repens", "M. truncatula", "S. helvola", "C. fasciculata", "D. illinoense", "A. bracteata"))
+root$met$Plants <- factor(root$met$Plant.Species, levels = c("T. repens", "M. truncatula", "S. helvola", "C. fasciculata", "D. canadense", "A. bracteata"))
 for(i in 1:nrow(root$met)){
   root$met$Tri[i] <- paste0(substr(root$met$Plant.Species[i],1,1), substr(root$met$Soil.Origin[i],1,1), substr(root$met$Compartment[i],1,2)) 
 }
@@ -1245,7 +1245,7 @@ Anova(all_evn.lm)
 all_sha.lm <- lm(Shannon~Soils*Plants*Comps, all.rich)
 Anova(all_sha.lm)
 
-# Do the same except for just the bulk soil and rhizosphere data #
+# Do the same except for just the Source Community and rhizosphere data #
 soil.rich <- filter(all.rich, Compartment != "Root Endosphere") 
 soil_cha.lm <- lm(Chao1~Soils*Plants*Comps, soil.rich)
 Anova(soil_cha.lm)
@@ -1256,21 +1256,21 @@ Anova(soil_sha.lm)
 
 # Do the same with only the native plant data #
 naty.rich <- filter(soil.rich, Plant != "M. truncatula" & Plant != "T. repens")
-naty.bin <- filter(naty.rich, Compartment == "Bulk Soil" & Soil_Treatment == "Non-PSF Soil")
+naty.bin <- filter(naty.rich, Compartment == "Source Community" & Soil_Treatment == "Non-PSF Soil")
 naty.bin$Plant <- gsub("C. fasciculata", "S. helvola", naty.bin$Plant)
-naty.bin$Plant <- gsub("D. illinoense", "A. bracteata", naty.bin$Plant)
+naty.bin$Plant <- gsub("D. canadense", "A. bracteata", naty.bin$Plant)
 naty_comm.bin <- filter(soil.rich, Tri == "SCBu")
 naty_comm.bin$Plant <- gsub("S. helvola", "C. fasciculata", naty_comm.bin$Plant)
 naty.rich <- rbind(naty.rich, naty.bin, naty_comm.bin)
-naty_comm.bin$Plant <- gsub("C. fasciculata", "D. illinoense", naty_comm.bin$Plant)
+naty_comm.bin$Plant <- gsub("C. fasciculata", "D. canadense", naty_comm.bin$Plant)
 naty.rich <- rbind(naty.rich, naty_comm.bin)
-naty_comm.bin$Plant <- gsub("D. illinoense", "A. bracteata", naty_comm.bin$Plant)
+naty_comm.bin$Plant <- gsub("D. canadense", "A. bracteata", naty_comm.bin$Plant)
 naty.rich <- rbind(naty.rich, naty_comm.bin)
 
 naty.rich$Soils <- gsub("Non-PSF Soil", "Non PSF Soil", naty.rich$Soils)
 naty.rich$Soils <- factor(naty.rich$Soils, levels = c("Common Soil", "Non PSF Soil", "PSF Soil"))
-naty.rich$Comps <- factor(naty.rich$Compartment, levels = c("Bulk Soil", "Rhizosphere"))
-naty.rich$Plants <- factor(naty.rich$Plant, levels = c("S. helvola", "C. fasciculata", "D. illinoense", "A. bracteata"))
+naty.rich$Comps <- factor(naty.rich$Compartment, levels = c("Source Community", "Rhizosphere"))
+naty.rich$Plants <- factor(naty.rich$Plant, levels = c("S. helvola", "C. fasciculata", "D. canadense", "A. bracteata"))
 naty_cha.lm <- lm(Chao1~Soils*Plants*Comps, naty.rich)
 Anova(naty_cha.lm)
 naty_evn.lm <- lm(ShaEvn~Soils*Plants*Comps, naty.rich)
@@ -1288,7 +1288,7 @@ nnat.rich <- rbind(nnat.rich, nnat.bin)
 nnat.rich$Plants <- gsub("S. helvola", "M. truncatula", nnat.rich$Plants)
 
 nnat.rich$Soils <- factor(nnat.rich$Soils, levels = c("Common Soil", "Non PSF Soil", "PSF Soil"))
-nnat.rich$Comps <- factor(nnat.rich$Compartment, levels = c("Bulk Soil", "Rhizosphere"))
+nnat.rich$Comps <- factor(nnat.rich$Compartment, levels = c("Source Community", "Rhizosphere"))
 nnat.rich$Plants <- factor(nnat.rich$Plants, levels = c("T. repens", "M. truncatula"))
 nnat_cha.lm <- lm(Chao1~Soils*Plants*Comps, nnat.rich)
 Anova(nnat_cha.lm, type = "II")
@@ -1338,7 +1338,7 @@ all_rich.mnsd <- all.rich %>%
   )
 
 all_rich.mnsd <- as.data.frame(all_rich.mnsd)
-all_rich.mnsd$`Plant Species` <- factor(all_rich.mnsd$Plant, levels = c('A. bracteata', 'D. illinoense', 'C. fasciculata', 'S. helvola', 'T. repens', 'M. truncatula'))
+all_rich.mnsd$`Plant Species` <- factor(all_rich.mnsd$Plant, levels = c('A. bracteata', 'D. canadense', 'C. fasciculata', 'S. helvola', 'T. repens', 'M. truncatula'))
 all_rich.mnsd$`Soil Type` <- factor(all_rich.mnsd$Soil_Treatment, levels = c('Common Soil', 'Non-PSF Soil', 'PSF Soil'))
 all_rich.mnsd$`Soil Type` <- gsub("Non-PSF Soil", "Non PSF Soil", all_rich.mnsd$`Soil Type`)
 
@@ -1371,7 +1371,7 @@ cc_rhiz_sha.let <- cc_rhiz_sha.let$Soils$Letters[sort(names(cc_rhiz_sha.let$Soil
 
 
 ## Desmodium ##
-ds_rhiz.richraw <- filter(rhiz.richraw, Plant == 'D. illinoense')
+ds_rhiz.richraw <- filter(rhiz.richraw, Plant == 'D. canadense')
 ds_rhiz_sha.aov <- aov(Shannon ~ Soils, data = ds_rhiz.richraw)
 summary(ds_rhiz_sha.aov)
 
@@ -1471,7 +1471,7 @@ cc_rhiz_evn.let <- multcompLetters4(cc_rhiz_evn.aov, cc_rhiz_evn.hsd)
 cc_rhiz_evn.let <- cc_rhiz_evn.let$Soils$Letters[sort(names(cc_rhiz_evn.let$Soils$Letters))]
 
 ## Desmodium ##
-ds_rhiz.richraw <- filter(rhiz.richraw, Plant == 'D. illinoense')
+ds_rhiz.richraw <- filter(rhiz.richraw, Plant == 'D. canadense')
 ds_rhiz_evn.aov <- aov(ShaEvn ~ Soils, data = ds_rhiz.richraw)
 summary(ds_rhiz_evn.aov)
 
@@ -1571,7 +1571,7 @@ cc_rhiz_cha.let <- multcompLetters4(cc_rhiz_cha.aov, cc_rhiz_cha.hsd)
 cc_rhiz_cha.let <- cc_rhiz_cha.let$Soils$Letters[sort(names(cc_rhiz_cha.let$Soils$Letters))]
 
 ## Desmodium ##
-ds_rhiz.richraw <- filter(rhiz.richraw, Plant == 'D. illinoense')
+ds_rhiz.richraw <- filter(rhiz.richraw, Plant == 'D. canadense')
 ds_rhiz_cha.aov <- aov(Chao1 ~ Soils, data = ds_rhiz.richraw)
 summary(ds_rhiz_cha.aov)
 
@@ -1653,18 +1653,18 @@ cha_rhiz.plot
   (sha_rhiz.plot) &
   theme(plot.tag = element_text(size = 22))
 
-# All Bulk Soil Samples #
-bulk.rich <- filter(all_rich.mnsd, Compartment == "Bulk Soil")
-bulk.richraw <- filter(all.rich, Compartment == 'Bulk Soil')
+# All Source Community Samples #
+bulk.rich <- filter(all_rich.mnsd, Compartment == "Source Community")
+bulk.richraw <- filter(all.rich, Compartment == 'Source Community')
 bulk.richraw$Soils <- gsub('Non-PSF Soil', 'Non PSF Soil', bulk.richraw$Soils)
 shapiro.test(bulk.richraw$Shannon)
 
 comm_bulk.rich <- bulk.rich[7,]
 comm_bulk.rich$`Plant Species` <- gsub("S. helvola", "C. fasciculata", comm_bulk.rich$`Plant Species`)
 bulk.rich <- rbind(bulk.rich, comm_bulk.rich)
-comm_bulk.rich$`Plant Species` <- gsub("C. fasciculata", "D. illinoense", comm_bulk.rich$`Plant Species`)
+comm_bulk.rich$`Plant Species` <- gsub("C. fasciculata", "D. canadense", comm_bulk.rich$`Plant Species`)
 bulk.rich <- rbind(bulk.rich, comm_bulk.rich)
-comm_bulk.rich$`Plant Species` <- gsub("D. illinoense", "A. bracteata", comm_bulk.rich$`Plant Species`)
+comm_bulk.rich$`Plant Species` <- gsub("D. canadense", "A. bracteata", comm_bulk.rich$`Plant Species`)
 bulk.rich <- rbind(bulk.rich, comm_bulk.rich)
 comm_bulk.rich$`Plant Species` <- gsub("A. bracteata", "T. repens", comm_bulk.rich$`Plant Species`)
 bulk.rich <- rbind(bulk.rich, comm_bulk.rich)
@@ -1674,7 +1674,7 @@ npsf.rich <- bulk.rich[2,]
 npsf.rich$`Plant Species` <- gsub("C. fasciculata", "S. helvola", npsf.rich$`Plant Species`)
 bulk.rich <- rbind(bulk.rich, npsf.rich)
 npsf.rich <- bulk.rich[4,]
-npsf.rich$`Plant Species` <- gsub("D. illinoense", "A. bracteata", npsf.rich$`Plant Species`)
+npsf.rich$`Plant Species` <- gsub("D. canadense", "A. bracteata", npsf.rich$`Plant Species`)
 bulk.rich <- rbind(bulk.rich, npsf.rich)
 npsf.rich <- bulk.rich[9,]
 npsf.rich$`Plant Species` <- gsub("T. repens", "M. truncatula", npsf.rich$`Plant Species`)
@@ -1708,7 +1708,7 @@ cc_bulk_sha.let <- multcompLetters4(cc_bulk_sha.aov, cc_bulk_sha.hsd)
 cc_bulk_sha.let <- cc_bulk_sha.let$Soils$Letters[sort(names(cc_bulk_sha.let$Soils$Letters))]
 
 ## Desmodium ##
-ds_bulk.richraw <- filter(bulk.richraw, Plant == 'D. illinoense')
+ds_bulk.richraw <- filter(bulk.richraw, Plant == 'D. canadense')
 ds_bulk.richraw <- rbind(ds_bulk.richraw, bulk.richraw[c('5044', '5045', '5046'),])
 
 ds_bulk_sha.aov <- aov(Shannon ~ Soils, data = ds_bulk.richraw)
@@ -1779,7 +1779,7 @@ sha_bulk.plot <- ggplot(bulk.rich, aes(x = `Plant Species`, y = sha.mean, fill =
   theme_prism() +
   scale_fill_manual(labels = c("Common Soil", "Non-PSF Soil","PSF Soil"), values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(labels = c("Common Soil", "Non-PSF Soil","PSF Soil"), values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,8), breaks = seq(0,8, by = 2), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "Bulk Soil")) +
+  scale_y_continuous(limits = c(0,8), breaks = seq(0,8, by = 2), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "Source Community")) +
   theme(legend.position = 'bottom',
         legend.text = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
         axis.text.x = element_text(size = 24, face = 'bold.italic', family = "Liberation Sans"),
@@ -1793,7 +1793,7 @@ sha_bulk.plot <- ggplot(bulk.rich, aes(x = `Plant Species`, y = sha.mean, fill =
 
 sha_bulk.plot
 
-# Bulk Soil Shannon Evenness #
+# Source Community Shannon Evenness #
 ## Strophostyles ##
 fb_bulk_evn.aov <- aov(ShaEvn ~ Soils, data = fb_bulk.richraw)
 summary(fb_bulk_evn.aov)
@@ -1874,7 +1874,7 @@ evn_bulk.plot <- ggplot(bulk.rich, aes(x = `Plant Species`, y = evn.mean, fill =
   theme_prism() +
   scale_fill_manual(values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,1), breaks = seq(0,1,by = 0.25), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ .,name = "Bulk Soil")) +
+  scale_y_continuous(limits = c(0,1), breaks = seq(0,1,by = 0.25), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ .,name = "Source Community")) +
   theme(legend.position = 'none',
         legend.text = element_text(size = 24),
         axis.text.x = element_blank(),
@@ -1968,7 +1968,7 @@ cha_bulk.plot <- ggplot(bulk.rich, aes(x = `Plant Species`, y = cha.mean, fill =
   theme_prism() +
   scale_fill_manual(values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,400), breaks = seq(0,400, by = 100), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "Bulk Soil")) +
+  scale_y_continuous(limits = c(0,400), breaks = seq(0,400, by = 100), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "Source Community")) +
   theme(legend.position = 'none',
         legend.text = element_text(size = 24),
         axis.text.x = element_blank(),
@@ -1982,7 +1982,7 @@ cha_bulk.plot <- ggplot(bulk.rich, aes(x = `Plant Species`, y = cha.mean, fill =
 
 cha_bulk.plot
 
-# All Bulk Soil Sample Plots #
+# All Source Community Sample Plots #
 (cha_bulk.plot) / 
 (evn_bulk.plot) / 
 (sha_bulk.plot) &
@@ -2020,7 +2020,7 @@ cc_root_sha.let <- multcompLetters4(cc_root_sha.aov, cc_root_sha.hsd)
 cc_root_sha.let <- cc_root_sha.let$Soils$Letters[sort(names(cc_root_sha.let$Soils$Letters))]
 
 ## Desmodium ##
-ds_root.richraw <- filter(root.richraw, Plant == 'D. illinoense')
+ds_root.richraw <- filter(root.richraw, Plant == 'D. canadense')
 ds_root_sha.aov <- aov(Shannon ~ Soils, data = ds_root.richraw)
 summary(ds_root_sha.aov)
 
@@ -2119,7 +2119,7 @@ cc_root_evn.let <- multcompLetters4(cc_root_evn.aov, cc_root_evn.hsd)
 cc_root_evn.let <- cc_root_evn.let$Soils$Letters[sort(names(cc_root_evn.let$Soils$Letters))]
 
 ## Desmodium ##
-ds_root.richraw <- filter(root.richraw, Plant == 'D. illinoense')
+ds_root.richraw <- filter(root.richraw, Plant == 'D. canadense')
 ds_root_evn.aov <- aov(ShaEvn ~ Soils, data = ds_root.richraw)
 summary(ds_root_evn.aov)
 
@@ -2217,7 +2217,7 @@ cc_root_cha.let <- multcompLetters4(cc_root_cha.aov, cc_root_cha.hsd)
 cc_root_cha.let <- cc_root_cha.let$Soils$Letters[sort(names(cc_root_cha.let$Soils$Letters))]
 
 ## Desmodium ##
-ds_root.richraw <- filter(root.richraw, Plant == 'D. illinoense')
+ds_root.richraw <- filter(root.richraw, Plant == 'D. canadense')
 ds_root_cha.aov <- aov(Chao1 ~ Soils, data = ds_root.richraw)
 summary(ds_root_cha.aov)
 
@@ -2363,8 +2363,8 @@ decompose_ps(soil.ps, 'soil')
 for(i in 1:nrow(soil$met)){
   soil$met$PSC[i] <- paste0(substr(soil$met$Plant[i],1,1), substr(soil$met$Soil_Treatment[i],1,1), substr(soil$met$Compartment[i],1,2))
 }
-soil$met$Plants <- factor(soil$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. illinoense', 'A. bracteata', 'T. repens', 'M. truncatula', 'Common Soil'))
-soil$met$Comps <- factor(soil$met$Compartment, levels = c('Bulk Soil', 'Rhizosphere'))
+soil$met$Plants <- factor(soil$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula', 'Common Soil'))
+soil$met$Comps <- factor(soil$met$Compartment, levels = c('Source Community', 'Rhizosphere'))
 soil$met$Soils <- factor(soil$met$Soil_Treatment, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
 
 sample_data(soil.ps) <- soil$met
@@ -2496,8 +2496,8 @@ decompose_ps(naty.ps, 'naty')
 for(i in 1:nrow(naty$met)){
   naty$met$PSC[i] <- paste0(substr(naty$met$Plant[i],1,1), substr(naty$met$Soil_Treatment[i],1,1), substr(naty$met$Compartment[i],1,2))
 }
-naty$met$Plants <- factor(naty$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. illinoense', 'A. bracteata', 'T. repens', 'M. truncatula'))
-naty$met$Comps <- factor(naty$met$Compartment, levels = c('Bulk Soil', 'Rhizosphere'))
+naty$met$Plants <- factor(naty$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula'))
+naty$met$Comps <- factor(naty$met$Compartment, levels = c('Source Community', 'Rhizosphere'))
 naty$met$Soils <- factor(naty$met$Soil_Treatment, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
 
 sample_data(naty.ps) <- naty$met
@@ -2626,8 +2626,8 @@ decompose_ps(nnat.ps, 'nnat')
 for(i in 1:nrow(nnat$met)){
   nnat$met$PSC[i] <- paste0(substr(nnat$met$Plant[i],1,1), substr(nnat$met$Soil_Treatment[i],1,1), substr(nnat$met$Compartment[i],1,2))
 }
-nnat$met$Plants <- factor(nnat$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. illinoense', 'A. bracteata', 'T. repens', 'M. truncatula'))
-nnat$met$Comps <- factor(nnat$met$Compartment, levels = c('Bulk Soil', 'Rhizosphere'))
+nnat$met$Plants <- factor(nnat$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula'))
+nnat$met$Comps <- factor(nnat$met$Compartment, levels = c('Source Community', 'Rhizosphere'))
 nnat$met$Soils <- factor(nnat$met$Soil_Treatment, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
 
 sample_data(nnat.ps) <- nnat$met
@@ -2696,9 +2696,9 @@ anova(nnat.bdis)
 TukeyHSD(nnat.bdis)
 
 
-# Bulk Soils #
+# Source Communitys #
 # Construct a Weighted Unifrac distance matrix and PCoA ordination #
-bulk.ps <- subset_samples(soil.ps, Compartment == "Bulk Soil")
+bulk.ps <- subset_samples(soil.ps, Compartment == "Source Community")
 bulk.ps <- subset_taxa(bulk.ps, taxa_sums(bulk.ps) > 0)
 
 bulk_prop.ps <- transform_sample_counts(bulk.ps, function(x) x/sum(x))
@@ -2763,8 +2763,8 @@ for(i in 1:nrow(bulk$met)){
     bulk$met$Plant[i] = "Common Soil"
   }
 }
-bulk$met$Plants <- factor(bulk$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. illinoense', 'A. bracteata', 'T. repens', 'M. truncatula', 'Common Soil'))
-bulk$met$Comps <- factor(bulk$met$Compartment, c('Bulk Soil'))
+bulk$met$Plants <- factor(bulk$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula', 'Common Soil'))
+bulk$met$Comps <- factor(bulk$met$Compartment, c('Source Community'))
 bulk$met$Soils <- factor(bulk$met$Soil_Treatment, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
 
 sample_data(bulk.ps) <- bulk$met
@@ -2834,7 +2834,7 @@ bulk_nmds.load <- cbind(bulk$met, bulk_nmds.scores)
 # plot the NMDS ordination of all samples that will be used to make a patchwork plot #
 bulk_nmds.plot <- ggplot(bulk_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape = Soils)) +
   geom_point(size = 12) +
-  scale_color_manual(name = "Bulk Soil Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. illinoense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
+  scale_color_manual(name = "Source Community Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. canadense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
   scale_shape_manual(name = "PSF History", labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c(15,17,16)) +
   xlab(expression("NMDS1 (R"^2 ~ "= 0.8167)")) +
   ylab(expression("NMDS2 (R"^2 ~ "= 0.1551)")) +
@@ -2932,7 +2932,7 @@ cc_bulk_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_bulk_nvsc.met)
 summary(cc_bulk_nvsc.man)
 
 ## Desmodium ##
-ds_bulk.ps <- subset_samples(bulk.ps, Plant == "D. illinoense" | Plant == "Common Soil")
+ds_bulk.ps <- subset_samples(bulk.ps, Plant == "D. canadense" | Plant == "Common Soil")
 ds_bulk.ps <- subset_taxa(ds_bulk.ps, taxa_sums(ds_bulk.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -2947,7 +2947,7 @@ anova(ds_bulk.bdis)
 TukeyHSD(ds_bulk.bdis)
 
 # Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
-ds_bulk.met <- filter(bulk_nmds.load,  Plant == "D. illinoense" | Plant == "Common Soil")
+ds_bulk.met <- filter(bulk_nmds.load,  Plant == "D. canadense" | Plant == "Common Soil")
 
 # Perform MANOVA on all samples #
 ds_bulk.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_bulk.met)
@@ -2970,7 +2970,7 @@ ds_bulk_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_bulk_nvsc.met)
 summary(ds_bulk_nvsc.man)
 
 ## Hog Peanut ##
-hp_bulk.ps <- subset_samples(bulk.ps, Plant == "A. bracteata" | Plant == "Common Soil" | Plant == "D. illinoense" & Soil_Treatment == "Non-PSF Soil")
+hp_bulk.ps <- subset_samples(bulk.ps, Plant == "A. bracteata" | Plant == "Common Soil" | Plant == "D. canadense" & Soil_Treatment == "Non-PSF Soil")
 hp_bulk.ps <- subset_taxa(hp_bulk.ps, taxa_sums(hp_bulk.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -2985,7 +2985,7 @@ anova(hp_bulk.bdis)
 TukeyHSD(hp_bulk.bdis)
 
 # Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
-hp_bulk.met <- filter(bulk_nmds.load, Plant == "A. bracteata" | Plant == "Common Soil" | Plant == "D. illinoense" & Soil_Treatment == "Non-PSF Soil")
+hp_bulk.met <- filter(bulk_nmds.load, Plant == "A. bracteata" | Plant == "Common Soil" | Plant == "D. canadense" & Soil_Treatment == "Non-PSF Soil")
 
 # Perform MANOVA on all samples #
 hp_bulk.man <- manova(cbind(NMDS1,NMDS2)~Soils, hp_bulk.met)
@@ -3143,7 +3143,7 @@ decompose_ps(rhiz.ps, 'rhiz')
 for(i in 1:nrow(rhiz$met)){
   rhiz$met$PS[i] <- paste0(substr(rhiz$met$Plant[i],1,1), substr(rhiz$met$Soil_Treatment[i],1,1))
 }
-rhiz$met$Plants <- factor(rhiz$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. illinoense', 'A. bracteata', 'T. repens', 'M. truncatula'))
+rhiz$met$Plants <- factor(rhiz$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula'))
 rhiz$met$Comps <- factor(rhiz$met$Compartment, c('Rhizosphere'))
 rhiz$met$Soils <- factor(rhiz$met$Soil_Treatment, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
 
@@ -3214,7 +3214,7 @@ rhiz_nmds.load <- cbind(rhiz$met, rhiz_nmds.scores)
 # plot the NMDS ordination of all samples that will be used to make a patchwork plot #
 rhiz_nmds.plot <- ggplot(rhiz_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape = Soils)) +
   geom_point(size = 8) +
-  scale_color_manual(name = "Rhizosphere Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. illinoense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
+  scale_color_manual(name = "Rhizosphere Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. canadense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
   scale_shape_manual(name = "PSF History", labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c(15,17,16)) +
   xlab(expression("NMDS1 (R"^2 ~ "= 0.5386)")) +
   ylab(expression("NMDS2 (R"^2 ~ "= 0.2525)")) +
@@ -3310,7 +3310,7 @@ cc_rhiz_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_rhiz_nvsc.met)
 summary(cc_rhiz_nvsc.man)
 
 ## Desmodium ##
-ds_rhiz.ps <- subset_samples(rhiz.ps, Plant == "D. illinoense")
+ds_rhiz.ps <- subset_samples(rhiz.ps, Plant == "D. canadense")
 ds_rhiz.ps <- subset_taxa(ds_rhiz.ps, taxa_sums(ds_rhiz.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -3325,7 +3325,7 @@ anova(ds_rhiz.bdis)
 TukeyHSD(ds_rhiz.bdis)
 
 # Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
-ds_rhiz.met <- filter(rhiz_nmds.load, Plant == "D. illinoense")
+ds_rhiz.met <- filter(rhiz_nmds.load, Plant == "D. canadense")
 
 # Perform MANOVA on all samples #
 ds_rhiz.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_rhiz.met)
@@ -3536,7 +3536,7 @@ decompose_ps(root.ps, 'root')
 for(i in 1:nrow(root$met)){
   root$met$PS[i] <- paste0(substr(root$met$Plant.Species[i],1,1), substr(root$met$Soil.Origin[i],1,1))
 }
-root$met$Plants <- factor(root$met$Plant.Species, levels = c('S. helvola', 'C. fasciculata', 'D. illinoense', 'A. bracteata', 'T. repens', 'M. truncatula'))
+root$met$Plants <- factor(root$met$Plant.Species, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula'))
 root$met$Comps <- factor(root$met$Compartment, c('Root Endosphere'))
 root$met$Soils <- factor(root$met$Soil.Origin, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
 
@@ -3607,7 +3607,7 @@ root_nmds.load <- cbind(root$met, root_nmds.scores)
 # plot the NMDS ordination of all samples that will be used to make a patchwork plot #
 root_nmds.plot <- ggplot(root_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape = Soils)) +
   geom_point(size = 8) +
-  scale_color_manual(name = "Root Endosphere Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. illinoense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
+  scale_color_manual(name = "Root Endosphere Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. canadense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
   scale_shape_manual(name = "PSF History", labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c(15,17,16)) +
   xlab(expression("NMDS1 (R"^2 ~ "= 0.5695)")) +
   ylab(expression("NMDS2 (R"^2 ~ "= 0.1246)")) +
@@ -3703,7 +3703,7 @@ cc_root_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_root_nvsc.met)
 summary(cc_root_nvsc.man)
 
 ## Desmodium ##
-ds_root.ps <- subset_samples(root.ps, Plant.Species == "D. illinoense")
+ds_root.ps <- subset_samples(root.ps, Plant.Species == "D. canadense")
 ds_root.ps <- subset_taxa(ds_root.ps, taxa_sums(ds_root.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -3718,7 +3718,7 @@ anova(ds_root.bdis)
 TukeyHSD(ds_root.bdis)
 
 # Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
-ds_root.met <- filter(root_nmds.load, Plant.Species == "D. illinoense")
+ds_root.met <- filter(root_nmds.load, Plant.Species == "D. canadense")
 
 # Perform MANOVA on all samples #
 ds_root.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_root.met)
@@ -3928,7 +3928,7 @@ decompose_ps(raty.ps, 'raty')
 for(i in 1:nrow(raty$met)){
   raty$met$PS[i] <- paste0(substr(raty$met$Plant.Species[i],1,1), substr(raty$met$Soil.Origin[i],1,1))
 }
-raty$met$Plants <- factor(raty$met$Plant.Species, levels = c('S. helvola', 'C. fasciculata', 'D. illinoense', 'A. bracteata', 'T. repens', 'M. truncatula'))
+raty$met$Plants <- factor(raty$met$Plant.Species, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula'))
 raty$met$Comps <- factor(raty$met$Compartment, c('Root Endosphere'))
 raty$met$Soils <- factor(raty$met$Soil.Origin, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
 
@@ -4054,7 +4054,7 @@ decompose_ps(rnat.ps, 'rnat')
 for(i in 1:nrow(rnat$met)){
   rnat$met$PS[i] <- paste0(substr(rnat$met$Plant.Species[i],1,1), substr(rnat$met$Soil.Origin[i],1,1))
 }
-rnat$met$Plants <- factor(rnat$met$Plant.Species, levels = c('S. helvola', 'C. fasciculata', 'D. illinoense', 'A. bracteata', 'T. repens', 'M. truncatula'))
+rnat$met$Plants <- factor(rnat$met$Plant.Species, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula'))
 rnat$met$Comps <- factor(rnat$met$Compartment, c('Root Endosphere'))
 rnat$met$Soils <- factor(rnat$met$Soil.Origin, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
 
@@ -4119,7 +4119,7 @@ rnat.bdis <- betadisper(rnat.wuni, group = rnat$met$PS)
 anova(rnat.bdis)
 TukeyHSD(rnat.bdis)
 
-# Bulk Soil vs Rhizosphere No Plant #
+# Source Community vs Rhizosphere No Plant #
 # Construct a phyloseq object containing only samples in the Non-PSF Soil #
 npsf.ps <- subset_samples(soil.ps, Soil_Treatment == "Non-PSF Soil")
 
@@ -4178,8 +4178,8 @@ decompose_ps(npsf.ps, 'npsf')
 for(i in 1:nrow(npsf$met)){
   npsf$met$PC[i] <- paste0(substr(npsf$met$Plant[i],1,1), substr(npsf$met$Compartment[i],1,2))
 }
-npsf$met$Plants <- factor(npsf$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. illinoense', 'A. bracteata', 'T. repens', 'M. truncatula'))
-npsf$met$Comps <- factor(npsf$met$Compartment, c('Bulk Soil', 'Rhizosphere'))
+npsf$met$Plants <- factor(npsf$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula'))
+npsf$met$Comps <- factor(npsf$met$Compartment, c('Source Community', 'Rhizosphere'))
 npsf$met$Soils <- factor(npsf$met$Soil_Treatment, levels = c("Non-PSF Soil"))
 
 sample_data(npsf.ps) <- npsf$met
@@ -4246,13 +4246,13 @@ TukeyHSD(npsf.bdis)
 # Make an object with the data to be plotted #
 npsf_nmds.load <- cbind(npsf$met, npsf_nmds.scores)
 npsf_nmds.load$Plants <- gsub("T. repens", "M. truncatula", npsf_nmds.load$Plants)
-npsf_nmds.load$Plants <- factor(npsf_nmds.load$Plants, levels = c("S. helvola", "C. fasciculata", "D. illinoense", "A. bracteata", "M. truncatula"))
+npsf_nmds.load$Plants <- factor(npsf_nmds.load$Plants, levels = c("S. helvola", "C. fasciculata", "D. canadense", "A. bracteata", "M. truncatula"))
 
 # plot the NMDS ordination of all samples that will be used to make a patchwork plot #
 npsf_nmds.plot <- ggplot(npsf_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape = Comps)) +
   geom_point(size = 8) +
-  scale_color_manual(name = "Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. illinoense')), expression(italic('A. bracteata')), expression(italic('M. truncatula'))), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00", "#6A3D9A")) +
-  scale_shape_manual(name = "Compartment", labels = c("Bulk Soil", "Rhizosphere", "PSF Soil"), values = c(15,16)) +
+  scale_color_manual(name = "Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. canadense')), expression(italic('A. bracteata')), expression(italic('M. truncatula'))), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00", "#6A3D9A")) +
+  scale_shape_manual(name = "Compartment", labels = c("Source Community", "Rhizosphere", "PSF Soil"), values = c(15,16)) +
   xlab(expression("NMDS1 (R"^2 ~ "= 0.6251)")) +
   ylab(expression("NMDS2 (R"^2 ~ "= 0.2766)")) +
   theme_bw() +
@@ -4272,7 +4272,7 @@ npsf_nmds.plot
 
 # Separate samples by plant species #
 ## Fuzzy Bean ##
-fb_npsf.ps <- subset_samples(npsf.ps, Plant == "S. helvola" | Plant == "C. fasciculata" & Compartment == "Bulk Soil")
+fb_npsf.ps <- subset_samples(npsf.ps, Plant == "S. helvola" | Plant == "C. fasciculata" & Compartment == "Source Community")
 fb_npsf.ps <- subset_taxa(fb_npsf.ps, taxa_sums(fb_npsf.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -4287,14 +4287,14 @@ anova(fb_npsf.bdis)
 TukeyHSD(fb_npsf.bdis)
 
 # Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
-fb_npsf.met <- filter(npsf_nmds.load, Plant == "S. helvola" | Plant == "C. fasciculata" & Compartment == "Bulk Soil")
+fb_npsf.met <- filter(npsf_nmds.load, Plant == "S. helvola" | Plant == "C. fasciculata" & Compartment == "Source Community")
 
 # Perform MANOVA on all samples #
 fb_npsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, fb_npsf.met)
 summary(fb_npsf.man)
 
 # Subset the data for pairwise MANOVA tests #
-## Bulk Soil vs. Rhizosphere ##
+## Source Community vs. Rhizosphere ##
 fb_npsf_pvsn.met <- filter(fb_npsf.met, Soil_Treatment != "Common Soil")
 fb_npsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, fb_npsf_pvsn.met)
 summary(fb_npsf_pvsn.man)
@@ -4322,13 +4322,13 @@ cc_npsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, cc_npsf.met)
 summary(cc_npsf.man)
 
 # Subset the data for pairwise MANOVA tests #
-## Bulk Soil vs. Rhizosphere ##
+## Source Community vs. Rhizosphere ##
 cc_npsf_pvsn.met <- filter(cc_npsf.met, Soil_Treatment != "Common Soil")
 cc_npsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, cc_npsf_pvsn.met)
 summary(cc_npsf_pvsn.man)
 
 ## Desmodium ##
-ds_npsf.ps <- subset_samples(npsf.ps, Plant == "D. illinoense")
+ds_npsf.ps <- subset_samples(npsf.ps, Plant == "D. canadense")
 ds_npsf.ps <- subset_taxa(ds_npsf.ps, taxa_sums(ds_npsf.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -4343,20 +4343,20 @@ anova(ds_npsf.bdis)
 TukeyHSD(ds_npsf.bdis)
 
 # Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
-ds_npsf.met <- filter(npsf_nmds.load, Plant == "D. illinoense")
+ds_npsf.met <- filter(npsf_nmds.load, Plant == "D. canadense")
 
 # Perform MANOVA on all samples #
 ds_npsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, ds_npsf.met)
 summary(ds_npsf.man)
 
 # Subset the data for pairwise MANOVA tests #
-## Bulk Soil vs. Rhizosphere ##
+## Source Community vs. Rhizosphere ##
 ds_npsf_pvsn.met <- filter(ds_npsf.met, Soil_Treatment != "Common Soil")
 ds_npsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, ds_npsf_pvsn.met)
 summary(ds_npsf_pvsn.man)
 
 ## Hog Peanut ##
-hp_npsf.ps <- subset_samples(npsf.ps, Plant == "A. bracteata" | Plant == "D. illinoense" & Compartment == "Bulk Soil")
+hp_npsf.ps <- subset_samples(npsf.ps, Plant == "A. bracteata" | Plant == "D. canadense" & Compartment == "Source Community")
 hp_npsf.ps <- subset_taxa(hp_npsf.ps, taxa_sums(hp_npsf.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -4371,20 +4371,20 @@ anova(hp_npsf.bdis)
 TukeyHSD(hp_npsf.bdis)
 
 # Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
-hp_npsf.met <- filter(npsf_nmds.load, Plant == "A. bracteata" | Plant == "D. illinoense" & Compartment == "Bulk Soil")
+hp_npsf.met <- filter(npsf_nmds.load, Plant == "A. bracteata" | Plant == "D. canadense" & Compartment == "Source Community")
 
 # Perform MANOVA on all samples #
 hp_npsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, hp_npsf.met)
 summary(hp_npsf.man)
 
 # Subset the data for pairwise MANOVA tests #
-## Bulk Soil vs. Rhizosphere ##
+## Source Community vs. Rhizosphere ##
 hp_npsf_pvsn.met <- filter(hp_npsf.met, Soil_Treatment != "Common Soil")
 hp_npsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, hp_npsf_pvsn.met)
 summary(hp_npsf_pvsn.man)
 
 ## Medicago ##
-md_npsf.ps <- subset_samples(npsf.ps, Plant == "M. truncatula" | Plant == "T. repens" & Compartment == "Bulk Soil")
+md_npsf.ps <- subset_samples(npsf.ps, Plant == "M. truncatula" | Plant == "T. repens" & Compartment == "Source Community")
 md_npsf.ps <- subset_taxa(md_npsf.ps, taxa_sums(md_npsf.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -4406,12 +4406,12 @@ md_npsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, md_npsf.met)
 summary(md_npsf.man)
 
 # Subset the data for pairwise MANOVA tests #
-## Bulk Soil vs. Rhizosphere ##
+## Source Community vs. Rhizosphere ##
 md_npsf_pvsn.met <- filter(md_npsf.met, Soil_Treatment != "Common Soil")
 md_npsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, md_npsf_pvsn.met)
 summary(md_npsf_pvsn.man)
 
-# Bulk Soil vs Rhizosphere PSF Soil #
+# Source Community vs Rhizosphere PSF Soil #
 # Construct a phyloseq object containing only samples in the Non-PSF Soil #
 wpsf.ps <- subset_samples(soil.ps, Soil_Treatment == "PSF Soil")
 
@@ -4474,8 +4474,8 @@ decompose_ps(wpsf.ps, 'wpsf')
 for(i in 1:nrow(wpsf$met)){
   wpsf$met$PC[i] <- paste0(substr(wpsf$met$Plant[i],1,1), substr(wpsf$met$Compartment[i],1,2))
 }
-wpsf$met$Plants <- factor(wpsf$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. illinoense', 'A. bracteata', 'T. repens', 'M. truncatula'))
-wpsf$met$Comps <- factor(wpsf$met$Compartment, c('Bulk Soil', 'Rhizosphere'))
+wpsf$met$Plants <- factor(wpsf$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula'))
+wpsf$met$Comps <- factor(wpsf$met$Compartment, c('Source Community', 'Rhizosphere'))
 wpsf$met$Soils <- factor(wpsf$met$Soil_Treatment, levels = c("PSF Soil"))
 
 sample_data(wpsf.ps) <- wpsf$met
@@ -4545,8 +4545,8 @@ wpsf_nmds.load <- cbind(wpsf$met, wpsf_nmds.scores)
 # plot the NMDS ordination of all samples that will be used to make a patchwork plot #
 wpsf_nmds.plot <- ggplot(wpsf_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape = Comps)) +
   geom_point(size = 8) +
-  scale_color_manual(name = "Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. illinoense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
-  scale_shape_manual(name = "Compartment", labels = c("Bulk Soil", "Rhizosphere", "PSF Soil"), values = c(15,16)) +
+  scale_color_manual(name = "Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. canadense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
+  scale_shape_manual(name = "Compartment", labels = c("Source Community", "Rhizosphere", "PSF Soil"), values = c(15,16)) +
   xlab(expression("NMDS1 (R"^2 ~ "= 0.4873)")) +
   ylab(expression("NMDS2 (R"^2 ~ "= 0.3939)")) +
   theme_bw() +
@@ -4588,7 +4588,7 @@ fb_wpsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, fb_wpsf.met)
 summary(fb_wpsf.man)
 
 # Subset the data for pairwise MANOVA tests #
-## Bulk Soil vs. Rhizosphere ##
+## Source Community vs. Rhizosphere ##
 fb_wpsf_pvsn.met <- filter(fb_wpsf.met, Soil_Treatment != "Common Soil")
 fb_wpsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, fb_wpsf_pvsn.met)
 summary(fb_wpsf_pvsn.man)
@@ -4616,14 +4616,14 @@ cc_wpsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, cc_wpsf.met)
 summary(cc_wpsf.man)
 
 # Subset the data for pairwise MANOVA tests #
-## Bulk Soil vs. Rhizosphere ##
+## Source Community vs. Rhizosphere ##
 cc_wpsf_pvsn.met <- filter(cc_wpsf.met, Soil_Treatment != "Common Soil")
 cc_wpsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, cc_wpsf_pvsn.met)
 summary(cc_wpsf_pvsn.man)
 
 
 ## Desmodium ##
-ds_wpsf.ps <- subset_samples(wpsf.ps, Plant == "D. illinoense")
+ds_wpsf.ps <- subset_samples(wpsf.ps, Plant == "D. canadense")
 ds_wpsf.ps <- subset_taxa(ds_wpsf.ps, taxa_sums(ds_wpsf.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -4638,14 +4638,14 @@ anova(ds_wpsf.bdis)
 TukeyHSD(ds_wpsf.bdis)
 
 # Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
-ds_wpsf.met <- filter(wpsf_nmds.load, Plant == "D. illinoense")
+ds_wpsf.met <- filter(wpsf_nmds.load, Plant == "D. canadense")
 
 # Perform MANOVA on all samples #
 ds_wpsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, ds_wpsf.met)
 summary(ds_wpsf.man)
 
 # Subset the data for pairwise MANOVA tests #
-## Bulk Soil vs. Rhizosphere ##
+## Source Community vs. Rhizosphere ##
 ds_wpsf_pvsn.met <- filter(ds_wpsf.met, Soil_Treatment != "Common Soil")
 ds_wpsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, ds_wpsf_pvsn.met)
 summary(ds_wpsf_pvsn.man)
@@ -4674,7 +4674,7 @@ hp_wpsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, hp_wpsf.met)
 summary(hp_wpsf.man)
 
 # Subset the data for pairwise MANOVA tests #
-## Bulk Soil vs. Rhizosphere ##
+## Source Community vs. Rhizosphere ##
 hp_wpsf_pvsn.met <- filter(hp_wpsf.met, Soil_Treatment != "Common Soil")
 hp_wpsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, hp_wpsf_pvsn.met)
 summary(hp_wpsf_pvsn.man)
@@ -4738,12 +4738,12 @@ decompose_ps(soil.ps, 'soil_temp')
 for(i in 1:nrow(soil_temp$met)){
   soil_temp$met$PS[i] <- paste0(substr(soil_temp$met$Plant[i],1,1), substr(soil_temp$met$Soil_Treatment[i], 1,1))
 }
-soil_temp$met$Plants <- factor(soil_temp$met$Plant, levels = c("S. helvola", "C. fasciculata", "D. illinoense", "A. bracteata", "T. repens", "M. truncatula"))
-soil_temp$met$Comps <- factor(soil_temp$met$Compartment, levels = c("Bulk Soil", "Rhizosphere", "Root Endosphere"))
+soil_temp$met$Plants <- factor(soil_temp$met$Plant, levels = c("S. helvola", "C. fasciculata", "D. canadense", "A. bracteata", "T. repens", "M. truncatula"))
+soil_temp$met$Comps <- factor(soil_temp$met$Compartment, levels = c("Source Community", "Rhizosphere", "Root Endosphere"))
 soil_temp$met$Soils <- factor(soil_temp$met$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 decompose_ps(root.ps, 'root_temp')
-root_temp$met$Comps <- factor(root_temp$met$Compartment, levels = c("Bulk Soil", "Rhizosphere", "Root Endosphere"))
+root_temp$met$Comps <- factor(root_temp$met$Compartment, levels = c("Source Community", "Rhizosphere", "Root Endosphere"))
 colnames(root_temp$met) <- colnames(soil_temp$met)
 
 soil_temp.ps <- phyloseq(otu_table(soil_temp$otu, taxa_are_rows = TRUE),
@@ -4770,7 +4770,7 @@ rownames(all.colr)[350] <- "Other"
 # Separate by plant species # 
 ## Fuzzy Bean ##
 fb_all.ps <- subset_samples(all.ps, Plant == "S. helvola")
-fb_all.ps <- merge_phyloseq(fb_all.ps, subset_samples(all.ps, Plant == "C. fasciculata" & Soil_Treatment == "Non-PSF Soil" & Compartment == "Bulk Soil"))
+fb_all.ps <- merge_phyloseq(fb_all.ps, subset_samples(all.ps, Plant == "C. fasciculata" & Soil_Treatment == "Non-PSF Soil" & Compartment == "Source Community"))
 
 fb_top.ps <- aggregate_top_taxa2(fb_all.ps, 19, "Genus")
 fb_top.name <- names(sort(taxa_sums(fb_top.ps), decreasing = TRUE))
@@ -4812,7 +4812,7 @@ fb_top.plot
 
 ## Chamaecrista ##
 cc_all.ps <- subset_samples(all.ps, Plant == "C. fasciculata")
-cc_all.ps <- merge_phyloseq(cc_all.ps, subset_samples(all.ps, Plant == "S. helvola" & Soil_Treatment == "Common Soil" & Compartment == "Bulk Soil"))
+cc_all.ps <- merge_phyloseq(cc_all.ps, subset_samples(all.ps, Plant == "S. helvola" & Soil_Treatment == "Common Soil" & Compartment == "Source Community"))
 
 cc_top.ps <- aggregate_top_taxa2(cc_all.ps, 19, "Genus")
 cc_top.name <- names(sort(taxa_sums(cc_top.ps), decreasing = TRUE))
@@ -4853,8 +4853,8 @@ cc_top.plot
   theme(plot.tag = element_text(size = 22, face = "bold", family = "Liberation Sans"))
 
 ## Desmodium ##
-ds_all.ps <- subset_samples(all.ps, Plant == "D. illinoense")
-ds_all.ps <- merge_phyloseq(ds_all.ps, subset_samples(all.ps, Plant == "S. helvola" & Soil_Treatment == "Common Soil" & Compartment == "Bulk Soil"))
+ds_all.ps <- subset_samples(all.ps, Plant == "D. canadense")
+ds_all.ps <- merge_phyloseq(ds_all.ps, subset_samples(all.ps, Plant == "S. helvola" & Soil_Treatment == "Common Soil" & Compartment == "Source Community"))
 
 ds_top.ps <- aggregate_top_taxa2(ds_all.ps, 19, "Genus")
 ds_top.name <- names(sort(taxa_sums(ds_top.ps), decreasing = TRUE))
@@ -4870,7 +4870,7 @@ ds_top.plot <- ggplot(ds_top.df, aes(x = Group, y = Abundance, fill = Genera)) +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = ds_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('D. illinoense')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('D. canadense')))) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18, angle = -45, hjust = 0),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
@@ -4896,8 +4896,8 @@ ds_top.plot
 
 ## Hog Peanut ##
 hp_all.ps <- subset_samples(all.ps, Plant == "A. bracteata")
-hp_all.ps <- merge_phyloseq(hp_all.ps, subset_samples(all.ps, Plant == "S. helvola" & Soil_Treatment == "Common Soil" & Compartment == "Bulk Soil"))
-hp_all.ps <- merge_phyloseq(hp_all.ps, subset_samples(all.ps, Plant == "D. illinoense" & Soil_Treatment == "Non-PSF Soil" & Compartment == "Bulk Soil"))
+hp_all.ps <- merge_phyloseq(hp_all.ps, subset_samples(all.ps, Plant == "S. helvola" & Soil_Treatment == "Common Soil" & Compartment == "Source Community"))
+hp_all.ps <- merge_phyloseq(hp_all.ps, subset_samples(all.ps, Plant == "D. canadense" & Soil_Treatment == "Non-PSF Soil" & Compartment == "Source Community"))
 
 
 hp_top.ps <- aggregate_top_taxa2(hp_all.ps, 19, "Genus")
@@ -4940,7 +4940,7 @@ hp_top.plot
 
 ## Clover ##
 cl_all.ps <- subset_samples(all.ps, Plant == "T. repens")
-cl_all.ps <- merge_phyloseq(cl_all.ps, subset_samples(all.ps, Plant == "S. helvola" & Soil_Treatment == "Common Soil" & Compartment == "Bulk Soil"))
+cl_all.ps <- merge_phyloseq(cl_all.ps, subset_samples(all.ps, Plant == "S. helvola" & Soil_Treatment == "Common Soil" & Compartment == "Source Community"))
 
 
 cl_top.ps <- aggregate_top_taxa2(cl_all.ps, 19, "Genus")
@@ -4984,8 +4984,8 @@ cl_top.plot
 
 ## Medicago ##
 md_all.ps <- subset_samples(all.ps, Plant == "M. truncatula")
-md_all.ps <- merge_phyloseq(md_all.ps, subset_samples(all.ps, Plant == "S. helvola" & Soil_Treatment == "Common Soil" & Compartment == "Bulk Soil"))
-md_all.ps <- merge_phyloseq(md_all.ps, subset_samples(all.ps, Plant == "T. repens" & Soil_Treatment == "Non-PSF Soil" & Compartment == "Bulk Soil"))
+md_all.ps <- merge_phyloseq(md_all.ps, subset_samples(all.ps, Plant == "S. helvola" & Soil_Treatment == "Common Soil" & Compartment == "Source Community"))
+md_all.ps <- merge_phyloseq(md_all.ps, subset_samples(all.ps, Plant == "T. repens" & Soil_Treatment == "Non-PSF Soil" & Compartment == "Source Community"))
 
 
 md_top.ps <- aggregate_top_taxa2(md_all.ps, 19, "Genus")
@@ -5065,7 +5065,7 @@ fb_bulk_wpsf.maas <- Maaslin2(input_data = fb_bulk$otu,
                                plot_scatter = FALSE,
                                save_scatter = FALSE)
 
-# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+# Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 fb_bulk_wpsf.res <- fb_bulk_wpsf.maas$results
 fb_bulk_wpsf.dares <- c()
 for(i in 1:nrow(fb_bulk_wpsf.res)){
@@ -5074,7 +5074,7 @@ for(i in 1:nrow(fb_bulk_wpsf.res)){
   }
 }
 
-# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+# Maaslin2 analysis for the Source Community data (PSF Reference) # 
 fb_bulk_npsf.maas <- Maaslin2(input_data = fb_bulk$otu,
                                input_metadata = fb_bulk$met,
                                output = "./maas_results/fb_bulk_npsf.maas",
@@ -5090,7 +5090,7 @@ fb_bulk_npsf.maas <- Maaslin2(input_data = fb_bulk$otu,
                                plot_scatter = FALSE,
                                save_scatter = FALSE)
 
-# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+# Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 fb_bulk_npsf.res <- fb_bulk_npsf.maas$results
 fb_bulk_npsf.dares <- c()
 for(i in 1:nrow(fb_bulk_npsf.res)){
@@ -5103,7 +5103,7 @@ for(i in 1:nrow(fb_bulk_npsf.res)){
 fb_rhiz.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(fb_rhiz$otu)))
 fb_rhiz$otu <- fb_rhiz$otu[order(fb_rhiz.sort),]
 
-# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+# Maaslin2 analysis for the Source Community data (PSF Reference) # 
 fb_rhiz_wpsf.maas <- Maaslin2(input_data = fb_rhiz$otu,
                                input_metadata = fb_rhiz$met,
                                output = "./maas_results/fb_rhiz_wpsf.maas",
@@ -5305,7 +5305,7 @@ cc_bulk_wpsf.maas <- Maaslin2(input_data = cc_bulk$otu,
                                plot_scatter = FALSE,
                                save_scatter = FALSE)
 
-# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+# Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 cc_bulk_wpsf.res <- cc_bulk_wpsf.maas$results
 cc_bulk_wpsf.dares <- c()
 for(i in 1:nrow(cc_bulk_wpsf.res)){
@@ -5314,7 +5314,7 @@ for(i in 1:nrow(cc_bulk_wpsf.res)){
   }
 }
 
-# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+# Maaslin2 analysis for the Source Community data (PSF Reference) # 
 cc_bulk_npsf.maas <- Maaslin2(input_data = cc_bulk$otu,
                                input_metadata = cc_bulk$met,
                                output = "./maas_results/cc_bulk_npsf.maas",
@@ -5330,7 +5330,7 @@ cc_bulk_npsf.maas <- Maaslin2(input_data = cc_bulk$otu,
                                plot_scatter = FALSE,
                                save_scatter = FALSE)
 
-# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+# Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 cc_bulk_npsf.res <- cc_bulk_npsf.maas$results
 cc_bulk_npsf.dares <- c()
 for(i in 1:nrow(cc_bulk_npsf.res)){
@@ -5343,7 +5343,7 @@ for(i in 1:nrow(cc_bulk_npsf.res)){
 cc_rhiz.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(cc_rhiz$otu)))
 cc_rhiz$otu <- cc_rhiz$otu[order(cc_rhiz.sort),]
 
-# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+# Maaslin2 analysis for the Source Community data (PSF Reference) # 
 cc_rhiz_wpsf.maas <- Maaslin2(input_data = cc_rhiz$otu,
                                input_metadata = cc_rhiz$met,
                                output = "./maas_results/cc_rhiz_wpsf.maas",
@@ -5546,7 +5546,7 @@ ds_bulk_wpsf.maas <- Maaslin2(input_data = ds_bulk$otu,
                                plot_scatter = FALSE,
                                save_scatter = FALSE)
 
-# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+# Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 ds_bulk_wpsf.res <- ds_bulk_wpsf.maas$results
 ds_bulk_wpsf.dares <- c()
 for(i in 1:nrow(ds_bulk_wpsf.res)){
@@ -5555,7 +5555,7 @@ for(i in 1:nrow(ds_bulk_wpsf.res)){
   }
 }
 
-# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+# Maaslin2 analysis for the Source Community data (PSF Reference) # 
 ds_bulk_npsf.maas <- Maaslin2(input_data = ds_bulk$otu,
                                input_metadata = ds_bulk$met,
                                output = "./maas_results/ds_bulk_npsf.maas",
@@ -5571,7 +5571,7 @@ ds_bulk_npsf.maas <- Maaslin2(input_data = ds_bulk$otu,
                                plot_scatter = FALSE,
                                save_scatter = FALSE)
 
-# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+# Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 ds_bulk_npsf.res <- ds_bulk_npsf.maas$results
 ds_bulk_npsf.dares <- c()
 for(i in 1:nrow(ds_bulk_npsf.res)){
@@ -5584,7 +5584,7 @@ for(i in 1:nrow(ds_bulk_npsf.res)){
 ds_rhiz.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(ds_rhiz$otu)))
 ds_rhiz$otu <- ds_rhiz$otu[order(ds_rhiz.sort),]
 
-# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+# Maaslin2 analysis for the Source Community data (PSF Reference) # 
 ds_rhiz_wpsf.maas <- Maaslin2(input_data = ds_rhiz$otu,
                                input_metadata = ds_rhiz$met,
                                output = "./maas_results/ds_rhiz_wpsf.maas",
@@ -5787,7 +5787,7 @@ hp_bulk_wpsf.maas <- Maaslin2(input_data = hp_bulk$otu,
                                plot_scatter = FALSE,
                                save_scatter = FALSE)
 
-# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+# Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 hp_bulk_wpsf.res <- hp_bulk_wpsf.maas$results
 hp_bulk_wpsf.dares <- c()
 for(i in 1:nrow(hp_bulk_wpsf.res)){
@@ -5796,7 +5796,7 @@ for(i in 1:nrow(hp_bulk_wpsf.res)){
   }
 }
 
-# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+# Maaslin2 analysis for the Source Community data (PSF Reference) # 
 hp_bulk_npsf.maas <- Maaslin2(input_data = hp_bulk$otu,
                                input_metadata = hp_bulk$met,
                                output = "./maas_results/hp_bulk_npsf.maas",
@@ -5812,7 +5812,7 @@ hp_bulk_npsf.maas <- Maaslin2(input_data = hp_bulk$otu,
                                plot_scatter = FALSE,
                                save_scatter = FALSE)
 
-# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+# Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 hp_bulk_npsf.res <- hp_bulk_npsf.maas$results
 hp_bulk_npsf.dares <- c()
 for(i in 1:nrow(hp_bulk_npsf.res)){
@@ -5825,7 +5825,7 @@ for(i in 1:nrow(hp_bulk_npsf.res)){
 hp_rhiz.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(hp_rhiz$otu)))
 hp_rhiz$otu <- hp_rhiz$otu[order(hp_rhiz.sort),]
 
-# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+# Maaslin2 analysis for the Source Community data (PSF Reference) # 
 hp_rhiz_wpsf.maas <- Maaslin2(input_data = hp_rhiz$otu,
                                input_metadata = hp_rhiz$met,
                                output = "./maas_results/hp_rhiz_wpsf.maas",
@@ -6028,7 +6028,7 @@ cl_bulk_wpsf.maas <- Maaslin2(input_data = cl_bulk$otu,
                                plot_scatter = FALSE,
                                save_scatter = FALSE)
 
-# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+# Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 cl_bulk_wpsf.res <- cl_bulk_wpsf.maas$results
 cl_bulk_wpsf.dares <- c()
 for(i in 1:nrow(cl_bulk_wpsf.res)){
@@ -6037,7 +6037,7 @@ for(i in 1:nrow(cl_bulk_wpsf.res)){
   }
 }
 
-# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+# Maaslin2 analysis for the Source Community data (PSF Reference) # 
 cl_bulk_npsf.maas <- Maaslin2(input_data = cl_bulk$otu,
                                input_metadata = cl_bulk$met,
                                output = "./maas_results/cl_bulk_npsf.maas",
@@ -6053,7 +6053,7 @@ cl_bulk_npsf.maas <- Maaslin2(input_data = cl_bulk$otu,
                                plot_scatter = FALSE,
                                save_scatter = FALSE)
 
-# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+# Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 cl_bulk_npsf.res <- cl_bulk_npsf.maas$results
 cl_bulk_npsf.dares <- c()
 for(i in 1:nrow(cl_bulk_npsf.res)){
@@ -6066,7 +6066,7 @@ for(i in 1:nrow(cl_bulk_npsf.res)){
 cl_rhiz.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(cl_rhiz$otu)))
 cl_rhiz$otu <- cl_rhiz$otu[order(cl_rhiz.sort),]
 
-# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+# Maaslin2 analysis for the Source Community data (PSF Reference) # 
 cl_rhiz_wpsf.maas <- Maaslin2(input_data = cl_rhiz$otu,
                                input_metadata = cl_rhiz$met,
                                output = "./maas_results/cl_rhiz_wpsf.maas",
@@ -6218,7 +6218,7 @@ md_bulk_wpsf.maas <- Maaslin2(input_data = md_bulk$otu,
                                plot_scatter = FALSE,
                                save_scatter = FALSE)
 
-# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+# Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 md_bulk_wpsf.res <- md_bulk_wpsf.maas$results
 md_bulk_wpsf.dares <- c()
 for(i in 1:nrow(md_bulk_wpsf.res)){
@@ -6227,7 +6227,7 @@ for(i in 1:nrow(md_bulk_wpsf.res)){
   }
 }
 
-# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+# Maaslin2 analysis for the Source Community data (PSF Reference) # 
 md_bulk_npsf.maas <- Maaslin2(input_data = md_bulk$otu,
                                input_metadata = md_bulk$met,
                                output = "./maas_results/md_bulk_npsf.maas",
@@ -6243,7 +6243,7 @@ md_bulk_npsf.maas <- Maaslin2(input_data = md_bulk$otu,
                                plot_scatter = FALSE,
                                save_scatter = FALSE)
 
-# Save only the pairwise comparisons within bulk soils of Fuzzy Bean #
+# Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 md_bulk_npsf.res <- md_bulk_npsf.maas$results
 md_bulk_npsf.dares <- c()
 for(i in 1:nrow(md_bulk_npsf.res)){
@@ -6256,7 +6256,7 @@ for(i in 1:nrow(md_bulk_npsf.res)){
 md_rhiz.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(md_rhiz$otu)))
 md_rhiz$otu <- md_rhiz$otu[order(md_rhiz.sort),]
 
-# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+# Maaslin2 analysis for the Source Community data (PSF Reference) # 
 md_rhiz_wpsf.maas <- Maaslin2(input_data = md_rhiz$otu,
                                input_metadata = md_rhiz$met,
                                output = "./maas_results/md_rhiz_wpsf.maas",
@@ -6440,13 +6440,13 @@ for(i in 1:nrow(md_wpsf.res)){
 }
 
 #### Visualizing Differential Abundance ####
-### Fuzzy Bean Bulk Soil ###
+### Fuzzy Bean Source Community ###
 ## Soil Nodule ASV: ASV9(Mesorhizobium) ##
 # Transform the abundance data using total sum scaling #
 fb_bulk_prop.ps <- transform_sample_counts(fb_bulk.ps, function(x) x/sum(x))
 decompose_ps(fb_bulk_prop.ps, "fb_bulk_prop")
 
-# Make a data frame of just the bulk soil samples as well as the abundances of rhizobia of the PSF nodule #
+# Make a data frame of just the Source Community samples as well as the abundances of rhizobia of the PSF nodule #
 fb_bulk.meso <- cbind(fb_bulk_prop$met, t(fb_bulk_prop$otu["ASV9(Mesorhizobium)",]))
 
 # Make soils a factor with the proper levels #
@@ -6463,7 +6463,7 @@ fb_bulk_meso.plot <- ggplot(fb_bulk.meso, aes(x = Comps, y = `ASV9(Mesorhizobium
   coord_cartesian(ylim = c(0, 0.01)) +
   scale_y_continuous(limits = c(0,0.01), breaks = seq(0,0.01, by = 0.002), sec.axis = dup_axis(name = "")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Bulk Soil<br>ASV9(*Mesorhizobium*)") +
+  scale_x_discrete(labels = "Source Community<br>ASV9(*Mesorhizobium*)") +
   ylab('Relative Abundance') +
   xlab('') +
   theme_prism() +
@@ -6605,13 +6605,13 @@ fb_root_meso.plot
   theme(plot.tag = element_text(size = 22, face = 'bold', family = "Liberation Sans"))
 
 
-### Chamaecrista Bulk Soil ###
+### Chamaecrista Source Community ###
 ## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
 # Transform the abundance data using total sum scaling #
 cc_bulk_prop.ps <- transform_sample_counts(cc_bulk.ps, function(x) x/sum(x))
 decompose_ps(cc_bulk_prop.ps, "cc_bulk_prop")
 
-# Make a data frame of just the bulk soil samples as well as the abundances of rhizobia of the PSF nodule #
+# Make a data frame of just the Source Community samples as well as the abundances of rhizobia of the PSF nodule #
 cc_bulk.meso <- cbind(cc_bulk_prop$met, t(cc_bulk_prop$otu["ASV1(Bradyrhizobium)",]))
 
 # Make soils a factor with the proper levels #
@@ -6628,7 +6628,7 @@ cc_bulk_meso.plot <- ggplot(cc_bulk.meso, aes(x = Comps, y = `ASV1(Bradyrhizobiu
   coord_cartesian(ylim = c(0, 0.1)) +
   scale_y_continuous(limits = c(0,0.11), breaks = seq(0,0.1, by = 0.02), sec.axis = dup_axis(name = "")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Bulk Soil<br>ASV1(*Bradyrhizobium*)") +
+  scale_x_discrete(labels = "Source Community<br>ASV1(*Bradyrhizobium*)") +
   ylab('Relative Abundance') +
   xlab('') +
   theme_prism() +
@@ -6845,13 +6845,13 @@ cc_root_meso14.plot
 
 (cc_root_meso.plot | cc_root_meso6.plot | cc_root_meso14.plot)
 
-### Desmodium Bulk Soil ###
+### Desmodium Source Community ###
 ## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
 # Transform the abundance data using total sum scaling #
 ds_bulk_prop.ps <- transform_sample_counts(ds_bulk.ps, function(x) x/sum(x))
 decompose_ps(ds_bulk_prop.ps, "ds_bulk_prop")
 
-# Make a data frame of just the bulk soil samples as well as the abundances of rhizobia of the PSF nodule #
+# Make a data frame of just the Source Community samples as well as the abundances of rhizobia of the PSF nodule #
 ds_bulk.meso <- cbind(ds_bulk_prop$met, t(ds_bulk_prop$otu["ASV1(Bradyrhizobium)",]))
 
 # Make soils a factor with the proper levels #
@@ -6868,7 +6868,7 @@ ds_bulk_meso.plot <- ggplot(ds_bulk.meso, aes(x = Comps, y = `ASV1(Bradyrhizobiu
   coord_cartesian(ylim = c(0, 0.08)) +
   scale_y_continuous(limits = c(0,0.08), breaks = seq(0,0.08, by = 0.01), sec.axis = dup_axis(name = "")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Bulk Soil<br>ASV1(*Bradyrhizobium*)") +
+  scale_x_discrete(labels = "Source Community<br>ASV1(*Bradyrhizobium*)") +
   ylab('Relative Abundance') +
   xlab('') +
   theme_prism() +
@@ -6974,7 +6974,7 @@ ds_root.nvsc <- "ns"
 # Plot the differential abundance #
 ds_root_meso.plot <- ggplot(ds_root.meso, aes(x = Comps, y = `ASV7(Bradyrhizobium)`)) +
   geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
-  scale_y_continuous(limits = c(0,0.4), breaks = seq(0,0.4, by = 0.1), sec.axis = dup_axis(name = "D. illinoense")) +
+  scale_y_continuous(limits = c(0,0.4), breaks = seq(0,0.4, by = 0.1), sec.axis = dup_axis(name = "D. canadense")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
   scale_x_discrete(labels = "Root Endosphere<br>ASV7(*Bradyrhizobium*)") +
   ylab('') +
@@ -7009,13 +7009,13 @@ ds_root_meso.plot
 (ds_bulk_meso.plot | ds_rhiz_meso.plot | ds_root_meso.plot) &
   theme(plot.tag = element_text(size = 22, face = 'bold', family = "Liberation Sans"))
 
-### Hog Peanut Bulk Soil ###
+### Hog Peanut Source Community ###
 ## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
 # Transform the abundance data using total sum scaling #
 hp_bulk_prop.ps <- transform_sample_counts(hp_bulk.ps, function(x) x/sum(x))
 decompose_ps(hp_bulk_prop.ps, "hp_bulk_prop")
 
-# Make a data frame of just the bulk soil samples as well as the abundances of rhizobia of the PSF nodule #
+# Make a data frame of just the Source Community samples as well as the abundances of rhizobia of the PSF nodule #
 hp_bulk.meso <- cbind(hp_bulk_prop$met, t(hp_bulk_prop$otu["ASV1(Bradyrhizobium)",]))
 
 # Make soils a factor with the proper levels #
@@ -7032,7 +7032,7 @@ hp_bulk_meso.plot <- ggplot(hp_bulk.meso, aes(x = Comps, y = `ASV1(Bradyrhizobiu
   coord_cartesian(ylim = c(0, 0.05)) +
   scale_y_continuous(limits = c(0,0.05), breaks = seq(0,0.05, by = 0.01), sec.axis = dup_axis(name = "")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Bulk Soil<br>ASV1(*Bradyrhizobium*)") +
+  scale_x_discrete(labels = "Source Community<br>ASV1(*Bradyrhizobium*)") +
   ylab('Relative Abundance') +
   xlab('') +
   theme_prism() +
@@ -7161,13 +7161,13 @@ hp_root_meso.plot
 (hp_bulk_meso.plot | hp_rhiz_meso.plot | hp_root_meso.plot) &
   theme(plot.tag = element_text(size = 22, face = 'bold', family = "Liberation Sans"))
 
-### Clover Bulk Soil ###
+### Clover Source Community ###
 ## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
 # Transform the abundance data using total sum scaling #
 cl_bulk_prop.ps <- transform_sample_counts(cl_bulk.ps, function(x) x/sum(x))
 decompose_ps(cl_bulk_prop.ps, "cl_bulk_prop")
 
-# Make a data frame of just the bulk soil samples as well as the abundances of rhizobia of the PSF nodule #
+# Make a data frame of just the Source Community samples as well as the abundances of rhizobia of the PSF nodule #
 cl_bulk.meso <- cbind(cl_bulk_prop$met, t(cl_bulk_prop$otu["ASV2(Agrobacterium)",]))
 
 # Make soils a factor with the proper levels #
@@ -7184,7 +7184,7 @@ cl_bulk_meso.plot <- ggplot(cl_bulk.meso, aes(x = Comps, y = `ASV2(Agrobacterium
   coord_cartesian(ylim = c(0, 0.01)) +
   scale_y_continuous(limits = c(0,0.01), breaks = seq(0,0.01, by = 0.002), sec.axis = dup_axis(name = "")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Bulk Soil<br>ASV2(*Agrobacterium*)") +
+  scale_x_discrete(labels = "Source Community<br>ASV2(*Agrobacterium*)") +
   ylab('Relative Abundance') +
   xlab('') +
   theme_prism() +
@@ -7311,13 +7311,13 @@ cl_root_meso.plot
   theme(plot.tag = element_text(size = 22, face = 'bold', family = "Liberation Sans"))
 
 
-### Medicago Bulk Soil ###
+### Medicago Source Community ###
 ## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
 # Transform the abundance data using total sum scaling #
 md_bulk_prop.ps <- transform_sample_counts(md_bulk.ps, function(x) x/sum(x))
 decompose_ps(md_bulk_prop.ps, "md_bulk_prop")
 
-# Make a data frame of just the bulk soil samples as well as the abundances of rhizobia of the PSF nodule #
+# Make a data frame of just the Source Community samples as well as the abundances of rhizobia of the PSF nodule #
 md_bulk.meso <- cbind(md_bulk_prop$met, t(md_bulk_prop$otu["ASV2(Agrobacterium)",]))
 
 # Make soils a factor with the proper levels #
@@ -7334,7 +7334,7 @@ md_bulk_meso.plot <- ggplot(md_bulk.meso, aes(x = Comps, y = `ASV2(Agrobacterium
   coord_cartesian(ylim = c(0, 0.01)) +
   scale_y_continuous(limits = c(0,0.01), breaks = seq(0,0.01, by = 0.0025), sec.axis = dup_axis(name = "")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Bulk Soil<br>ASV2(*Agrobacterium*)") +
+  scale_x_discrete(labels = "Source Community<br>ASV2(*Agrobacterium*)") +
   ylab('Relative Abundance') +
   xlab('') +
   theme_prism() +
@@ -7540,7 +7540,7 @@ ggplot(soil.radf, aes(x = i, y = index, group = ID, color = Group)) +
   theme_bw() +
   xlab('Sequencing Coverage') +
   ylab("Shannon Diversity") +
-  scale_color_manual(name = "Plant Species", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. illinoense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A")) +
+  scale_color_manual(name = "Plant Species", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. canadense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A")) +
   theme(axis.title = element_text(size = 22, color = 'black', face = 'bold', family = 'Liberation Sans'),
         axis.text = element_text(size = 18, color = 'black', face = 'bold', family = 'Liberation Sans'),
         legend.title = element_text(size = 22, color = 'black', face = 'bold', family = 'Liberation Sans'),
@@ -7567,7 +7567,7 @@ ggplot(root.radf, aes(x = i, y = index, group = ID, color = Group)) +
   theme_bw() +
   xlab('Sequencing Coverage') +
   ylab("Shannon Diversity") +
-  scale_color_manual(name = "Plant Species", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. illinoense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A")) +
+  scale_color_manual(name = "Plant Species", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. canadense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A")) +
   theme(axis.title = element_text(size = 22, color = 'black', face = 'bold', family = 'Liberation Sans'),
         axis.text = element_text(size = 18, color = 'black', face = 'bold', family = 'Liberation Sans'),
         legend.title = element_text(size = 22, color = 'black', face = 'bold', family = 'Liberation Sans'),
