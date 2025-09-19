@@ -572,7 +572,12 @@ aggregate_top_taxa2 <- function(x, top, level){
 
 resave(aggregate_top_taxa2, file = './psf_abridged.RData')
 save.image("./test.RData")
-## Fuzzy bean ##
+
+# Install package fontLiberation for the plots #
+if(!requireNamespace("fontLiberation")) install.packages("fontLiberation")
+library(fontLiberation); packageVersion("fontLiberation")
+
+## Fuzzy Bean ##
 fb_soil_nod_raw.ps <- subset_samples(soil_nod.ps, Plant == "S. helvola")
 fb_soil_nod_raw.ps <- subset_taxa(fb_soil_nod_raw.ps, taxa_sums(fb_soil_nod_raw.ps) > 0)
 fb_soil_nod.ps <- aggregate_top_taxa2(fb_soil_nod_raw.ps, 8, "ASV")
