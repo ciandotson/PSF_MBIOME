@@ -523,239 +523,6 @@ library(cgwtools); packageVersion("cgwtools")
 resave(soil.ps, file = './psf_abridged.RData')
 
 save.image("./test.RData")
-
-#### Soil Nodule Stacked Histograms ####
-# Create a nodule specifc phyloseq object #
-soil_nod.ps <- subset_samples(soil.ps, Compartment == "Nodule")
-soil_nod.ps <- subset_taxa(soil_nod.ps, taxa_sums(soil_nod.ps) > 0)
-decompose_ps(soil_nod.ps, "soil_nod")
-resave(soil_nod.ps, file ='./psf_abridged.RData')
-
-# Create a color palette for each ASV #
-if(!requireNamespace('Polychrome')) install.packages('Polychrome')
-library(Polychrome); packageVersion('Polychrome')
-set.seed(248)
-soil_nod.colr <- createPalette(ntaxa(soil_nod.ps),  c("#ff0000", "#00ff00", "#0000ff"))
-soil_nod.colr <- as.data.frame(soil_nod.colr)
-rownames(soil_nod.colr) <- taxa_names(soil_nod.ps)
-soil_nod.colr[ntaxa(soil_nod.ps) + 1,] <- "#D4D4D4" 
-rownames(soil_nod.colr)[ntaxa(soil_nod.ps) + 1] <- "Other" 
-
-save.image('./test.RData')
-
-# Create a tree for ASVs that are found in the nodules and are in the Order Hyphomicrobiales #
-soil_hyph.ps <- subset_taxa(soil_nod.ps, Order == "Hyphomicrobiales")
-soil_hyph_tre.plot <- plot_tree(soil_hyph.ps, label.tips = "taxa_names", ladderize = TRUE, color = "Family")
-
-# save a new phyloseq object without the nodules #
-soil.ps <- subset_samples(soil.ps, Compartment != "Nodule")
-soil.ps <- subset_taxa(soil.ps, taxa_sums(soil.ps) > 0)
-decompose_ps(soil.ps, 'soil')
-soil$fra <- arrange(soil$fra, desc(rowSums(soil$fra[,16:ncol(soil$fra)])))
-
-# Construct a phyloseq object for each individual plant taxon's nodule community # 
-if(requireNamespace("microbiome")) BiocManager::install("microbiome")
-library(microbiome); packageVersion("microbiome")
-
-aggregate_top_taxa2 <- function(x, top, level){
-  # function that works like aggregate_top_taxa2() without downloading the package #
-  x <- aggregate_taxa(x, level)
-  tops <- top_taxa(x, top)
-  tax <- tax_table(x)
-  inds <- which(!rownames(tax) %in% tops)
-  tax[inds, level] <- "Other"
-  tax_table(x) <- tax
-  tt <- tax_table(x)[, level]
-  tax_table(x) <- tax_table(tt)
-  aggregate_taxa(x, level)
-}
-
-resave(aggregate_top_taxa2, file = './psf_abridged.RData')
-save.image("./test.RData")
-
-# Install package fontLiberation for the plots #
-if(!requireNamespace("fontLiberation")) install.packages("fontLiberation")
-library(fontLiberation); packageVersion("fontLiberation")
-
-## Fuzzy Bean ##
-fb_soil_nod_raw.ps <- subset_samples(soil_nod.ps, Plant == "S. helvola")
-fb_soil_nod_raw.ps <- subset_taxa(fb_soil_nod_raw.ps, taxa_sums(fb_soil_nod_raw.ps) > 0)
-fb_soil_nod.ps <- aggregate_top_taxa2(fb_soil_nod_raw.ps, 8, "ASV")
-fb_nod_soil.name <- names(sort(taxa_sums(fb_soil_nod.ps), decreasing = TRUE))
-fb_soil_nod.colr <- soil_nod.colr[fb_nod_soil.name,]
-fb_soil_nod.df <- psmelt(fb_soil_nod.ps)
-fb_soil_nod.df$ASVs <- factor(fb_soil_nod.df$ASV, levels = fb_nod_soil.name)
-fb_soil_nod.df$Soil <- factor(fb_soil_nod.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
-
-fb_soil_nod.plot <- ggplot(fb_soil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
-  geom_bar(stat='identity', position = 'fill') +
-  xlab('') +
-  ylab('') +
-  scale_fill_manual(name = "Soil ASV", values = fb_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "S. helvola")) +
-  theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(color = "black", size = 18, family = "Liberation Sans", angle = -45, vjust = 0.6, hjust = 0.1),
-        axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
-        axis.text.y.right = element_blank(),
-        axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
-        legend.position = 'right') +
-  labs(tag = "B.")
-fb_soil_nod.plot
-
-## Chamaecrista ##
-cc_soil_nod.ps <- subset_samples(soil_nod.ps, Plant == "C. fasciculata")
-cc_soil_nod.ps <- subset_taxa(cc_soil_nod.ps, taxa_sums(cc_soil_nod.ps) > 0)
-cc_soil_nod.ps <- aggregate_top_taxa2(cc_soil_nod.ps, 8, "ASV")
-cc_nod_soil.name <- names(sort(taxa_sums(cc_soil_nod.ps), decreasing = TRUE))
-cc_soil_nod.colr <- soil_nod.colr[cc_nod_soil.name,]
-cc_soil_nod.df <- psmelt(cc_soil_nod.ps)
-cc_soil_nod.df$ASVs <- factor(cc_soil_nod.df$ASV, levels = cc_nod_soil.name)
-cc_soil_nod.df$Soil <- factor(cc_soil_nod.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
-
-cc_soil_nod.plot <- ggplot(cc_soil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
-  geom_bar(stat='identity', position = 'fill') +
-  xlab('') +
-  ylab('') +
-  scale_fill_manual(name = "Soil ASV", values = cc_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "C. fasciculata")) +
-  theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
-        axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
-        axis.text.y.right = element_blank(),
-        axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
-        legend.position = 'right') +
-  labs(tag = "B.")
-cc_soil_nod.plot
-
-## Desmodium ##
-ds_soil_nod.ps <- subset_samples(soil_nod.ps, Plant == "D. canadense")
-ds_soil_nod.ps <- subset_taxa(ds_soil_nod.ps, taxa_sums(ds_soil_nod.ps) > 0)
-ds_nod_soil.name <- names(sort(taxa_sums(ds_soil_nod.ps), decreasing = TRUE))
-ds_soil_nod.colr <- soil_nod.colr[ds_nod_soil.name,]
-ds_soil_nod.df <- psmelt(ds_soil_nod.ps)
-ds_soil_nod.df$ASVs <- factor(ds_soil_nod.df$ASV, levels = ds_nod_soil.name)
-ds_soil_nod.df$Soil <- factor(ds_soil_nod.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
-
-ds_soil_nod.plot <- ggplot(ds_soil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
-  geom_bar(stat='identity', position = 'fill') +
-  xlab('') +
-  ylab('') +
-  scale_fill_manual(name = "Soil ASV", values = ds_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "D. canadense")) +
-  theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
-        axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
-        axis.text.y.right = element_blank(),
-        axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
-        legend.position = 'right') +
-  labs(tag = "B.")
-ds_soil_nod.plot
-
-## Hog Peanut ##
-hp_soil_nod.ps <- subset_samples(soil_nod.ps, Plant == "A. bracteata")
-hp_soil_nod.ps <- subset_taxa(hp_soil_nod.ps, taxa_sums(hp_soil_nod.ps) > 0)
-hp_nod_soil.name <- names(sort(taxa_sums(hp_soil_nod.ps), decreasing = TRUE))
-hp_soil_nod.colr <- soil_nod.colr[hp_nod_soil.name,]
-hp_soil_nod.df <- psmelt(hp_soil_nod.ps)
-hp_soil_nod.df$ASVs <- factor(hp_soil_nod.df$ASV, levels = hp_nod_soil.name)
-hp_soil_nod.df$Soil <- factor(hp_soil_nod.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
-
-hp_soil_nod.plot <- ggplot(hp_soil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
-  geom_bar(stat='identity', position = 'fill') +
-  xlab('') +
-  ylab('') +
-  scale_fill_manual(name = "Soil ASV", values = hp_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "A. bracteata")) +
-  theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
-        axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
-        axis.text.y.right = element_blank(),
-        axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
-        legend.position = 'right') +
-  labs(tag = "B.")
-hp_soil_nod.plot
-
-## Clover ##
-cl_soil_nod.ps <- subset_samples(soil_nod.ps, Plant == "T. repens")
-cl_soil_nod.ps <- subset_taxa(cl_soil_nod.ps, taxa_sums(cl_soil_nod.ps) > 0)
-cl_soil_nod.ps <- aggregate_top_taxa2(cl_soil_nod.ps, 8, "ASV")
-cl_nod_soil.name <- names(sort(taxa_sums(cl_soil_nod.ps), decreasing = TRUE))
-cl_soil_nod.colr <- soil_nod.colr[cl_nod_soil.name,]
-cl_soil_nod.df <- psmelt(cl_soil_nod.ps)
-cl_soil_nod.df$ASVs <- factor(cl_soil_nod.df$ASV, levels = cl_nod_soil.name)
-cl_soil_nod.df$Soil <- factor(cl_soil_nod.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
-
-cl_soil_nod.plot <- ggplot(cl_soil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
-  geom_bar(stat='identity', position = 'fill') +
-  xlab('') +
-  ylab('') +
-  scale_fill_manual(name = "Soil ASV", values = cl_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "T. repens")) +
-  theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
-        axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
-        axis.text.y.right = element_blank(),
-        axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
-        legend.position = 'right') +
-  labs(tag = "B.")
-cl_soil_nod.plot
-
-## Medicago ##
-md_soil_nod.ps <- subset_samples(soil_nod.ps, Plant == "M. truncatula")
-md_soil_nod.ps <- subset_taxa(md_soil_nod.ps, taxa_sums(md_soil_nod.ps) > 0)
-md_soil_nod.ps <- aggregate_top_taxa2(md_soil_nod.ps, 8, "ASV")
-md_nod_soil.name <- names(sort(taxa_sums(md_soil_nod.ps), decreasing = TRUE))
-md_soil_nod.colr <- soil_nod.colr[md_nod_soil.name,]
-md_soil_nod.df <- psmelt(md_soil_nod.ps)
-md_soil_nod.df$ASVs <- factor(md_soil_nod.df$ASV, levels = md_nod_soil.name)
-md_soil_nod.df$Soil <- factor(md_soil_nod.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
-
-md_soil_nod.plot <- ggplot(md_soil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
-  geom_bar(stat='identity', position = 'fill') +
-  xlab('') +
-  ylab('') +
-  scale_fill_manual(name = "Soil ASV", values = md_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "M. truncatula")) +
-  theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
-        axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
-        axis.text.y.right = element_blank(),
-        axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
-        legend.position = 'right') +
-  labs(tag = "B.")
-md_soil_nod.plot
-
-save.image("./test.RData")
 #### Root Primer Removal ####
 # Ensure you have the right files #
 list.files(root.dir)
@@ -988,6 +755,232 @@ root.ps <- phyloseq(otu_table(root$otu, taxa_are_rows = TRUE),
 resave(root.ps, file = './psf_abridged.RData')
 save.image("./test.RData")
 
+#### Soil Nodule Stacked Histograms ####
+# Create a nodule specifc phyloseq object #
+soil_nod.ps <- subset_samples(soil.ps, Compartment == "Nodule")
+soil_nod.ps <- subset_taxa(soil_nod.ps, taxa_sums(soil_nod.ps) > 0)
+decompose_ps(soil_nod.ps, "soil_nod")
+resave(soil_nod.ps, file ='./psf_abridged.RData')
+
+# Create a color palette for each ASV #
+if(!requireNamespace('Polychrome')) install.packages('Polychrome')
+library(Polychrome); packageVersion('Polychrome')
+set.seed(248)
+soil_nod.colr <- createPalette(ntaxa(soil_nod.ps),  c("#ff0000", "#00ff00", "#0000ff"))
+soil_nod.colr <- as.data.frame(soil_nod.colr)
+rownames(soil_nod.colr) <- taxa_names(soil_nod.ps)
+soil_nod.colr[ntaxa(soil_nod.ps) + 1,] <- "#D4D4D4" 
+rownames(soil_nod.colr)[ntaxa(soil_nod.ps) + 1] <- "Other" 
+
+save.image('./test.RData')
+
+# Create a tree for ASVs that are found in the nodules and are in the Order Hyphomicrobiales #
+soil_hyph.ps <- subset_taxa(soil_nod.ps, Order == "Hyphomicrobiales")
+soil_hyph_tre.plot <- plot_tree(soil_hyph.ps, label.tips = "taxa_names", ladderize = TRUE, color = "Family")
+
+# save a new phyloseq object without the nodules #
+soil.ps <- subset_samples(soil.ps, Compartment != "Nodule")
+soil.ps <- subset_taxa(soil.ps, taxa_sums(soil.ps) > 0)
+decompose_ps(soil.ps, 'soil')
+soil$fra <- arrange(soil$fra, desc(rowSums(soil$fra[,16:ncol(soil$fra)])))
+
+# Construct a phyloseq object for each individual plant taxon's nodule community # 
+if(requireNamespace("microbiome")) BiocManager::install("microbiome")
+library(microbiome); packageVersion("microbiome")
+
+aggregate_top_taxa2 <- function(x, top, level){
+  # function that works like aggregate_top_taxa2() without downloading the package #
+  x <- aggregate_taxa(x, level)
+  tops <- top_taxa(x, top)
+  tax <- tax_table(x)
+  inds <- which(!rownames(tax) %in% tops)
+  tax[inds, level] <- "Other"
+  tax_table(x) <- tax
+  tt <- tax_table(x)[, level]
+  tax_table(x) <- tax_table(tt)
+  aggregate_taxa(x, level)
+}
+
+resave(aggregate_top_taxa2, file = './psf_abridged.RData')
+save.image("./test.RData")
+
+# Install package fontLiberation for the plots #
+if(!requireNamespace("fontLiberation")) install.packages("fontLiberation")
+library(fontLiberation); packageVersion("fontLiberation")
+
+## Fuzzy Bean ##
+fb_soil_nod_raw.ps <- subset_samples(soil_nod.ps, Plant == "S. helvola")
+fb_soil_nod_raw.ps <- subset_taxa(fb_soil_nod_raw.ps, taxa_sums(fb_soil_nod_raw.ps) > 0)
+fb_soil_nod.ps <- aggregate_top_taxa2(fb_soil_nod_raw.ps, 8, "ASV")
+fb_nod_soil.name <- names(sort(taxa_sums(fb_soil_nod.ps), decreasing = TRUE))
+fb_soil_nod.colr <- soil_nod.colr[fb_nod_soil.name,]
+fb_soil_nod.df <- psmelt(fb_soil_nod.ps)
+fb_soil_nod.df$ASVs <- factor(fb_soil_nod.df$ASV, levels = fb_nod_soil.name)
+fb_soil_nod.df$Soil <- factor(fb_soil_nod.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
+
+fb_soil_nod.plot <- ggplot(fb_soil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+  geom_bar(stat='identity', position = 'fill') +
+  xlab('') +
+  ylab('') +
+  scale_fill_manual(name = "Soil ASV", values = fb_soil_nod.colr) +
+  scale_y_continuous(sec.axis = dup_axis(name = "S. helvola")) +
+  theme_bw() +
+  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
+        axis.text.x.bottom = element_text(color = "black", size = 18, family = "Liberation Sans", angle = -45, vjust = 0.6, hjust = 0.1),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size =18),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
+        axis.text.y.right = element_blank(),
+        axis.ticks.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
+        legend.position = 'right') +
+  labs(tag = "B.")
+
+## Chamaecrista ##
+cc_soil_nod.ps <- subset_samples(soil_nod.ps, Plant == "C. fasciculata")
+cc_soil_nod.ps <- subset_taxa(cc_soil_nod.ps, taxa_sums(cc_soil_nod.ps) > 0)
+cc_soil_nod.ps <- aggregate_top_taxa2(cc_soil_nod.ps, 8, "ASV")
+cc_nod_soil.name <- names(sort(taxa_sums(cc_soil_nod.ps), decreasing = TRUE))
+cc_soil_nod.colr <- soil_nod.colr[cc_nod_soil.name,]
+cc_soil_nod.df <- psmelt(cc_soil_nod.ps)
+cc_soil_nod.df$ASVs <- factor(cc_soil_nod.df$ASV, levels = cc_nod_soil.name)
+cc_soil_nod.df$Soil <- factor(cc_soil_nod.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
+
+cc_soil_nod.plot <- ggplot(cc_soil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+  geom_bar(stat='identity', position = 'fill') +
+  xlab('') +
+  ylab('') +
+  scale_fill_manual(name = "Soil ASV", values = cc_soil_nod.colr) +
+  scale_y_continuous(sec.axis = dup_axis(name = "C. fasciculata")) +
+  theme_bw() +
+  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
+        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size =18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
+        axis.text.y.right = element_blank(),
+        axis.ticks.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
+        legend.position = 'right') +
+  labs(tag = "B.")
+
+## Desmodium ##
+ds_soil_nod.ps <- subset_samples(soil_nod.ps, Plant == "D. canadense")
+ds_soil_nod.ps <- subset_taxa(ds_soil_nod.ps, taxa_sums(ds_soil_nod.ps) > 0)
+ds_nod_soil.name <- names(sort(taxa_sums(ds_soil_nod.ps), decreasing = TRUE))
+ds_soil_nod.colr <- soil_nod.colr[ds_nod_soil.name,]
+ds_soil_nod.df <- psmelt(ds_soil_nod.ps)
+ds_soil_nod.df$ASVs <- factor(ds_soil_nod.df$ASV, levels = ds_nod_soil.name)
+ds_soil_nod.df$Soil <- factor(ds_soil_nod.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
+
+ds_soil_nod.plot <- ggplot(ds_soil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+  geom_bar(stat='identity', position = 'fill') +
+  xlab('') +
+  ylab('') +
+  scale_fill_manual(name = "Soil ASV", values = ds_soil_nod.colr) +
+  scale_y_continuous(sec.axis = dup_axis(name = "D. canadense")) +
+  theme_bw() +
+  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
+        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size =18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
+        axis.text.y.right = element_blank(),
+        axis.ticks.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
+        legend.position = 'right') +
+  labs(tag = "B.")
+ds_soil_nod.plot
+
+## Hog Peanut ##
+hp_soil_nod.ps <- subset_samples(soil_nod.ps, Plant == "A. bracteata")
+hp_soil_nod.ps <- subset_taxa(hp_soil_nod.ps, taxa_sums(hp_soil_nod.ps) > 0)
+hp_nod_soil.name <- names(sort(taxa_sums(hp_soil_nod.ps), decreasing = TRUE))
+hp_soil_nod.colr <- soil_nod.colr[hp_nod_soil.name,]
+hp_soil_nod.df <- psmelt(hp_soil_nod.ps)
+hp_soil_nod.df$ASVs <- factor(hp_soil_nod.df$ASV, levels = hp_nod_soil.name)
+hp_soil_nod.df$Soil <- factor(hp_soil_nod.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
+
+hp_soil_nod.plot <- ggplot(hp_soil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+  geom_bar(stat='identity', position = 'fill') +
+  xlab('') +
+  ylab('') +
+  scale_fill_manual(name = "Soil ASV", values = hp_soil_nod.colr) +
+  scale_y_continuous(sec.axis = dup_axis(name = "A. bracteata")) +
+  theme_bw() +
+  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
+        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size =18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
+        axis.text.y.right = element_blank(),
+        axis.ticks.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
+        legend.position = 'right') +
+  labs(tag = "B.")
+
+## Clover ##
+cl_soil_nod.ps <- subset_samples(soil_nod.ps, Plant == "T. repens")
+cl_soil_nod.ps <- subset_taxa(cl_soil_nod.ps, taxa_sums(cl_soil_nod.ps) > 0)
+cl_soil_nod.ps <- aggregate_top_taxa2(cl_soil_nod.ps, 8, "ASV")
+cl_nod_soil.name <- names(sort(taxa_sums(cl_soil_nod.ps), decreasing = TRUE))
+cl_soil_nod.colr <- soil_nod.colr[cl_nod_soil.name,]
+cl_soil_nod.df <- psmelt(cl_soil_nod.ps)
+cl_soil_nod.df$ASVs <- factor(cl_soil_nod.df$ASV, levels = cl_nod_soil.name)
+cl_soil_nod.df$Soil <- factor(cl_soil_nod.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
+
+cl_soil_nod.plot <- ggplot(cl_soil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+  geom_bar(stat='identity', position = 'fill') +
+  xlab('') +
+  ylab('') +
+  scale_fill_manual(name = "Soil ASV", values = cl_soil_nod.colr) +
+  scale_y_continuous(sec.axis = dup_axis(name = "T. repens")) +
+  theme_bw() +
+  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
+        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size =18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
+        axis.text.y.right = element_blank(),
+        axis.ticks.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
+        legend.position = 'right') +
+  labs(tag = "B.")
+
+## Medicago ##
+md_soil_nod.ps <- subset_samples(soil_nod.ps, Plant == "M. truncatula")
+md_soil_nod.ps <- subset_taxa(md_soil_nod.ps, taxa_sums(md_soil_nod.ps) > 0)
+md_soil_nod.ps <- aggregate_top_taxa2(md_soil_nod.ps, 8, "ASV")
+md_nod_soil.name <- names(sort(taxa_sums(md_soil_nod.ps), decreasing = TRUE))
+md_soil_nod.colr <- soil_nod.colr[md_nod_soil.name,]
+md_soil_nod.df <- psmelt(md_soil_nod.ps)
+md_soil_nod.df$ASVs <- factor(md_soil_nod.df$ASV, levels = md_nod_soil.name)
+md_soil_nod.df$Soil <- factor(md_soil_nod.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
+
+md_soil_nod.plot <- ggplot(md_soil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+  geom_bar(stat='identity', position = 'fill') +
+  xlab('') +
+  ylab('') +
+  scale_fill_manual(name = "Soil ASV", values = md_soil_nod.colr) +
+  scale_y_continuous(sec.axis = dup_axis(name = "M. truncatula")) +
+  theme_bw() +
+  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
+        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size =18, family = "Liberation Sans"),
+        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
+        axis.text.y.right = element_blank(),
+        axis.ticks.y.right = element_blank(),
+        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
+        legend.position = 'right') +
+  labs(tag = "B.")
+
 #### Root Nodule Stacked Histograms ####
 # Create a nodule specifc phyloseq object #
 root_nod.ps <- subset_samples(root.ps, Compartment == "Nodule")
@@ -1040,7 +1033,6 @@ fb_root_nod.plot <- ggplot(fb_root_nod.df, aes(x = Soil, y = Abundance, fill = A
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
         legend.position = 'right') +
   labs(tag = "C.")
-fb_root_nod.plot
 
 fb_nod.plot <- (fb_soil_nod.plot | fb_root_nod.plot)
 
@@ -1072,9 +1064,8 @@ cc_root_nod.plot <- ggplot(cc_root_nod.df, aes(x = Soil, y = Abundance, fill = A
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
         legend.position = 'right')+
   labs(tag = "C.")
-cc_root_nod.plot
 
-(cc_soil_nod.plot | cc_root_nod.plot)
+cc_nod.plot <- (cc_soil_nod.plot | cc_root_nod.plot)
 
 ## Desmodium ##
 ds_root_nod.ps <- subset_samples(root_nod.ps, Plant.Species == "D. canadense")
@@ -1104,9 +1095,8 @@ ds_root_nod.plot <- ggplot(ds_root_nod.df, aes(x = Soil, y = Abundance, fill = A
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
         legend.position = 'right') +
   labs(tag = "C.")
-ds_root_nod.plot
 
-(ds_soil_nod.plot | ds_root_nod.plot)
+ds_nod.plot <- (ds_soil_nod.plot | ds_root_nod.plot)
 
 ## Hog Peanut ##
 hp_root_nod.ps <- subset_samples(root_nod.ps, Plant.Species == "A. bracteata")
@@ -1135,9 +1125,8 @@ hp_root_nod.plot <- ggplot(hp_root_nod.df, aes(x = Soil, y = Abundance, fill = A
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
         legend.position = 'right') +
   labs(tag = "C.")
-hp_root_nod.plot
 
-(hp_soil_nod.plot | hp_root_nod.plot)
+hp_nod.plot <- (hp_soil_nod.plot | hp_root_nod.plot)
 
 ## Clover ##
 cl_root_nod.ps <- subset_samples(root_nod.ps, Plant.Species == "T. repens")
@@ -1167,9 +1156,8 @@ cl_root_nod.plot <- ggplot(cl_root_nod.df, aes(x = Soil, y = Abundance, fill = A
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
         legend.position = 'right') +
   labs(tag = "C.")
-cl_root_nod.plot
 
-(cl_soil_nod.plot | cl_root_nod.plot)
+cl_nod.plot <- (cl_soil_nod.plot | cl_root_nod.plot)
 
 ## Medicago ##
 md_root_nod.ps <- subset_samples(root_nod.ps, Plant.Species == "M. truncatula")
@@ -1199,9 +1187,8 @@ md_root_nod.plot <- ggplot(md_root_nod.df, aes(x = Soil, y = Abundance, fill = A
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
         legend.position = 'right') +
   labs(tag = "C.")
-md_root_nod.plot
 
-(md_soil_nod.plot | md_root_nod.plot)
+md_nod.plot <- (md_soil_nod.plot | md_root_nod.plot)
 
 save.image("./test.RData")
 #### Alpha Diversity Analysis and Visualization ####
