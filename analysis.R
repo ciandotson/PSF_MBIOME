@@ -763,11 +763,19 @@ soil$met$Plants <- factor(soil$met$Plant, levels = c("S. helvola", "C. fascicula
 soil$met$Comps <- factor(soil$met$Compartment, levels = c("Source Community", "Rhizosphere", "Nodule"))
 soil$met$Soils <- factor(soil$met$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
+for(i in 1:nrow(soil$met)){
+  soil$met$SC[i] <- paste0(soil$met$Soil_Treatment[i], '; ', soil$met$Compartment[i]) 
+}
+
 # Root #
 decompose_ps(root.ps, 'root')
 root$met$Plants <- factor(root$met$Plant.Species, levels = c("S. helvola", "C. fasciculata", "D. canadense", "A. bracteata", "T. repens", "M. truncatula"))
 root$met$Comps <- factor(root$met$Compartment, levels = c("Root Endosphere", "Nodule"))
-root$met$roots <- factor(root$met$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
+root$met$Soils <- factor(root$met$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
+
+for(i in 1:nrow(root$met)){
+  root$met$SC[i] <- paste0(root$met$Soil_Treatment[i], '; ', root$met$Compartment[i]) 
+}
 
 # Save the new metadata table to the original phyloseq object #
 sample_data(soil.ps) <- soil$met
@@ -1142,7 +1150,7 @@ fb_pbulk_top.df$ASVs <- factor(fb_pbulk_top.df$ASV, levels = fb_pbulk_top.name)
 fb_pbulk_top.df$Group <- factor(fb_pbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-fb_pbulk_top.plot <- ggplot(fb_pbulk_top.df, aes(x = Soils, y = Abundance, fill = ASVs)) +
+fb_pbulk_top.plot <- ggplot(fb_pbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1175,7 +1183,7 @@ fb_nbulk_top.df$ASVs <- factor(fb_nbulk_top.df$ASV, levels = fb_nbulk_top.name)
 fb_nbulk_top.df$Group <- factor(fb_nbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-fb_nbulk_top.plot <- ggplot(fb_nbulk_top.df, aes(x = Soils, y = Abundance, fill = ASVs)) +
+fb_nbulk_top.plot <- ggplot(fb_nbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1195,6 +1203,7 @@ fb_nbulk_top.plot <- ggplot(fb_nbulk_top.df, aes(x = Soils, y = Abundance, fill 
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+
 ## Common ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
 fb_cbulk_top.ps <- aggregate_top_taxa2(fb_cbulk.ps, 19, "ASV")
@@ -1207,7 +1216,7 @@ fb_cbulk_top.df$ASVs <- factor(fb_cbulk_top.df$ASV, levels = fb_cbulk_top.name)
 fb_cbulk_top.df$Group <- factor(fb_cbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cbulk_top.plot <- ggplot(fb_cbulk_top.df, aes(x = Soils, y = Abundance, fill = ASVs)) +
+cbulk_top.plot <- ggplot(fb_cbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1243,7 +1252,7 @@ fb_prhiz_top.df$ASVs <- factor(fb_prhiz_top.df$ASV, levels = fb_prhiz_top.name)
 fb_prhiz_top.df$Group <- factor(fb_prhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-fb_prhiz_top.plot <- ggplot(fb_prhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+fb_prhiz_top.plot <- ggplot(fb_prhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1276,7 +1285,7 @@ fb_nrhiz_top.df$ASVs <- factor(fb_nrhiz_top.df$ASV, levels = fb_nrhiz_top.name)
 fb_nrhiz_top.df$Group <- factor(fb_nrhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-fb_nrhiz_top.plot <- ggplot(fb_nrhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+fb_nrhiz_top.plot <- ggplot(fb_nrhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1309,7 +1318,7 @@ fb_crhiz_top.df$ASVs <- factor(fb_crhiz_top.df$ASV, levels = fb_crhiz_top.name)
 fb_crhiz_top.df$Group <- factor(fb_crhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-fb_crhiz_top.plot <- ggplot(fb_crhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+fb_crhiz_top.plot <- ggplot(fb_crhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1345,7 +1354,7 @@ fb_proot_top.df$ASVs <- factor(fb_proot_top.df$ASV, levels = fb_proot_top.name)
 fb_proot_top.df$Group <- factor(fb_proot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-fb_proot_top.plot <- ggplot(fb_proot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+fb_proot_top.plot <- ggplot(fb_proot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1379,7 +1388,7 @@ fb_nroot_top.df$ASVs <- factor(fb_nroot_top.df$ASV, levels = unique(fb_nroot_top
 fb_nroot_top.df$Group <- factor(fb_nroot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-fb_nroot_top.plot <- ggplot(fb_nroot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+fb_nroot_top.plot <- ggplot(fb_nroot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1413,7 +1422,7 @@ fb_croot_top.df$ASVs <- factor(fb_croot_top.df$ASV, levels = unique(fb_croot_top
 fb_croot_top.df$Group <- factor(fb_croot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-fb_croot_top.plot <- ggplot(fb_croot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+fb_croot_top.plot <- ggplot(fb_croot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1447,7 +1456,7 @@ cc_pbulk_top.df$ASVs <- factor(cc_pbulk_top.df$ASV, levels = cc_pbulk_top.name)
 cc_pbulk_top.df$Group <- factor(cc_pbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cc_pbulk_top.plot <- ggplot(cc_pbulk_top.df, aes(x = Soils, y = Abundance, fill = ASVs)) +
+cc_pbulk_top.plot <- ggplot(cc_pbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1480,7 +1489,7 @@ cc_nbulk_top.df$ASVs <- factor(cc_nbulk_top.df$ASV, levels = cc_nbulk_top.name)
 cc_nbulk_top.df$Group <- factor(cc_nbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cc_nbulk_top.plot <- ggplot(cc_nbulk_top.df, aes(x = Soils, y = Abundance, fill = ASVs)) +
+cc_nbulk_top.plot <- ggplot(cc_nbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1517,7 +1526,7 @@ cc_prhiz_top.df$ASVs <- factor(cc_prhiz_top.df$ASV, levels = unique(cc_prhiz_top
 cc_prhiz_top.df$Group <- factor(cc_prhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cc_prhiz_top.plot <- ggplot(cc_prhiz_top.df, aes(x = Soils, y = Abundance, fill = ASVs)) +
+cc_prhiz_top.plot <- ggplot(cc_prhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1551,7 +1560,7 @@ cc_nrhiz_top.df$ASVs <- factor(cc_nrhiz_top.df$ASV, levels = unique(cc_nrhiz_top
 cc_nrhiz_top.df$Group <- factor(cc_nrhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cc_nrhiz_top.plot <- ggplot(cc_nrhiz_top.df, aes(x = Soils, y = Abundance, fill = ASVs)) +
+cc_nrhiz_top.plot <- ggplot(cc_nrhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1585,7 +1594,7 @@ cc_crhiz_top.df$ASVs <- factor(cc_crhiz_top.df$ASV, levels = unique(cc_crhiz_top
 cc_crhiz_top.df$Group <- factor(cc_crhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cc_crhiz_top.plot <- ggplot(cc_crhiz_top.df, aes(x = Soils, y = Abundance, fill = ASVs)) +
+cc_crhiz_top.plot <- ggplot(cc_crhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1622,7 +1631,7 @@ cc_proot_top.df$ASVs <- factor(cc_proot_top.df$ASV, levels = unique(cc_proot_top
 cc_proot_top.df$Group <- factor(cc_proot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cc_proot_top.plot <- ggplot(cc_proot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+cc_proot_top.plot <- ggplot(cc_proot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1656,7 +1665,7 @@ cc_nroot_top.df$ASVs <- factor(cc_nroot_top.df$ASV, levels = unique(cc_nroot_top
 cc_nroot_top.df$Group <- factor(cc_nroot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cc_nroot_top.plot <- ggplot(cc_nroot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+cc_nroot_top.plot <- ggplot(cc_nroot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1690,7 +1699,7 @@ cc_croot_top.df$ASVs <- factor(cc_croot_top.df$ASV, levels = unique(cc_croot_top
 cc_croot_top.df$Group <- factor(cc_croot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cc_croot_top.plot <- ggplot(cc_croot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+cc_croot_top.plot <- ggplot(cc_croot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1726,7 +1735,7 @@ ds_pbulk_top.df$ASVs <- factor(ds_pbulk_top.df$ASV, levels = ds_pbulk_top.name)
 ds_pbulk_top.df$Group <- factor(ds_pbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-ds_pbulk_top.plot <- ggplot(ds_pbulk_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+ds_pbulk_top.plot <- ggplot(ds_pbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1759,7 +1768,7 @@ ds_nbulk_top.df$ASVs <- factor(ds_nbulk_top.df$ASV, levels = ds_nbulk_top.name)
 ds_nbulk_top.df$Group <- factor(ds_nbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-ds_nbulk_top.plot <- ggplot(ds_nbulk_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+ds_nbulk_top.plot <- ggplot(ds_nbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1796,7 +1805,7 @@ ds_prhiz_top.df$ASVs <- factor(ds_prhiz_top.df$ASV, levels = unique(ds_prhiz_top
 ds_prhiz_top.df$Group <- factor(ds_prhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-ds_prhiz_top.plot <- ggplot(ds_prhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+ds_prhiz_top.plot <- ggplot(ds_prhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1830,7 +1839,7 @@ ds_nrhiz_top.df$ASVs <- factor(ds_nrhiz_top.df$ASV, levels = unique(ds_nrhiz_top
 ds_nrhiz_top.df$Group <- factor(ds_nrhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-ds_nrhiz_top.plot <- ggplot(ds_nrhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+ds_nrhiz_top.plot <- ggplot(ds_nrhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1864,7 +1873,7 @@ ds_crhiz_top.df$ASVs <- factor(ds_crhiz_top.df$ASV, levels = unique(ds_crhiz_top
 ds_crhiz_top.df$Group <- factor(ds_crhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-ds_crhiz_top.plot <- ggplot(ds_crhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+ds_crhiz_top.plot <- ggplot(ds_crhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1901,7 +1910,7 @@ ds_proot_top.df$ASVs <- factor(ds_proot_top.df$ASV, levels = unique(ds_proot_top
 ds_proot_top.df$Group <- factor(ds_proot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-ds_proot_top.plot <- ggplot(ds_proot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+ds_proot_top.plot <- ggplot(ds_proot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1935,7 +1944,7 @@ ds_nroot_top.df$ASVs <- factor(ds_nroot_top.df$ASV, levels = unique(ds_nroot_top
 ds_nroot_top.df$Group <- factor(ds_nroot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-ds_nroot_top.plot <- ggplot(ds_nroot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+ds_nroot_top.plot <- ggplot(ds_nroot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -1969,7 +1978,7 @@ ds_croot_top.df$ASVs <- factor(ds_croot_top.df$ASV, levels = unique(ds_croot_top
 ds_croot_top.df$Group <- factor(ds_croot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-ds_croot_top.plot <- ggplot(ds_croot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+ds_croot_top.plot <- ggplot(ds_croot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2005,7 +2014,7 @@ hp_pbulk_top.df$ASVs <- factor(hp_pbulk_top.df$ASV, levels = hp_pbulk_top.name)
 hp_pbulk_top.df$Group <- factor(hp_pbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-hp_pbulk_top.plot <- ggplot(hp_pbulk_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+hp_pbulk_top.plot <- ggplot(hp_pbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2038,7 +2047,7 @@ hp_nbulk_top.df$ASVs <- factor(hp_nbulk_top.df$ASV, levels = hp_nbulk_top.name)
 hp_nbulk_top.df$Group <- factor(hp_nbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-hp_nbulk_top.plot <- ggplot(hp_nbulk_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+hp_nbulk_top.plot <- ggplot(hp_nbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2075,7 +2084,7 @@ hp_prhiz_top.df$ASVs <- factor(hp_prhiz_top.df$ASV, levels = unique(hp_prhiz_top
 hp_prhiz_top.df$Group <- factor(hp_prhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-hp_prhiz_top.plot <- ggplot(hp_prhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+hp_prhiz_top.plot <- ggplot(hp_prhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2109,7 +2118,7 @@ hp_nrhiz_top.df$ASVs <- factor(hp_nrhiz_top.df$ASV, levels = unique(hp_nrhiz_top
 hp_nrhiz_top.df$Group <- factor(hp_nrhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-hp_nrhiz_top.plot <- ggplot(hp_nrhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+hp_nrhiz_top.plot <- ggplot(hp_nrhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2143,7 +2152,7 @@ hp_crhiz_top.df$ASVs <- factor(hp_crhiz_top.df$ASV, levels = unique(hp_crhiz_top
 hp_crhiz_top.df$Group <- factor(hp_crhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-hp_crhiz_top.plot <- ggplot(hp_crhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+hp_crhiz_top.plot <- ggplot(hp_crhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2180,7 +2189,7 @@ hp_proot_top.df$ASVs <- factor(hp_proot_top.df$ASV, levels = unique(hp_proot_top
 hp_proot_top.df$Group <- factor(hp_proot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-hp_proot_top.plot <- ggplot(hp_proot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+hp_proot_top.plot <- ggplot(hp_proot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2214,7 +2223,7 @@ hp_nroot_top.df$ASVs <- factor(hp_nroot_top.df$ASV, levels = unique(hp_nroot_top
 hp_nroot_top.df$Group <- factor(hp_nroot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-hp_nroot_top.plot <- ggplot(hp_nroot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+hp_nroot_top.plot <- ggplot(hp_nroot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2248,7 +2257,7 @@ hp_croot_top.df$ASVs <- factor(hp_croot_top.df$ASV, levels = unique(hp_croot_top
 hp_croot_top.df$Group <- factor(hp_croot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-hp_croot_top.plot <- ggplot(hp_croot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+hp_croot_top.plot <- ggplot(hp_croot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2284,7 +2293,7 @@ cl_pbulk_top.df$ASVs <- factor(cl_pbulk_top.df$ASV, levels = cl_pbulk_top.name)
 cl_pbulk_top.df$Group <- factor(cl_pbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cl_pbulk_top.plot <- ggplot(cl_pbulk_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+cl_pbulk_top.plot <- ggplot(cl_pbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2317,7 +2326,7 @@ cl_nbulk_top.df$ASVs <- factor(cl_nbulk_top.df$ASV, levels = cl_nbulk_top.name)
 cl_nbulk_top.df$Group <- factor(cl_nbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cl_nbulk_top.plot <- ggplot(cl_nbulk_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+cl_nbulk_top.plot <- ggplot(cl_nbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2354,7 +2363,7 @@ cl_prhiz_top.df$ASVs <- factor(cl_prhiz_top.df$ASV, levels = unique(cl_prhiz_top
 cl_prhiz_top.df$Group <- factor(cl_prhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cl_prhiz_top.plot <- ggplot(cl_prhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+cl_prhiz_top.plot <- ggplot(cl_prhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2388,7 +2397,7 @@ cl_crhiz_top.df$ASVs <- factor(cl_crhiz_top.df$ASV, levels = unique(cl_crhiz_top
 cl_crhiz_top.df$Group <- factor(cl_crhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cl_crhiz_top.plot <- ggplot(cl_crhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+cl_crhiz_top.plot <- ggplot(cl_crhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2425,7 +2434,7 @@ cl_proot_top.df$ASVs <- factor(cl_proot_top.df$ASV, levels = unique(cl_proot_top
 cl_proot_top.df$Group <- factor(cl_proot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cl_proot_top.plot <- ggplot(cl_proot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+cl_proot_top.plot <- ggplot(cl_proot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2459,7 +2468,7 @@ cl_nroot_top.df$ASVs <- factor(cl_nroot_top.df$ASV, levels = unique(cl_nroot_top
 cl_nroot_top.df$Group <- factor(cl_nroot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cl_nroot_top.plot <- ggplot(cl_nroot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+cl_nroot_top.plot <- ggplot(cl_nroot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2493,7 +2502,7 @@ cl_croot_top.df$ASVs <- factor(cl_croot_top.df$ASV, levels = unique(cl_croot_top
 cl_croot_top.df$Group <- factor(cl_croot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cl_croot_top.plot <- ggplot(cl_croot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+cl_croot_top.plot <- ggplot(cl_croot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2528,7 +2537,7 @@ md_pbulk_top.df$ASVs <- factor(md_pbulk_top.df$ASV, levels = md_pbulk_top.name)
 md_pbulk_top.df$Group <- factor(md_pbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-md_pbulk_top.plot <- ggplot(md_pbulk_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+md_pbulk_top.plot <- ggplot(md_pbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2565,7 +2574,7 @@ md_prhiz_top.df$ASVs <- factor(md_prhiz_top.df$ASV, levels = unique(md_prhiz_top
 md_prhiz_top.df$Group <- factor(md_prhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-md_prhiz_top.plot <- ggplot(md_prhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+md_prhiz_top.plot <- ggplot(md_prhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2599,7 +2608,7 @@ md_nrhiz_top.df$ASVs <- factor(md_nrhiz_top.df$ASV, levels = unique(md_nrhiz_top
 md_nrhiz_top.df$Group <- factor(md_nrhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-md_nrhiz_top.plot <- ggplot(md_nrhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+md_nrhiz_top.plot <- ggplot(md_nrhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2633,7 +2642,7 @@ md_crhiz_top.df$ASVs <- factor(md_crhiz_top.df$ASV, levels = unique(md_crhiz_top
 md_crhiz_top.df$Group <- factor(md_crhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-md_crhiz_top.plot <- ggplot(md_crhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+md_crhiz_top.plot <- ggplot(md_crhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2670,7 +2679,7 @@ md_proot_top.df$ASVs <- factor(md_proot_top.df$ASV, levels = unique(md_proot_top
 md_proot_top.df$Group <- factor(md_proot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-md_proot_top.plot <- ggplot(md_proot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+md_proot_top.plot <- ggplot(md_proot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2704,7 +2713,7 @@ md_nroot_top.df$ASVs <- factor(md_nroot_top.df$ASV, levels = unique(md_nroot_top
 md_nroot_top.df$Group <- factor(md_nroot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-md_nroot_top.plot <- ggplot(md_nroot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+md_nroot_top.plot <- ggplot(md_nroot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2737,7 +2746,7 @@ md_croot_top.df$ASVs <- factor(md_croot_top.df$ASV, levels = unique(md_croot_top
 md_croot_top.df$Group <- factor(md_croot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-md_croot_top.plot <- ggplot(md_croot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+md_croot_top.plot <- ggplot(md_croot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
@@ -2790,7 +2799,7 @@ fb_soil_nod.df <- psmelt(fb_soil_nod.ps)
 fb_soil_nod.df$ASVs <- factor(fb_soil_nod.df$ASV, levels = fb_nod_soil.name)
 fb_soil_nod.df$Soil <- factor(fb_soil_nod.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-fb_soil_nod.plot <- ggplot(fb_soil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+fb_soil_nod.plot <- ggplot(fb_soil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -2812,7 +2821,7 @@ fb_soil_nod.plot <- ggplot(fb_soil_nod.df, aes(x = Soil, y = Abundance, fill = A
 # Take and plot just the PSF Soil Nodule #
 fb_psoil_nod.df <- filter(fb_soil_nod.df, Soil_Treatment == "PSF Soil")
 
-fb_psoil_nod.plot <- ggplot(fb_psoil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+fb_psoil_nod.plot <- ggplot(fb_psoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -2833,7 +2842,7 @@ fb_psoil_nod.plot <- ggplot(fb_psoil_nod.df, aes(x = Soil, y = Abundance, fill =
 # Take and plot just the Non-PSF Soil Nodule #
 fb_nsoil_nod.df <- filter(fb_soil_nod.df, Soil_Treatment == "Non-PSF Soil")
 
-fb_nsoil_nod.plot <- ggplot(fb_nsoil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+fb_nsoil_nod.plot <- ggplot(fb_nsoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -2854,7 +2863,7 @@ fb_nsoil_nod.plot <- ggplot(fb_nsoil_nod.df, aes(x = Soil, y = Abundance, fill =
 # Take and plot just the Common Soil Nodule #
 fb_csoil_nod.df <- filter(fb_soil_nod.df, Soil_Treatment == "Common Soil")
 
-fb_csoil_nod.plot <- ggplot(fb_csoil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+fb_csoil_nod.plot <- ggplot(fb_csoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -2882,7 +2891,7 @@ cc_soil_nod.df <- psmelt(cc_soil_nod.ps)
 cc_soil_nod.df$ASVs <- factor(cc_soil_nod.df$ASV, levels = cc_nod_soil.name)
 cc_soil_nod.df$Soil <- factor(cc_soil_nod.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-cc_soil_nod.plot <- ggplot(cc_soil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+cc_soil_nod.plot <- ggplot(cc_soil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -2904,7 +2913,7 @@ cc_soil_nod.plot <- ggplot(cc_soil_nod.df, aes(x = Soil, y = Abundance, fill = A
 # Take and plot just the PSF Soil Nodule #
 cc_psoil_nod.df <- filter(cc_soil_nod.df, Soil_Treatment == "PSF Soil")
 
-cc_psoil_nod.plot <- ggplot(cc_psoil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+cc_psoil_nod.plot <- ggplot(cc_psoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -2925,7 +2934,7 @@ cc_psoil_nod.plot <- ggplot(cc_psoil_nod.df, aes(x = Soil, y = Abundance, fill =
 # Take and plot just the Non-PSF Soil Nodule #
 cc_nsoil_nod.df <- filter(cc_soil_nod.df, Soil_Treatment == "Non-PSF Soil")
 
-cc_nsoil_nod.plot <- ggplot(cc_nsoil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+cc_nsoil_nod.plot <- ggplot(cc_nsoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -2946,7 +2955,7 @@ cc_nsoil_nod.plot <- ggplot(cc_nsoil_nod.df, aes(x = Soil, y = Abundance, fill =
 # Take and plot just the Common Soil Nodule #
 cc_csoil_nod.df <- filter(cc_soil_nod.df, Soil_Treatment == "Non-PSF Soil")
 
-cc_csoil_nod.plot <- ggplot(cc_csoil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+cc_csoil_nod.plot <- ggplot(cc_csoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -2973,7 +2982,7 @@ ds_soil_nod.df <- psmelt(ds_soil_nod.ps)
 ds_soil_nod.df$ASVs <- factor(ds_soil_nod.df$ASV, levels = ds_nod_soil.name)
 ds_soil_nod.df$Soil <- factor(ds_soil_nod.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-ds_soil_nod.plot <- ggplot(ds_soil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+ds_soil_nod.plot <- ggplot(ds_soil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -2994,7 +3003,7 @@ ds_soil_nod.plot <- ggplot(ds_soil_nod.df, aes(x = Soil, y = Abundance, fill = A
 # Take and plot just the PSF Soil Nodule #
 ds_psoil_nod.df <- filter(ds_soil_nod.df, Soil_Treatment == "PSF Soil")
 
-ds_psoil_nod.plot <- ggplot(ds_psoil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+ds_psoil_nod.plot <- ggplot(ds_psoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3015,7 +3024,7 @@ ds_psoil_nod.plot <- ggplot(ds_psoil_nod.df, aes(x = Soil, y = Abundance, fill =
 # Take and plot just the Non-PSF Soil Nodule #
 ds_nsoil_nod.df <- filter(ds_soil_nod.df, Soil_Treatment == "Non-PSF Soil")
 
-ds_nsoil_nod.plot <- ggplot(ds_nsoil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+ds_nsoil_nod.plot <- ggplot(ds_nsoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3036,7 +3045,7 @@ ds_nsoil_nod.plot <- ggplot(ds_nsoil_nod.df, aes(x = Soil, y = Abundance, fill =
 # Take and plot just the Non-PSF Soil Nodule #
 ds_csoil_nod.df <- filter(ds_soil_nod.df, Soil_Treatment == "Common Soil")
 
-ds_csoil_nod.plot <- ggplot(ds_csoil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+ds_csoil_nod.plot <- ggplot(ds_csoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3063,7 +3072,7 @@ hp_soil_nod.df <- psmelt(hp_soil_nod.ps)
 hp_soil_nod.df$ASVs <- factor(hp_soil_nod.df$ASV, levels = hp_nod_soil.name)
 hp_soil_nod.df$Soil <- factor(hp_soil_nod.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-hp_soil_nod.plot <- ggplot(hp_soil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+hp_soil_nod.plot <- ggplot(hp_soil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3091,7 +3100,7 @@ cl_soil_nod.df <- psmelt(cl_soil_nod.ps)
 cl_soil_nod.df$ASVs <- factor(cl_soil_nod.df$ASV, levels = cl_nod_soil.name)
 cl_soil_nod.df$Soil <- factor(cl_soil_nod.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-cl_soil_nod.plot <- ggplot(cl_soil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+cl_soil_nod.plot <- ggplot(cl_soil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3112,7 +3121,7 @@ cl_soil_nod.plot <- ggplot(cl_soil_nod.df, aes(x = Soil, y = Abundance, fill = A
 # Take and plot just the PSF Soil Nodule #
 cl_psoil_nod.df <- filter(cl_soil_nod.df, Soil_Treatment == "PSF Soil")
 
-cl_psoil_nod.plot <- ggplot(cl_psoil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+cl_psoil_nod.plot <- ggplot(cl_psoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3133,7 +3142,7 @@ cl_psoil_nod.plot <- ggplot(cl_psoil_nod.df, aes(x = Soil, y = Abundance, fill =
 # Take and plot just the PSF Soil Nodule #
 cl_nsoil_nod.df <- filter(cl_soil_nod.df, Soil_Treatment == "Non-PSF Soil")
 
-cl_nsoil_nod.plot <- ggplot(cl_nsoil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+cl_nsoil_nod.plot <- ggplot(cl_nsoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3154,7 +3163,7 @@ cl_nsoil_nod.plot <- ggplot(cl_nsoil_nod.df, aes(x = Soil, y = Abundance, fill =
 # Take and plot just the PSF Soil Nodule #
 cl_csoil_nod.df <- filter(cl_soil_nod.df, Soil_Treatment == "Common Soil")
 
-cl_csoil_nod.plot <- ggplot(cl_csoil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+cl_csoil_nod.plot <- ggplot(cl_csoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3182,7 +3191,7 @@ md_soil_nod.df <- psmelt(md_soil_nod.ps)
 md_soil_nod.df$ASVs <- factor(md_soil_nod.df$ASV, levels = md_nod_soil.name)
 md_soil_nod.df$Soil <- factor(md_soil_nod.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-md_soil_nod.plot <- ggplot(md_soil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+md_soil_nod.plot <- ggplot(md_soil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3203,7 +3212,7 @@ md_soil_nod.plot <- ggplot(md_soil_nod.df, aes(x = Soil, y = Abundance, fill = A
 # Take and plot just the PSF Soil Nodule #
 md_psoil_nod.df <- filter(md_soil_nod.df, Soil_Treatment == "PSF Soil")
 
-md_psoil_nod.plot <- ggplot(md_psoil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+md_psoil_nod.plot <- ggplot(md_psoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3224,7 +3233,7 @@ md_psoil_nod.plot <- ggplot(md_psoil_nod.df, aes(x = Soil, y = Abundance, fill =
 # Take and plot just the Non-PSF Soil Nodule #
 md_nsoil_nod.df <- filter(md_soil_nod.df, Soil_Treatment == "Non-PSF Soil")
 
-md_nsoil_nod.plot <- ggplot(md_nsoil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+md_nsoil_nod.plot <- ggplot(md_nsoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3245,7 +3254,7 @@ md_nsoil_nod.plot <- ggplot(md_nsoil_nod.df, aes(x = Soil, y = Abundance, fill =
 # Take and plot just the Common Soil Nodule #
 md_csoil_nod.df <- filter(md_soil_nod.df, Soil_Treatment == "Common Soil")
 
-md_csoil_nod.plot <- ggplot(md_csoil_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+md_csoil_nod.plot <- ggplot(md_csoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3290,7 +3299,7 @@ fb_root_nod.df <- psmelt(fb_root_nod.ps)
 fb_root_nod.df$ASVs <- factor(fb_root_nod.df$ASV, levels = fb_nod_root.name)
 fb_root_nod.df$Soil <- factor(fb_root_nod.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-fb_root_nod.plot <- ggplot(fb_root_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+fb_root_nod.plot <- ggplot(fb_root_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3312,7 +3321,7 @@ fb_root_nod.plot <- ggplot(fb_root_nod.df, aes(x = Soil, y = Abundance, fill = A
 # Take and plot only the PSF Nodule #
 fb_proot_nod.df <- filter(fb_root_nod.df, Soil.Origin == "PSF Soil")
 
-fb_proot_nod.plot <- ggplot(fb_proot_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+fb_proot_nod.plot <- ggplot(fb_proot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3333,7 +3342,7 @@ fb_proot_nod.plot <- ggplot(fb_proot_nod.df, aes(x = Soil, y = Abundance, fill =
 # Take and plot only the Non-PSF Nodule #
 fb_nroot_nod.df <- filter(fb_root_nod.df, Soil.Origin == "Non-PSF Soil")
 
-fb_nroot_nod.plot <- ggplot(fb_nroot_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+fb_nroot_nod.plot <- ggplot(fb_nroot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3354,7 +3363,7 @@ fb_nroot_nod.plot <- ggplot(fb_nroot_nod.df, aes(x = Soil, y = Abundance, fill =
 # Take and plot only the Non-PSF Nodule #
 fb_croot_nod.df <- filter(fb_root_nod.df, Soil.Origin == "Common Soil")
 
-fb_croot_nod.plot <- ggplot(fb_croot_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+fb_croot_nod.plot <- ggplot(fb_croot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3382,7 +3391,7 @@ cc_root_nod.df <- psmelt(cc_root_nod.ps)
 cc_root_nod.df$ASVs <- factor(cc_root_nod.df$ASV, levels = cc_nod_root.name)
 cc_root_nod.df$Soil <- factor(cc_root_nod.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-cc_root_nod.plot <- ggplot(cc_root_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+cc_root_nod.plot <- ggplot(cc_root_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3403,7 +3412,7 @@ cc_root_nod.plot <- ggplot(cc_root_nod.df, aes(x = Soil, y = Abundance, fill = A
 # Take and plot only the PSF Nodule #
 cc_proot_nod.df <- filter(cc_root_nod.df, Soil.Origin == "PSF Soil")
 
-cc_proot_nod.plot <- ggplot(cc_proot_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+cc_proot_nod.plot <- ggplot(cc_proot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3424,7 +3433,7 @@ cc_proot_nod.plot <- ggplot(cc_proot_nod.df, aes(x = Soil, y = Abundance, fill =
 # Take and plot only the Non-PSF Nodule #
 cc_nroot_nod.df <- filter(cc_root_nod.df, Soil.Origin == "Non-PSF Soil")
 
-cc_nroot_nod.plot <- ggplot(cc_nroot_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+cc_nroot_nod.plot <- ggplot(cc_nroot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3445,7 +3454,7 @@ cc_nroot_nod.plot <- ggplot(cc_nroot_nod.df, aes(x = Soil, y = Abundance, fill =
 # Take and plot only the Non-PSF Nodule #
 cc_croot_nod.df <- filter(cc_root_nod.df, Soil.Origin == "Common Soil")
 
-cc_croot_nod.plot <- ggplot(cc_croot_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+cc_croot_nod.plot <- ggplot(cc_croot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3473,7 +3482,7 @@ ds_root_nod.df <- psmelt(ds_root_nod.ps)
 ds_root_nod.df$ASVs <- factor(ds_root_nod.df$ASV, levels = ds_nod_root.name)
 ds_root_nod.df$Soil <- factor(ds_root_nod.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-ds_root_nod.plot <- ggplot(ds_root_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+ds_root_nod.plot <- ggplot(ds_root_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3495,7 +3504,7 @@ ds_root_nod.plot <- ggplot(ds_root_nod.df, aes(x = Soil, y = Abundance, fill = A
 # Take and plot only the PSF Nodule #
 ds_proot_nod.df <- filter(ds_root_nod.df, Soil.Origin == "PSF Soil")
 
-ds_proot_nod.plot <- ggplot(ds_proot_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+ds_proot_nod.plot <- ggplot(ds_proot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3516,7 +3525,7 @@ ds_proot_nod.plot <- ggplot(ds_proot_nod.df, aes(x = Soil, y = Abundance, fill =
 # Take and plot only the Non-PSF Nodule #
 ds_nroot_nod.df <- filter(ds_root_nod.df, Soil.Origin == "Non-PSF Soil")
 
-ds_nroot_nod.plot <- ggplot(ds_nroot_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+ds_nroot_nod.plot <- ggplot(ds_nroot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3537,7 +3546,7 @@ ds_nroot_nod.plot <- ggplot(ds_nroot_nod.df, aes(x = Soil, y = Abundance, fill =
 # Take and plot only the Non-PSF Nodule #
 ds_croot_nod.df <- filter(ds_root_nod.df, Soil.Origin == "Common Soil")
 
-ds_croot_nod.plot <- ggplot(ds_croot_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+ds_croot_nod.plot <- ggplot(ds_croot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3564,7 +3573,7 @@ hp_root_nod.df <- psmelt(hp_root_nod.ps)
 hp_root_nod.df$ASVs <- factor(hp_root_nod.df$ASV, levels = hp_nod_root.name)
 hp_root_nod.df$Soil <- factor(hp_root_nod.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-hp_root_nod.plot <- ggplot(hp_root_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+hp_root_nod.plot <- ggplot(hp_root_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3593,7 +3602,7 @@ cl_root_nod.df <- psmelt(cl_root_nod.ps)
 cl_root_nod.df$ASVs <- factor(cl_root_nod.df$ASV, levels = cl_nod_root.name)
 cl_root_nod.df$Soil<- factor(cl_root_nod.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-cl_root_nod.plot <- ggplot(cl_root_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+cl_root_nod.plot <- ggplot(cl_root_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3614,7 +3623,7 @@ cl_root_nod.plot <- ggplot(cl_root_nod.df, aes(x = Soil, y = Abundance, fill = A
 # Take and plot only the PSF Nodule #
 cl_proot_nod.df <- filter(cl_root_nod.df, Soil.Origin == "PSF Soil")
 
-cl_proot_nod.plot <- ggplot(cl_proot_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+cl_proot_nod.plot <- ggplot(cl_proot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3635,7 +3644,7 @@ cl_proot_nod.plot <- ggplot(cl_proot_nod.df, aes(x = Soil, y = Abundance, fill =
 # Take and plot only the PSF Nodule #
 cl_nroot_nod.df <- filter(cl_root_nod.df, Soil.Origin == "Non-PSF Soil")
 
-cl_nroot_nod.plot <- ggplot(cl_nroot_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+cl_nroot_nod.plot <- ggplot(cl_nroot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3656,7 +3665,7 @@ cl_nroot_nod.plot <- ggplot(cl_nroot_nod.df, aes(x = Soil, y = Abundance, fill =
 # Take and plot only the PSF Nodule #
 cl_croot_nod.df <- filter(cl_root_nod.df, Soil.Origin == "Common Soil")
 
-cl_croot_nod.plot <- ggplot(cl_croot_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+cl_croot_nod.plot <- ggplot(cl_croot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3684,7 +3693,7 @@ md_root_nod.df <- psmelt(md_root_nod.ps)
 md_root_nod.df$ASVs <- factor(md_root_nod.df$ASV, levels = md_nod_root.name)
 md_root_nod.df$Soil <- factor(md_root_nod.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-md_root_nod.plot <- ggplot(md_root_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+md_root_nod.plot <- ggplot(md_root_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3705,7 +3714,7 @@ md_root_nod.plot <- ggplot(md_root_nod.df, aes(x = Soil, y = Abundance, fill = A
 # Take and plot only the PSF Nodule #
 md_proot_nod.df <- filter(md_root_nod.df, Soil.Origin == "PSF Soil")
 
-md_proot_nod.plot <- ggplot(md_proot_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+md_proot_nod.plot <- ggplot(md_proot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3726,7 +3735,7 @@ md_proot_nod.plot <- ggplot(md_proot_nod.df, aes(x = Soil, y = Abundance, fill =
 # Take and plot only the Non-PSF Nodule #
 md_nroot_nod.df <- filter(md_root_nod.df, Soil.Origin == "Non-PSF Soil")
 
-md_nroot_nod.plot <- ggplot(md_nroot_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+md_nroot_nod.plot <- ggplot(md_nroot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
@@ -3747,7 +3756,7 @@ md_nroot_nod.plot <- ggplot(md_nroot_nod.df, aes(x = Soil, y = Abundance, fill =
 # Take and plot only the Common Nodule #
 md_croot_nod.df <- filter(md_root_nod.df, Soil.Origin == "Common Soil")
 
-md_croot_nod.plot <- ggplot(md_croot_nod.df, aes(x = Soil, y = Abundance, fill = ASVs)) +
+md_croot_nod.plot <- ggplot(md_croot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
