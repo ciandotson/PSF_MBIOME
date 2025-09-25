@@ -470,7 +470,7 @@ soil.ps <- phyloseq(otu_table(filt_soil$otu, taxa_are_rows = TRUE),
                         tax_table(filt_soil$tax),
                         refseq(filt_soil$dna))
 
-soil.ps <- subset_taxa(soil.ps, taxa_sums(soil.ps) > 1000)
+soil.ps <- subset_taxa(soil.ps, taxa_sums(soil.ps) > 100)
 
 # Change the taxa names to represent comparative abundance and lowest identification level #
 taxa_names(soil.ps) <- paste0('ASV', seq(ntaxa(soil.ps)))
