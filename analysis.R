@@ -517,12 +517,38 @@ soil.ps <- phyloseq(otu_table(soil$otu, taxa_are_rows = TRUE),
                     refseq(soil$dna),
                     phy_tree(soil.tre))
 
-# Save the soil phyloseq object in the abridged .RData file # 
+# Join very closely related taxa (99% similarity based on cophenetic distances) #
+soil.ps <- tip_glom(soil.ps, h = 0.01)
+
+# Fix the ASVs such that they are numbered in order of abundance #
+fix_tax_names <- function(ps, label){
+  # function that fixes the names of taxa such that they represent their order of abundance #
+  tax.list <- names(sort(taxa_sums(ps), decreasing = TRUE))
+  tax.df <- as.data.frame(tax_table(ps))
+  new_tax.df <- tax.df[tax.list,]
+  for(i in 1:nrow(new_tax.df)){
+    new_tax.df$Abundance_Rank[i] <- i
+    new_tax.df$Lowest[i] <- sub(".*\\((.*)\\)", "\\1", rownames(new_tax.df)[i])
+    new_tax.df$ASV[i] <- paste0('ASV', as.character(new_tax.df$Abundance_Rank[i]), '(', new_tax.df$Lowest[i], ')')}
+  new_tax.df <- new_tax.df[taxa_names(ps),]
+  tax_table(ps) <- as.matrix(new_tax.df)
+  taxa_names(ps) <- new_tax.df$ASV
+  assign(label, ps, envir = .GlobalEnv)
+}
+
+fix_tax_names(soil.ps, 'soil.ps')
+
+# Save a separate phyloseq object for the nodule communities #
+soil_nod.ps <- subset_samples(soil.ps, Compartment == "Nodule")
+soil_nod.ps <- subset_taxa(soil_nod.ps, taxa_sums(soil_nod.ps) > 0)
+
+# Save the soil and soil_nod phyloseq object in the abridged .RData file # 
 if(!requireNamespace('cgwtools')) install.packages('cgwtools')
 library(cgwtools); packageVersion("cgwtools")
 resave(soil.ps, file = './psf_abridged.RData')
-
+resave(soil_nod.ps, file = './psf_abridged.RData')
 save.image("./test.RData")
+
 #### Root Primer Removal ####
 # Ensure you have the right files #
 list.files(root.dir)
@@ -752,7 +778,20 @@ root.ps <- phyloseq(otu_table(root$otu, taxa_are_rows = TRUE),
                     tax_table(root$tax),
                     refseq(root$dna),
                     phy_tree(root.tre))
+
+# Join very closely related taxa (99% similarity based on cophenetic distances) #
+root.ps <- tip_glom(root.ps, h = 0.01)
+
+# Fix the ASVs such that they are numbered in order of abundance #
+fix_tax_names(root.ps, 'root.ps')
+
+# Save a separate phyloseq object for the nodule communities #
+root_nod.ps <- subset_samples(root.ps, Compartment == "Nodule")
+root_nod.ps <- subset_taxa(root_nod.ps, taxa_sums(root_nod.ps) > 0)
+
+# Save the root and root_nod phyloseq objects to psf_abridged.RData #
 resave(root.ps, file = './psf_abridged.RData')
+resave(root_nod.ps, file = './psf_abridged.RData')
 save.image("./test.RData")
 
 #### Individualized Non-Nodule Histograms ####
