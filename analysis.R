@@ -517,8 +517,9 @@ soil.ps <- phyloseq(otu_table(soil$otu, taxa_are_rows = TRUE),
                     refseq(soil$dna),
                     phy_tree(soil.tre))
 
-# Join very closely related taxa (99% similarity based on cophenetic distances) #
-soil.ps <- tip_glom(soil.ps, h = 0.01)
+# Join very closely related taxa (98.5% similarity based on cophenetic distances) #
+soil.ps <- tip_glom(soil.ps, h = 0.015)
+soil.ps <- tip_glom(soil.ps, h = 0.015)
 
 # Fix the ASVs such that they are numbered in order of abundance #
 fix_tax_names <- function(ps, label){
@@ -779,8 +780,10 @@ root.ps <- phyloseq(otu_table(root$otu, taxa_are_rows = TRUE),
                     refseq(root$dna),
                     phy_tree(root.tre))
 
-# Join very closely related taxa (99% similarity based on cophenetic distances) #
-root.ps <- tip_glom(root.ps, h = 0.01)
+# Join very closely related taxa (98.5% similarity based on cophenetic distances) #
+root.ps <- tip_glom(root.ps, h = 0.015)
+root.ps <- tip_glom(root.ps, h = 0.015)
+# For whatever reason, this must be run twice to get a convergent result #
 
 # Fix the ASVs such that they are numbered in order of abundance #
 fix_tax_names(root.ps, 'root.ps')
@@ -1163,7 +1166,7 @@ rownames(root.colr)[ntaxa(root.ps) + 1] <- "Other"
 ### Fuzzy Bean Source Community ###
 ## PSF ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other" #
-if(requireNamespace("microbiome")) BiocManager::install("microbiome")
+if(requireNamespace("microbiome")) devtools::install_github('microbiome/microbiome')
 library(microbiome); packageVersion("microbiome")
 
 aggregate_top_taxa2 <- function(x, top, level){
@@ -1481,6 +1484,8 @@ fb_croot_top.plot <- ggplot(fb_croot_top.df, aes(x = SC, y = Abundance, fill = A
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+
+fb_root.plot <- (fb_proot_top.plot | fb_nroot_top.plot | fb_croot_top.plot )
 
 ### Chamaecrista Source Community ###
 ## PSF ##
@@ -2809,12 +2814,6 @@ md_croot_top.plot <- ggplot(md_croot_top.df, aes(x = SC, y = Abundance, fill = A
 md_root.plot <- (md_proot_top.plot | md_nroot_top.plot | md_croot_top.plot)
 
 #### Soil Nodule Stacked Histograms ####
-# Create a nodule specifc phyloseq object #
-soil_nod.ps <- subset_samples(soil.ps, Compartment == "Nodule")
-soil_nod.ps <- subset_taxa(soil_nod.ps, taxa_sums(soil_nod.ps) > 0)
-decompose_ps(soil_nod.ps, "soil_nod")
-resave(soil_nod.ps, file ='./psf_abridged.RData')
-
 # Create a tree for ASVs that are found in the nodules and are in the Order Hyphomicrobiales #
 soil_hyph.ps <- subset_taxa(soil_nod.ps, Order == "Hyphomicrobiales")
 soil_hyph_tre.plot <- plot_tree(soil_hyph.ps, label.tips = "taxa_names", ladderize = TRUE, color = "Family")
@@ -3312,12 +3311,6 @@ md_csoil_nod.plot <- ggplot(md_csoil_nod.df, aes(x = SC, y = Abundance, fill = A
         legend.position = 'right')
 
 #### Root Nodule Stacked Histograms ####
-# Create a nodule specifc phyloseq object #
-root_nod.ps <- subset_samples(root.ps, Compartment == "Nodule")
-root_nod.ps <- subset_taxa(root_nod.ps, taxa_sums(root_nod.ps) > 0)
-decompose_ps(root_nod.ps, "root_nod")
-resave(root_nod.ps, file ='./psf_abridged.RData')
-
 # Create a tree for ASVs that are found in the nodules and are in the Order Hyphomicrobiales #
 root_hyph.ps <- subset_taxa(root_nod.ps, Order == "Hyphomicrobiales")
 root_hyph_tre.plot <- plot_tree(root_hyph.ps, label.tips = "taxa_names", ladderize = TRUE, color = "Family")
