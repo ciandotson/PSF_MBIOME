@@ -517,9 +517,23 @@ soil.ps <- phyloseq(otu_table(soil$otu, taxa_are_rows = TRUE),
                     refseq(soil$dna),
                     phy_tree(soil.tre))
 
+# Save a separate decomposed phyloseq object to fix the taxonomy table later #
+decompose_ps(soil.ps, 'soil.tax')
+
 # Join very closely related taxa (98.5% similarity based on cophenetic distances) #
-soil.ps <- tip_glom(soil.ps, h = 0.015)
-soil.ps <- tip_glom(soil.ps, h = 0.015)
+soil.ps <- tip_glom(soil.ps, h = 0.032)
+soil.ps <- tip_glom(soil.ps, h = 0.032)
+
+# Use the separate taxonomy table to preserve the taxonomic ranks of the newly agglomerated taxa #
+fin_soil.tax <- c()
+for(i in rownames(soil.tax$tax)){
+  if(i %in% taxa_names(soil.ps)){
+    fin_soil.tax <- rbind(fin_soil.tax, soil.tax$tax[i,c("Domain", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "ASV")])
+  }
+}
+
+# Save the taxonomy table of soil.ps as the fin_soil.tax #
+tax_table(soil.ps) <- as.matrix(fin_soil.tax)
 
 # Fix the ASVs such that they are numbered in order of abundance #
 fix_tax_names <- function(ps, label){
@@ -547,7 +561,6 @@ soil_nod.ps <- subset_taxa(soil_nod.ps, taxa_sums(soil_nod.ps) > 0)
 if(!requireNamespace('cgwtools')) install.packages('cgwtools')
 library(cgwtools); packageVersion("cgwtools")
 resave(soil.ps, file = './psf_abridged.RData')
-resave(soil_nod.ps, file = './psf_abridged.RData')
 save.image("./test.RData")
 
 #### Root Primer Removal ####
@@ -780,21 +793,30 @@ root.ps <- phyloseq(otu_table(root$otu, taxa_are_rows = TRUE),
                     refseq(root$dna),
                     phy_tree(root.tre))
 
-# Join very closely related taxa (98.5% similarity based on cophenetic distances) #
-root.ps <- tip_glom(root.ps, h = 0.015)
-root.ps <- tip_glom(root.ps, h = 0.015)
+# Create a separate decomposed phyloseq object to save the taxonomy of the ASVs #
+decompose_ps(root.ps, 'root.tax')
+
+# Join very closely related taxa #
+root.ps <- tip_glom(root.ps, h = 0.032)
+root.ps <- tip_glom(root.ps, h = 0.032)
 # For whatever reason, this must be run twice to get a convergent result #
+
+# Use the separate taxonomy table to preserve the taxonomic ranks of the newly agglomerated taxa #
+fin_root.tax <- c()
+for(i in rownames(root.tax$tax)){
+  if(i %in% taxa_names(root.ps)){
+    fin_root.tax <- rbind(fin_root.tax, root.tax$tax[i,c("Domain", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "ASV")])
+  }
+}
+
+# Save the taxonomy table of soil.ps as the fin_soil.tax #
+tax_table(root.ps) <- as.matrix(fin_root.tax)
 
 # Fix the ASVs such that they are numbered in order of abundance #
 fix_tax_names(root.ps, 'root.ps')
 
-# Save a separate phyloseq object for the nodule communities #
-root_nod.ps <- subset_samples(root.ps, Compartment == "Nodule")
-root_nod.ps <- subset_taxa(root_nod.ps, taxa_sums(root_nod.ps) > 0)
-
 # Save the root and root_nod phyloseq objects to psf_abridged.RData #
 resave(root.ps, file = './psf_abridged.RData')
-resave(root_nod.ps, file = './psf_abridged.RData')
 save.image("./test.RData")
 
 #### Individualized Non-Nodule Histograms ####
@@ -816,12 +838,21 @@ root$met$Comps <- factor(root$met$Compartment, levels = c("Root Endosphere", "No
 root$met$Soils <- factor(root$met$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 for(i in 1:nrow(root$met)){
-  root$met$SC[i] <- paste0(root$met$Soil_Treatment[i], '; ', root$met$Compartment[i]) 
+  root$met$SC[i] <- paste0(root$met$Soil.Origin[i], '; ', root$met$Compartment[i]) 
 }
 
 # Save the new metadata table to the original phyloseq object #
 sample_data(soil.ps) <- soil$met
 sample_data(root.ps) <- root$met
+
+# Save a separate phyloseq object for the nodule communities #
+soil_nod.ps <- subset_samples(soil.ps, Compartment == "Nodule")
+soil_nod.ps <- subset_taxa(soil_nod.ps, taxa_sums(soil_nod.ps) > 0)
+root_nod.ps <- subset_samples(root.ps, Compartment == "Nodule")
+root_nod.ps <- subset_taxa(root_nod.ps, taxa_sums(root_nod.ps) > 0)
+
+resave(soil_nod.ps, file = './psf_abridged.RData')
+resave(root_nod.ps, file = './psf_abridged.RData')
 
 # Create phyloseq objects that have samples corresponding to their compartment #
 bulk.ps <- subset_samples(soil.ps, Compartment == "Source Community")
@@ -1388,11 +1419,12 @@ fb_rhiz.plot <- (fb_prhiz_top.plot | fb_nrhiz_top.plot | fb_crhiz_top.plot)
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
 fb_proot_top.ps <- aggregate_top_taxa2(fb_proot.ps, 19, "ASV")
 fb_proot_top.name <- names(sort(taxa_sums(fb_proot_top.ps), decreasing = TRUE))
-fb_proot_top.colr <- root.colr[fb_proot_top.name,]
+fb_proot_top.name <- c("Other", fb_proot_top.name)
+fb_proot_top.colr <- root.colr[unique(fb_proot_top.name),]
 
 # Create a data.frame with all the relevant information for plotting #
 fb_proot_top.df <- psmelt(fb_proot_top.ps)
-fb_proot_top.df$ASVs <- factor(fb_proot_top.df$ASV, levels = fb_proot_top.name)
+fb_proot_top.df$ASVs <- factor(fb_proot_top.df$ASV, levels = unique(fb_proot_top.name))
 fb_proot_top.df$Group <- factor(fb_proot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
@@ -2777,6 +2809,7 @@ md_nroot_top.plot <- ggplot(md_nroot_top.df, aes(x = SC, y = Abundance, fill = A
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+
 ## Common ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
 md_croot_top.ps <- aggregate_top_taxa2(md_croot.ps, 19, "ASV")
@@ -2817,12 +2850,6 @@ md_root.plot <- (md_proot_top.plot | md_nroot_top.plot | md_croot_top.plot)
 # Create a tree for ASVs that are found in the nodules and are in the Order Hyphomicrobiales #
 soil_hyph.ps <- subset_taxa(soil_nod.ps, Order == "Hyphomicrobiales")
 soil_hyph_tre.plot <- plot_tree(soil_hyph.ps, label.tips = "taxa_names", ladderize = TRUE, color = "Family")
-
-# save a new phyloseq object without the nodules #
-soil.ps <- subset_samples(soil.ps, Compartment != "Nodule")
-soil.ps <- subset_taxa(soil.ps, taxa_sums(soil.ps) > 0)
-decompose_ps(soil.ps, 'soil')
-soil$fra <- arrange(soil$fra, desc(rowSums(soil$fra[,16:ncol(soil$fra)])))
 
 resave(aggregate_top_taxa2, file = './psf_abridged.RData')
 save.image("./test.RData")
@@ -2991,7 +3018,7 @@ cc_nsoil_nod.plot <- ggplot(cc_nsoil_nod.df, aes(x = SC, y = Abundance, fill = A
         legend.position = 'right')
 
 # Take and plot just the Common Soil Nodule #
-cc_csoil_nod.df <- filter(cc_soil_nod.df, Soil_Treatment == "Non-PSF Soil")
+cc_csoil_nod.df <- filter(cc_soil_nod.df, Soil_Treatment == "Common Soil")
 
 cc_csoil_nod.plot <- ggplot(cc_csoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
@@ -3314,11 +3341,6 @@ md_csoil_nod.plot <- ggplot(md_csoil_nod.df, aes(x = SC, y = Abundance, fill = A
 # Create a tree for ASVs that are found in the nodules and are in the Order Hyphomicrobiales #
 root_hyph.ps <- subset_taxa(root_nod.ps, Order == "Hyphomicrobiales")
 root_hyph_tre.plot <- plot_tree(root_hyph.ps, label.tips = "taxa_names", ladderize = TRUE, color = "Family")
-
-# save a new phyloseq object without the nodules #
-root.ps <- subset_samples(root.ps, Compartment != "Nodule")
-root.ps <- subset_taxa(root.ps, taxa_sums(root.ps) > 0)
-decompose_ps(root.ps, 'root')
 
 # Construct a phyloseq object for each individual plant taxon's nodule community # 
 ## Fuzzy bean ##
@@ -3816,7 +3838,7 @@ fb_psf.plot <- (fb_pbulk_top.plot | fb_prhiz_top.plot | fb_psoil_nod.plot) /
 fb_nsf.plot <- (fb_nbulk_top.plot | fb_nrhiz_top.plot | fb_nsoil_nod.plot) /
   (fb_nroot_top.plot | fb_nroot_nod.plot)
 
-fb_com.plot <- (fb_cbulk_top.plot | fb_crhiz_top.plot | fb_csoil_nod.plot) /
+fb_com.plot <- (cbulk_top.plot | fb_crhiz_top.plot | fb_csoil_nod.plot) /
   (fb_croot_top.plot | fb_croot_nod.plot)
 
 # Chamaecrista #
