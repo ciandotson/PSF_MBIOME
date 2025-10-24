@@ -77,6 +77,7 @@ cl_nod.hsd <- TukeyHSD(cl_nod.aov)
 md_nod.hsd <- TukeyHSD(md_nod.aov)
 
 # Assign letters based on the Tukey HSD results #
+if(!requireNamespace('multcompView')) install.packages('multcompView')
 library(multcompView); packageVersion('multcompView')
 fb_nod.let <- multcompLetters4(fb_nod.aov, fb_nod.hsd)
 fb_nod.let <- fb_nod.let$Soil_Treatment$Letters[sort(names(fb_nod.let$Soil_Treatment$Letters))]
@@ -552,10 +553,6 @@ fix_tax_names <- function(ps, label){
 }
 
 fix_tax_names(soil.ps, 'soil.ps')
-
-# Save a separate phyloseq object for the nodule communities #
-soil_nod.ps <- subset_samples(soil.ps, Compartment == "Nodule")
-soil_nod.ps <- subset_taxa(soil_nod.ps, taxa_sums(soil_nod.ps) > 0)
 
 # Save the soil and soil_nod phyloseq object in the abridged .RData file # 
 if(!requireNamespace('cgwtools')) install.packages('cgwtools')
@@ -3893,33 +3890,30 @@ md_com.plot <- (cbulk_top.plot | md_crhiz_top.plot | md_csoil_nod.plot) /
 
 #### Alpha Diversity Analysis and Visualization ####
 # Add additional variables as factors for Soils #
-soil$met$Soils <- factor(soil$met$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
-soil$met$Soils <- gsub("Non-PSF Soil", "Non PSF Soil", soil$met$Soils)
-soil$met$Comps <- factor(soil$met$Compartment, levels = c("Source Community", "Rhizosphere"))
-soil$met$Plants <- factor(soil$met$Plant, levels = c("T. repens", "M. truncatula", "S. helvola", "C. fasciculata", "D. canadense", "A. bracteata"))
-for(i in 1:nrow(soil$met)){
-  soil$met$Tri[i] <- paste0(substr(soil$met$Plant[i],1,1), substr(soil$met$Soil_Treatment[i],1,1), substr(soil$met$Compartment[i],1,2)) 
+sample_data(soil.ps)$Soil_a <- gsub("Non-PSF Soil", "Non PSF Soil", sample_data(soil.ps)$Soil_Treatment)
+sample_data(soil.ps)$Soil_a <- factor(sample_data(soil.ps)$Soil_a, levels = c("PSF Soil", "Non PSF Soil", "Common Soil"))
+for(i in 1:nrow(sample_data(soil.ps))){
+  sample_data(soil.ps)$Tri[i] <- paste0(substr(sample_data(soil.ps)$Plant[i],1,1), substr(sample_data(soil.ps)$Soil_Treatment[i],1,1), substr(sample_data(soil.ps)$Compartment[i],1,2)) 
 }
 
 # Add additional variables as factors for Soils #
-root$met$Soils <- factor(root$met$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
-root$met$Soils <- gsub("Non-PSF Soil", "Non PSF Soil", root$met$Soils)
-root$met$Comps <- factor(root$met$Compartment, levels = "Root Endosphere")
-root$met$Plants <- factor(root$met$Plant.Species, levels = c("T. repens", "M. truncatula", "S. helvola", "C. fasciculata", "D. canadense", "A. bracteata"))
-for(i in 1:nrow(root$met)){
-  root$met$Tri[i] <- paste0(substr(root$met$Plant.Species[i],1,1), substr(root$met$Soil.Origin[i],1,1), substr(root$met$Compartment[i],1,2)) 
+sample_data(root.ps)$Soil_a <- gsub("Non-PSF Soil", "Non PSF Soil", sample_data(root.ps)$Soil.Origin)
+sample_data(root.ps)$Soil_a <- factor(sample_data(root.ps)$Soil_a, levels = c("PSF Soil", "Non PSF Soil", "Common Soil"))
+for(i in 1:nrow(sample_data(root.ps))){
+  sample_data(root.ps)$Tri[i] <- paste0(substr(sample_data(root.ps)$Plant.Species[i],1,1), substr(sample_data(root.ps)$Soil.Origin[i],1,1), substr(sample_data(root.ps)$Compartment[i],1,2)) 
 }
-soil$met <- soil$met[,c("Plant", "Soil_Treatment", "Compartment", "Soils", "Comps", "Plants", "Tri")]
-root$met <- root$met[,c("Plant.Species", "Soil.Origin", "Compartment", "Soils", "Comps", "Plants", "Tri")]
-colnames(root$met) <- colnames(soil$met)
+
+sample_data(soil.ps) <- sample_data(soil.ps)[,c("Plant", "Soil_Treatment", "Compartment", "Soils", "Comps", "Plants", "Soil_a", "Tri")]
+sample_data(root.ps) <- sample_data(root.ps)[,c("Plant.Species", "Soil.Origin", "Compartment", "Soils", "Comps", "Plants", "Soil_a", "Tri")]
+colnames(sample_data(root.ps)) <- colnames(sample_data(soil.ps))
 
 # Calculate the diversitry metrics #
 soil.rich <- estimate_richness(soil.ps)
 soil.rich <- as.data.frame(soil.rich)
-soil.rich <- cbind(soil$met, soil.rich)
+soil.rich <- cbind(sample_data(soil.ps), soil.rich)
 root.rich <- estimate_richness(root.ps)
 root.rich <- as.data.frame(root.rich)
-root.rich <- cbind(root$met, root.rich)
+root.rich <- cbind(sample_data(root.ps), root.rich)
 all.rich <- rbind(soil.rich, root.rich)
 
 # Calculate Shannon Evenness by dividing the Shannon Diversity value by the  #
@@ -3927,8 +3921,8 @@ for(i in 1:nrow(all.rich)){
   all.rich$ShaEvn[i] <- all.rich$Shannon[i]/log(all.rich$Chao1[i], base = 2.718) 
 }
 
-all.rich$Soils <- factor(all.rich$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 # Perform three way anova tests for plant species, compartment, and soil origin #
+if(!requireNamespace("car")) install.packages("car")
 library(car); packageVersion("car")
 all_cha.lm <- lm(Chao1~Soils*Plants*Comps, all.rich)
 Anova(all_cha.lm)
@@ -3959,10 +3953,6 @@ naty.rich <- rbind(naty.rich, naty_comm.bin)
 naty_comm.bin$Plant <- gsub("D. canadense", "A. bracteata", naty_comm.bin$Plant)
 naty.rich <- rbind(naty.rich, naty_comm.bin)
 
-naty.rich$Soils <- gsub("Non-PSF Soil", "Non PSF Soil", naty.rich$Soils)
-naty.rich$Soils <- factor(naty.rich$Soils, levels = c("Common Soil", "Non PSF Soil", "PSF Soil"))
-naty.rich$Comps <- factor(naty.rich$Compartment, levels = c("Source Community", "Rhizosphere"))
-naty.rich$Plants <- factor(naty.rich$Plant, levels = c("S. helvola", "C. fasciculata", "D. canadense", "A. bracteata"))
 naty_cha.lm <- lm(Chao1~Soils*Plants*Comps, naty.rich)
 Anova(naty_cha.lm)
 naty_evn.lm <- lm(ShaEvn~Soils*Plants*Comps, naty.rich)
@@ -3979,9 +3969,6 @@ nnat.bin$Plants <- gsub("T. repens", "M. truncatula", nnat.bin$Plant)
 nnat.rich <- rbind(nnat.rich, nnat.bin)
 nnat.rich$Plants <- gsub("S. helvola", "M. truncatula", nnat.rich$Plants)
 
-nnat.rich$Soils <- factor(nnat.rich$Soils, levels = c("Common Soil", "Non PSF Soil", "PSF Soil"))
-nnat.rich$Comps <- factor(nnat.rich$Compartment, levels = c("Source Community", "Rhizosphere"))
-nnat.rich$Plants <- factor(nnat.rich$Plants, levels = c("T. repens", "M. truncatula"))
 nnat_cha.lm <- lm(Chao1~Soils*Plants*Comps, nnat.rich)
 Anova(nnat_cha.lm, type = "II")
 nnat_evn.lm <- lm(ShaEvn~Soils*Plants*Comps, nnat.rich)
@@ -4041,70 +4028,70 @@ rhiz.richraw <- filter(all.rich, Compartment == 'Rhizosphere')
 ## Rhizosphere Shannon Diversity ##
 ### Strophostyles ###
 fb_rhiz.richraw <- filter(rhiz.richraw, Plant == 'S. helvola')
-fb_rhiz_sha.aov <- aov(Shannon ~ Soils, data = fb_rhiz.richraw)
+fb_rhiz_sha.aov <- aov(Shannon ~ Soil_a, data = fb_rhiz.richraw)
 summary(fb_rhiz_sha.aov)
 
 fb_rhiz_sha.hsd <- TukeyHSD(fb_rhiz_sha.aov)
 fb_rhiz_sha.hsd
 
 fb_rhiz_sha.let <- multcompLetters4(fb_rhiz_sha.aov, fb_rhiz_sha.hsd)
-fb_rhiz_sha.let <- fb_rhiz_sha.let$Soils$Letters[sort(names(fb_rhiz_sha.let$Soils$Letters))]
+fb_rhiz_sha.let <- fb_rhiz_sha.let$Soil_a$Letters[sort(names(fb_rhiz_sha.let$Soil_a$Letters))]
 
 ## Chamecrista ##
 cc_rhiz.richraw <- filter(rhiz.richraw, Plant == 'C. fasciculata')
-cc_rhiz_sha.aov <- aov(Shannon ~ Soils, data = cc_rhiz.richraw)
+cc_rhiz_sha.aov <- aov(Shannon ~ Soil_a, data = cc_rhiz.richraw)
 summary(cc_rhiz_sha.aov)
 
 cc_rhiz_sha.hsd <- TukeyHSD(cc_rhiz_sha.aov)
 cc_rhiz_sha.hsd
 
 cc_rhiz_sha.let <- multcompLetters4(cc_rhiz_sha.aov, cc_rhiz_sha.hsd)
-cc_rhiz_sha.let <- cc_rhiz_sha.let$Soils$Letters[sort(names(cc_rhiz_sha.let$Soils$Letters))]
+cc_rhiz_sha.let <- cc_rhiz_sha.let$Soil_a$Letters[sort(names(cc_rhiz_sha.let$Soil_a$Letters))]
 
 
 ## Desmodium ##
 ds_rhiz.richraw <- filter(rhiz.richraw, Plant == 'D. canadense')
-ds_rhiz_sha.aov <- aov(Shannon ~ Soils, data = ds_rhiz.richraw)
+ds_rhiz_sha.aov <- aov(Shannon ~ Soil_a, data = ds_rhiz.richraw)
 summary(ds_rhiz_sha.aov)
 
 ds_rhiz_sha.hsd <- TukeyHSD(ds_rhiz_sha.aov)
 ds_rhiz_sha.hsd
 
 ds_rhiz_sha.let <- multcompLetters4(ds_rhiz_sha.aov, ds_rhiz_sha.hsd)
-ds_rhiz_sha.let <- ds_rhiz_sha.let$Soils$Letters[sort(names(ds_rhiz_sha.let$Soils$Letters))]
+ds_rhiz_sha.let <- ds_rhiz_sha.let$Soil_a$Letters[sort(names(ds_rhiz_sha.let$Soil_a$Letters))]
 
 ## Amphicarpaea ##
 hp_rhiz.richraw <- filter(rhiz.richraw, Plant == 'A. bracteata')
-hp_rhiz_sha.aov <- aov(Shannon ~ Soils, data = hp_rhiz.richraw)
+hp_rhiz_sha.aov <- aov(Shannon ~ Soil_a, data = hp_rhiz.richraw)
 summary(hp_rhiz_sha.aov)
 
 hp_rhiz_sha.hsd <- TukeyHSD(hp_rhiz_sha.aov)
 hp_rhiz_sha.hsd
 
 hp_rhiz_sha.let <- multcompLetters4(hp_rhiz_sha.aov, hp_rhiz_sha.hsd)
-hp_rhiz_sha.let <- hp_rhiz_sha.let$Soils$Letters[sort(names(hp_rhiz_sha.let$Soils$Letters))]
+hp_rhiz_sha.let <- hp_rhiz_sha.let$Soil_a$Letters[sort(names(hp_rhiz_sha.let$Soil_a$Letters))]
 
 ## Trifolium ##
 cl_rhiz.richraw <- filter(rhiz.richraw, Plant == 'T. repens')
-cl_rhiz_sha.aov <- aov(Shannon ~ Soils, data = cl_rhiz.richraw)
+cl_rhiz_sha.aov <- aov(Shannon ~ Soil_a, data = cl_rhiz.richraw)
 summary(cl_rhiz_sha.aov)
 
 cl_rhiz_sha.hsd <- TukeyHSD(cl_rhiz_sha.aov)
 cl_rhiz_sha.hsd
 
 cl_rhiz_sha.let <- multcompLetters4(cl_rhiz_sha.aov, cl_rhiz_sha.hsd)
-cl_rhiz_sha.let <- cl_rhiz_sha.let$Soils$Letters[sort(names(cl_rhiz_sha.let$Soils$Letters))]
+cl_rhiz_sha.let <- cl_rhiz_sha.let$Soil_a$Letters[sort(names(cl_rhiz_sha.let$Soil_a$Letters))]
 
 ## Medicago ##
 md_rhiz.richraw <- filter(rhiz.richraw, Plant == 'M. truncatula')
-md_rhiz_sha.aov <- aov(Shannon ~ Soils, data = md_rhiz.richraw)
+md_rhiz_sha.aov <- aov(Shannon ~ Soil_a, data = md_rhiz.richraw)
 summary(md_rhiz_sha.aov)
 
 md_rhiz_sha.hsd <- TukeyHSD(md_rhiz_sha.aov)
 md_rhiz_sha.hsd
 
 md_rhiz_sha.let <- multcompLetters4(md_rhiz_sha.aov, md_rhiz_sha.hsd)
-md_rhiz_sha.let <- md_rhiz_sha.let$Soils$Letters[sort(names(md_rhiz_sha.let$Soils$Letters))]
+md_rhiz_sha.let <- md_rhiz_sha.let$Soil_a$Letters[sort(names(md_rhiz_sha.let$Soil_a$Letters))]
 
 ## Adding Letters ##
 sha_rhiz.let <- c(hp_rhiz_sha.let,
@@ -4137,74 +4124,72 @@ sha_rhiz.plot <- ggplot(rhiz.rich, aes(x = `Plant Species`, y = sha.mean, fill =
         legend.key.spacing.x = unit(6, 'cm')) +
     labs(tag = "C.")
 
-sha_rhiz.plot
-
 # Rhizosphere Shannon Evenness #
 ## Strophostyles ##
 fb_rhiz.richraw <- filter(rhiz.richraw, Plant == 'S. helvola')
-fb_rhiz_evn.aov <- aov(ShaEvn ~ Soils, data = fb_rhiz.richraw)
+fb_rhiz_evn.aov <- aov(ShaEvn ~ Soil_a, data = fb_rhiz.richraw)
 summary(fb_rhiz_evn.aov)
 
 fb_rhiz_evn.hsd <- TukeyHSD(fb_rhiz_evn.aov)
 fb_rhiz_evn.hsd
 
 fb_rhiz_evn.let <- multcompLetters4(fb_rhiz_evn.aov, fb_rhiz_evn.hsd)
-fb_rhiz_evn.let <- fb_rhiz_evn.let$Soils$Letters[sort(names(fb_rhiz_evn.let$Soils$Letters))]
+fb_rhiz_evn.let <- fb_rhiz_evn.let$Soil_a$Letters[sort(names(fb_rhiz_evn.let$Soil_a$Letters))]
 
 ## Chamecrista ##
 cc_rhiz.richraw <- filter(rhiz.richraw, Plant == 'C. fasciculata')
-cc_rhiz_evn.aov <- aov(ShaEvn ~ Soils, data = cc_rhiz.richraw)
+cc_rhiz_evn.aov <- aov(ShaEvn ~ Soil_a, data = cc_rhiz.richraw)
 summary(cc_rhiz_evn.aov)
 
 cc_rhiz_evn.hsd <- TukeyHSD(cc_rhiz_evn.aov)
 cc_rhiz_evn.hsd
 
 cc_rhiz_evn.let <- multcompLetters4(cc_rhiz_evn.aov, cc_rhiz_evn.hsd)
-cc_rhiz_evn.let <- cc_rhiz_evn.let$Soils$Letters[sort(names(cc_rhiz_evn.let$Soils$Letters))]
+cc_rhiz_evn.let <- cc_rhiz_evn.let$Soil_a$Letters[sort(names(cc_rhiz_evn.let$Soil_a$Letters))]
 
 ## Desmodium ##
 ds_rhiz.richraw <- filter(rhiz.richraw, Plant == 'D. canadense')
-ds_rhiz_evn.aov <- aov(ShaEvn ~ Soils, data = ds_rhiz.richraw)
+ds_rhiz_evn.aov <- aov(ShaEvn ~ Soil_a, data = ds_rhiz.richraw)
 summary(ds_rhiz_evn.aov)
 
 ds_rhiz_evn.hsd <- TukeyHSD(ds_rhiz_evn.aov)
 ds_rhiz_evn.hsd
 
 ds_rhiz_evn.let <- multcompLetters4(ds_rhiz_evn.aov, ds_rhiz_evn.hsd)
-ds_rhiz_evn.let <- ds_rhiz_evn.let$Soils$Letters[sort(names(ds_rhiz_evn.let$Soils$Letters))]
+ds_rhiz_evn.let <- ds_rhiz_evn.let$Soil_a$Letters[sort(names(ds_rhiz_evn.let$Soil_a$Letters))]
 
 ## Amphicarpaea ##
 hp_rhiz.richraw <- filter(rhiz.richraw, Plant == 'A. bracteata')
-hp_rhiz_evn.aov <- aov(ShaEvn ~ Soils, data = hp_rhiz.richraw)
+hp_rhiz_evn.aov <- aov(ShaEvn ~ Soil_a, data = hp_rhiz.richraw)
 summary(hp_rhiz_evn.aov)
 
 hp_rhiz_evn.hsd <- TukeyHSD(hp_rhiz_evn.aov)
 hp_rhiz_evn.hsd
 
 hp_rhiz_evn.let <- multcompLetters4(hp_rhiz_evn.aov, hp_rhiz_evn.hsd)
-hp_rhiz_evn.let <- hp_rhiz_evn.let$Soils$Letters[sort(names(hp_rhiz_evn.let$Soils$Letters))]
+hp_rhiz_evn.let <- hp_rhiz_evn.let$Soil_a$Letters[sort(names(hp_rhiz_evn.let$Soil_a$Letters))]
 
 ## Trifolium ##
 cl_rhiz.richraw <- filter(rhiz.richraw, Plant == 'T. repens')
-cl_rhiz_evn.aov <- aov(ShaEvn ~ Soils, data = cl_rhiz.richraw)
+cl_rhiz_evn.aov <- aov(ShaEvn ~ Soil_a, data = cl_rhiz.richraw)
 summary(cl_rhiz_evn.aov)
 
 cl_rhiz_evn.hsd <- TukeyHSD(cl_rhiz_evn.aov)
 cl_rhiz_evn.hsd
 
 cl_rhiz_evn.let <- multcompLetters4(cl_rhiz_evn.aov, cl_rhiz_evn.hsd)
-cl_rhiz_evn.let <- cl_rhiz_evn.let$Soils$Letters[sort(names(cl_rhiz_evn.let$Soils$Letters))]
+cl_rhiz_evn.let <- cl_rhiz_evn.let$Soil_a$Letters[sort(names(cl_rhiz_evn.let$Soil_a$Letters))]
 
 ## Medicago ##
 md_rhiz.richraw <- filter(rhiz.richraw, Plant == 'M. truncatula')
-md_rhiz_evn.aov <- aov(ShaEvn ~ Soils, data = md_rhiz.richraw)
+md_rhiz_evn.aov <- aov(ShaEvn ~ Soil_a, data = md_rhiz.richraw)
 summary(md_rhiz_evn.aov)
 
 md_rhiz_evn.hsd <- TukeyHSD(md_rhiz_evn.aov)
 md_rhiz_evn.hsd
 
 md_rhiz_evn.let <- multcompLetters4(md_rhiz_evn.aov, md_rhiz_evn.hsd)
-md_rhiz_evn.let <- md_rhiz_evn.let$Soils$Letters[sort(names(md_rhiz_evn.let$Soils$Letters))]
+md_rhiz_evn.let <- md_rhiz_evn.let$Soil_a$Letters[sort(names(md_rhiz_evn.let$Soil_a$Letters))]
 
 ## Adding Letters ##
 evn_rhiz.let <- c(hp_rhiz_evn.let,
@@ -4225,7 +4210,7 @@ evn_rhiz.plot <- ggplot(rhiz.rich, aes(x = `Plant Species`, y = evn.mean, fill =
   theme_prism() +
   scale_fill_manual(labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,1.1),breaks = seq(0,1,by = 0.25), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "Rhizosphere")) +
+  scale_y_continuous(limits = c(0,1.1),breaks = seq(0,1,by = 0.20), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "Rhizosphere")) +
   theme(legend.position = 'none',
         legend.text = element_text(size = 24),
         axis.text.x = element_blank(),
@@ -4237,74 +4222,72 @@ evn_rhiz.plot <- ggplot(rhiz.rich, aes(x = `Plant Species`, y = evn.mean, fill =
         legend.key.spacing.x = unit(6, 'cm')) +
   labs(tag = "B.")
   
-
-evn_rhiz.plot
 # Chao1 Observed ASVs #
 ## Strophostyles ##
 fb_rhiz.richraw <- filter(rhiz.richraw, Plant == 'S. helvola')
-fb_rhiz_cha.aov <- aov(Chao1 ~ Soils, data = fb_rhiz.richraw)
+fb_rhiz_cha.aov <- aov(Chao1 ~ Soil_a, data = fb_rhiz.richraw)
 summary(fb_rhiz_cha.aov)
 
 fb_rhiz_cha.hsd <- TukeyHSD(fb_rhiz_cha.aov)
 fb_rhiz_cha.hsd
 
 fb_rhiz_cha.let <- multcompLetters4(fb_rhiz_cha.aov, fb_rhiz_cha.hsd)
-fb_rhiz_cha.let <- fb_rhiz_cha.let$Soils$Letters[sort(names(fb_rhiz_cha.let$Soils$Letters))]
+fb_rhiz_cha.let <- fb_rhiz_cha.let$Soil_a$Letters[sort(names(fb_rhiz_cha.let$Soil_a$Letters))]
 
 ## Chamecrista ##
 cc_rhiz.richraw <- filter(rhiz.richraw, Plant == 'C. fasciculata')
-cc_rhiz_cha.aov <- aov(Chao1~ Soils, data = cc_rhiz.richraw)
+cc_rhiz_cha.aov <- aov(Chao1~ Soil_a, data = cc_rhiz.richraw)
 summary(cc_rhiz_cha.aov)
 
 cc_rhiz_cha.hsd <- TukeyHSD(cc_rhiz_cha.aov)
 cc_rhiz_cha.hsd
 
 cc_rhiz_cha.let <- multcompLetters4(cc_rhiz_cha.aov, cc_rhiz_cha.hsd)
-cc_rhiz_cha.let <- cc_rhiz_cha.let$Soils$Letters[sort(names(cc_rhiz_cha.let$Soils$Letters))]
+cc_rhiz_cha.let <- cc_rhiz_cha.let$Soil_a$Letters[sort(names(cc_rhiz_cha.let$Soil_a$Letters))]
 
 ## Desmodium ##
 ds_rhiz.richraw <- filter(rhiz.richraw, Plant == 'D. canadense')
-ds_rhiz_cha.aov <- aov(Chao1 ~ Soils, data = ds_rhiz.richraw)
+ds_rhiz_cha.aov <- aov(Chao1 ~ Soil_a, data = ds_rhiz.richraw)
 summary(ds_rhiz_cha.aov)
 
 ds_rhiz_cha.hsd <- TukeyHSD(ds_rhiz_cha.aov)
 ds_rhiz_cha.hsd
 
 ds_rhiz_cha.let <- multcompLetters4(ds_rhiz_cha.aov, ds_rhiz_cha.hsd)
-ds_rhiz_cha.let <- ds_rhiz_cha.let$Soils$Letters[sort(names(ds_rhiz_cha.let$Soils$Letters))]
+ds_rhiz_cha.let <- ds_rhiz_cha.let$Soil_a$Letters[sort(names(ds_rhiz_cha.let$Soil_a$Letters))]
 
 ## Amphicarpaea ##
 hp_rhiz.richraw <- filter(rhiz.richraw, Plant == 'A. bracteata')
-hp_rhiz_cha.aov <- aov(Chao1 ~ Soils, data = hp_rhiz.richraw)
+hp_rhiz_cha.aov <- aov(Chao1 ~ Soil_a, data = hp_rhiz.richraw)
 summary(hp_rhiz_cha.aov)
 
 hp_rhiz_cha.hsd <- TukeyHSD(hp_rhiz_cha.aov)
 hp_rhiz_cha.hsd
 
 hp_rhiz_cha.let <- multcompLetters4(hp_rhiz_cha.aov, hp_rhiz_cha.hsd)
-hp_rhiz_cha.let <- hp_rhiz_cha.let$Soils$Letters[sort(names(hp_rhiz_cha.let$Soils$Letters))]
+hp_rhiz_cha.let <- hp_rhiz_cha.let$Soil_a$Letters[sort(names(hp_rhiz_cha.let$Soil_a$Letters))]
 
 ## Trifolium ##
 cl_rhiz.richraw <- filter(rhiz.richraw, Plant == 'T. repens')
-cl_rhiz_cha.aov <- aov(Chao1 ~ Soils, data = cl_rhiz.richraw)
+cl_rhiz_cha.aov <- aov(Chao1 ~ Soil_a, data = cl_rhiz.richraw)
 summary(cl_rhiz_cha.aov)
 
 cl_rhiz_cha.hsd <- TukeyHSD(cl_rhiz_cha.aov)
 cl_rhiz_cha.hsd
 
 cl_rhiz_cha.let <- multcompLetters4(cl_rhiz_cha.aov, cl_rhiz_cha.hsd)
-cl_rhiz_cha.let <- cl_rhiz_cha.let$Soils$Letters[sort(names(cl_rhiz_cha.let$Soils$Letters))]
+cl_rhiz_cha.let <- cl_rhiz_cha.let$Soil_a$Letters[sort(names(cl_rhiz_cha.let$Soil_a$Letters))]
 
 ## Medicago ##
 md_rhiz.richraw <- filter(rhiz.richraw, Plant == 'M. truncatula')
-md_rhiz_cha.aov <- aov(Chao1 ~ Soils, data = md_rhiz.richraw)
+md_rhiz_cha.aov <- aov(Chao1 ~ Soil_a, data = md_rhiz.richraw)
 summary(md_rhiz_cha.aov)
 
 md_rhiz_cha.hsd <- TukeyHSD(md_rhiz_cha.aov)
 md_rhiz_cha.hsd
 
 md_rhiz_cha.let <- multcompLetters4(md_rhiz_cha.aov, md_rhiz_cha.hsd)
-md_rhiz_cha.let <- md_rhiz_cha.let$Soils$Letters[sort(names(md_rhiz_cha.let$Soils$Letters))]
+md_rhiz_cha.let <- md_rhiz_cha.let$Soil_a$Letters[sort(names(md_rhiz_cha.let$Soil_a$Letters))]
 
 ## Adding Letters ##
 cha_rhiz.let <- c(hp_rhiz_cha.let,
@@ -4325,7 +4308,7 @@ cha_rhiz.plot <- ggplot(rhiz.rich, aes(x = `Plant Species`, y = cha.mean, fill =
   theme_prism() +
   scale_fill_manual(labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,500),expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "Rhizosphere")) +
+  scale_y_continuous(limits = c(0,350),expand = expansion(mult = c(0, 0.05)), breaks = seq(0,350,70), sec.axis = sec_axis(~ ., name = "Rhizosphere")) +
   theme(legend.position = 'none',
         legend.text = element_text(size = 24),
         axis.text.x = element_blank(),
@@ -4337,10 +4320,8 @@ cha_rhiz.plot <- ggplot(rhiz.rich, aes(x = `Plant Species`, y = cha.mean, fill =
         legend.key.spacing.x = unit(6, 'cm')) +
   labs(tag = "A.")
 
-cha_rhiz.plot
-
 # All Rhizosphere Sample Plots #
-(cha_rhiz.plot) / 
+alpha_rhiz.plot <- (cha_rhiz.plot) / 
   (evn_rhiz.plot) / 
   (sha_rhiz.plot) &
   theme(plot.tag = element_text(size = 22))
@@ -4348,7 +4329,7 @@ cha_rhiz.plot
 # All Source Community Samples #
 bulk.rich <- filter(all_rich.mnsd, Compartment == "Source Community")
 bulk.richraw <- filter(all.rich, Compartment == 'Source Community')
-bulk.richraw$Soils <- gsub('Non-PSF Soil', 'Non PSF Soil', bulk.richraw$Soils)
+bulk.richraw$Soil_a <- gsub('Non-PSF Soil', 'Non PSF Soil', bulk.richraw$Soil_a)
 shapiro.test(bulk.richraw$Shannon)
 
 comm_bulk.rich <- bulk.rich[7,]
@@ -4377,79 +4358,79 @@ fb_bulk.richraw <- filter(bulk.richraw, Plant == 'S. helvola')
 fb_bulk.richraw <- rbind(fb_bulk.richraw, bulk.richraw[c('5076', '5077', '5078'),])
 
 fb_bulk.rich <- filter(bulk.rich, `Plant Species` == 'S. helvola')
-fb_bulk_sha.aov <- aov(Shannon ~ Soils, data = fb_bulk.richraw)
+fb_bulk_sha.aov <- aov(Shannon ~ Soil_a, data = fb_bulk.richraw)
 summary(fb_bulk_sha.aov)
 
 fb_bulk_sha.hsd <- TukeyHSD(fb_bulk_sha.aov)
 fb_bulk_sha.hsd
 
 fb_bulk_sha.let <- multcompLetters4(fb_bulk_sha.aov, fb_bulk_sha.hsd)
-fb_bulk_sha.let <- fb_bulk_sha.let$Soils$Letters[sort(names(fb_bulk_sha.let$Soils$Letters))]
+fb_bulk_sha.let <- fb_bulk_sha.let$Soil_a$Letters[sort(names(fb_bulk_sha.let$Soil_a$Letters))]
 
 ## Chamaecrista ##
 cc_bulk.richraw <- filter(bulk.richraw, Plants == 'C. fasciculata')
 cc_bulk.richraw <- rbind(cc_bulk.richraw, bulk.richraw[c('5044', '5045', '5046'),])
 
-cc_bulk_sha.aov <- aov(Shannon ~ Soils, data = cc_bulk.richraw)
+cc_bulk_sha.aov <- aov(Shannon ~ Soil_a, data = cc_bulk.richraw)
 summary(cc_bulk_sha.aov)
 
 cc_bulk_sha.hsd <- TukeyHSD(cc_bulk_sha.aov)
 cc_bulk_sha.hsd
 
 cc_bulk_sha.let <- multcompLetters4(cc_bulk_sha.aov, cc_bulk_sha.hsd)
-cc_bulk_sha.let <- cc_bulk_sha.let$Soils$Letters[sort(names(cc_bulk_sha.let$Soils$Letters))]
+cc_bulk_sha.let <- cc_bulk_sha.let$Soil_a$Letters[sort(names(cc_bulk_sha.let$Soil_a$Letters))]
 
 ## Desmodium ##
 ds_bulk.richraw <- filter(bulk.richraw, Plant == 'D. canadense')
 ds_bulk.richraw <- rbind(ds_bulk.richraw, bulk.richraw[c('5044', '5045', '5046'),])
 
-ds_bulk_sha.aov <- aov(Shannon ~ Soils, data = ds_bulk.richraw)
+ds_bulk_sha.aov <- aov(Shannon ~ Soil_a, data = ds_bulk.richraw)
 summary(ds_bulk_sha.aov)
 
 ds_bulk_sha.hsd <- TukeyHSD(ds_bulk_sha.aov)
 ds_bulk_sha.hsd
 
 ds_bulk_sha.let <- multcompLetters4(ds_bulk_sha.aov, ds_bulk_sha.hsd)
-ds_bulk_sha.let <- ds_bulk_sha.let$Soils$Letters[sort(names(ds_bulk_sha.let$Soils$Letters))]
+ds_bulk_sha.let <- ds_bulk_sha.let$Soil_a$Letters[sort(names(ds_bulk_sha.let$Soil_a$Letters))]
 
 ## Amphicarpaea ##
 hp_bulk.richraw <- filter(bulk.richraw, Plant == 'A. bracteata')
 hp_bulk.richraw <- rbind(hp_bulk.richraw, bulk.richraw[c('5044', '5045','5046', '5129-1', '5129-2', '5129-3'),])
 
-hp_bulk_sha.aov <- aov(Shannon ~ Soils, data = hp_bulk.richraw)
+hp_bulk_sha.aov <- aov(Shannon ~ Soil_a, data = hp_bulk.richraw)
 summary(hp_bulk_sha.aov)
 
 hp_bulk_sha.hsd <- TukeyHSD(hp_bulk_sha.aov)
 hp_bulk_sha.hsd
 
 hp_bulk_sha.let <- multcompLetters4(hp_bulk_sha.aov, hp_bulk_sha.hsd)
-hp_bulk_sha.let <- hp_bulk_sha.let$Soils$Letters[sort(names(hp_bulk_sha.let$Soils$Letters))]
+hp_bulk_sha.let <- hp_bulk_sha.let$Soil_a$Letters[sort(names(hp_bulk_sha.let$Soil_a$Letters))]
 
 ## Trifolium ##
 cl_bulk.richraw <- filter(bulk.richraw, Plant == 'T. repens')
 cl_bulk.richraw <- rbind(cl_bulk.richraw, bulk.richraw[c('5044', '5045','5046'),])
 
-cl_bulk_sha.aov <- aov(Shannon ~ Soils, data = cl_bulk.richraw)
+cl_bulk_sha.aov <- aov(Shannon ~ Soil_a, data = cl_bulk.richraw)
 summary(cl_bulk_sha.aov)
 
 cl_bulk_sha.hsd <- TukeyHSD(cl_bulk_sha.aov)
 cl_bulk_sha.hsd
 
 cl_bulk_sha.let <- multcompLetters4(cl_bulk_sha.aov, cl_bulk_sha.hsd)
-cl_bulk_sha.let <- cl_bulk_sha.let$Soils$Letters[sort(names(cl_bulk_sha.let$Soils$Letters))]
+cl_bulk_sha.let <- cl_bulk_sha.let$Soil_a$Letters[sort(names(cl_bulk_sha.let$Soil_a$Letters))]
 
 ## Medicago ##
 md_bulk.richraw <- filter(bulk.richraw, Plant == 'M. truncatula')
 md_bulk.richraw <- rbind(md_bulk.richraw, bulk.richraw[c('5044', '5045','5046', '5210', '5211', '5212'),])
 
-md_bulk_sha.aov <- aov(Shannon ~ Soils, data = md_bulk.richraw)
+md_bulk_sha.aov <- aov(Shannon ~ Soil_a, data = md_bulk.richraw)
 summary(md_bulk_sha.aov)
 
 md_bulk_sha.hsd <- TukeyHSD(md_bulk_sha.aov)
 md_bulk_sha.hsd
 
 md_bulk_sha.let <- multcompLetters4(md_bulk_sha.aov, md_bulk_sha.hsd)
-md_bulk_sha.let <- md_bulk_sha.let$Soils$Letters[sort(names(md_bulk_sha.let$Soils$Letters))]
+md_bulk_sha.let <- md_bulk_sha.let$Soil_a$Letters[sort(names(md_bulk_sha.let$Soil_a$Letters))]
 
 ## Adding Letters ##
 sha_bulk.let <- c(hp_bulk_sha.let,
@@ -4471,7 +4452,7 @@ sha_bulk.plot <- ggplot(bulk.rich, aes(x = `Plant Species`, y = sha.mean, fill =
   theme_prism() +
   scale_fill_manual(labels = c("Common Soil", "Non-PSF Soil","PSF Soil"), values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(labels = c("Common Soil", "Non-PSF Soil","PSF Soil"), values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,8), breaks = seq(0,8, by = 2), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "Source Community")) +
+  scale_y_continuous(limits = c(0,5.2), breaks = seq(0,5, by = 1), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "Source Community")) +
   theme(legend.position = 'bottom',
         legend.text = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
         axis.text.x = element_text(size = 24, face = 'bold.italic', family = "Liberation Sans"),
@@ -4483,68 +4464,66 @@ sha_bulk.plot <- ggplot(bulk.rich, aes(x = `Plant Species`, y = sha.mean, fill =
         legend.key.spacing.x = unit(6, 'cm')) +
   labs(tag = "C.")
 
-sha_bulk.plot
-
 # Source Community Shannon Evenness #
 ## Strophostyles ##
-fb_bulk_evn.aov <- aov(ShaEvn ~ Soils, data = fb_bulk.richraw)
+fb_bulk_evn.aov <- aov(ShaEvn ~ Soil_a, data = fb_bulk.richraw)
 summary(fb_bulk_evn.aov)
 
 fb_bulk_evn.hsd <- TukeyHSD(fb_bulk_evn.aov)
 fb_bulk_evn.hsd
 
 fb_bulk_evn.let <- multcompLetters4(fb_bulk_evn.aov, fb_bulk_evn.hsd)
-fb_bulk_evn.let <- fb_bulk_evn.let$Soils$Letters[sort(names(fb_bulk_evn.let$Soils$Letters))]
+fb_bulk_evn.let <- fb_bulk_evn.let$Soil_a$Letters[sort(names(fb_bulk_evn.let$Soil_a$Letters))]
 
 ## Chamecrista ##
-cc_bulk_evn.aov <- aov(ShaEvn ~ Soils, data = cc_bulk.richraw)
+cc_bulk_evn.aov <- aov(ShaEvn ~ Soil_a, data = cc_bulk.richraw)
 summary(cc_bulk_evn.aov)
 
 cc_bulk_evn.hsd <- TukeyHSD(cc_bulk_evn.aov)
 cc_bulk_evn.hsd
 
 cc_bulk_evn.let <- multcompLetters4(cc_bulk_evn.aov, cc_bulk_evn.hsd)
-cc_bulk_evn.let <- cc_bulk_evn.let$Soils$Letters[sort(names(cc_bulk_evn.let$Soils$Letters))]
+cc_bulk_evn.let <- cc_bulk_evn.let$Soil_a$Letters[sort(names(cc_bulk_evn.let$Soil_a$Letters))]
 
 ## Desmodium ##
-ds_bulk_evn.aov <- aov(ShaEvn ~ Soils, data = ds_bulk.richraw)
+ds_bulk_evn.aov <- aov(ShaEvn ~ Soil_a, data = ds_bulk.richraw)
 summary(ds_bulk_evn.aov)
 
 ds_bulk_evn.hsd <- TukeyHSD(ds_bulk_evn.aov)
 ds_bulk_evn.hsd
 
 ds_bulk_evn.let <- multcompLetters4(ds_bulk_evn.aov, ds_bulk_evn.hsd)
-ds_bulk_evn.let <- ds_bulk_evn.let$Soils$Letters[sort(names(ds_bulk_evn.let$Soils$Letters))]
+ds_bulk_evn.let <- ds_bulk_evn.let$Soil_a$Letters[sort(names(ds_bulk_evn.let$Soil_a$Letters))]
 
 ## Amphicarpaea ##
-hp_bulk_evn.aov <- aov(ShaEvn ~ Soils, data = hp_bulk.richraw)
+hp_bulk_evn.aov <- aov(ShaEvn ~ Soil_a, data = hp_bulk.richraw)
 summary(hp_bulk_evn.aov)
 
 hp_bulk_evn.hsd <- TukeyHSD(hp_bulk_evn.aov)
 hp_bulk_evn.hsd
 
 hp_bulk_evn.let <- multcompLetters4(hp_bulk_evn.aov, hp_bulk_evn.hsd)
-hp_bulk_evn.let <- hp_bulk_evn.let$Soils$Letters[sort(names(hp_bulk_evn.let$Soils$Letters))]
+hp_bulk_evn.let <- hp_bulk_evn.let$Soil_a$Letters[sort(names(hp_bulk_evn.let$Soil_a$Letters))]
 
 ## Trifolium ##
-cl_bulk_evn.aov <- aov(ShaEvn ~ Soils, data = cl_bulk.richraw)
+cl_bulk_evn.aov <- aov(ShaEvn ~ Soil_a, data = cl_bulk.richraw)
 summary(cl_bulk_evn.aov)
 
 cl_bulk_evn.hsd <- TukeyHSD(cl_bulk_evn.aov)
 cl_bulk_evn.hsd
 
 cl_bulk_evn.let <- multcompLetters4(cl_bulk_evn.aov, cl_bulk_evn.hsd)
-cl_bulk_evn.let <- cl_bulk_evn.let$Soils$Letters[sort(names(cl_bulk_evn.let$Soils$Letters))]
+cl_bulk_evn.let <- cl_bulk_evn.let$Soil_a$Letters[sort(names(cl_bulk_evn.let$Soil_a$Letters))]
 
 ## Medicago ##
-md_bulk_evn.aov <- aov(ShaEvn ~ Soils, data = md_bulk.richraw)
+md_bulk_evn.aov <- aov(ShaEvn ~ Soil_a, data = md_bulk.richraw)
 summary(md_bulk_evn.aov)
 
 md_bulk_evn.hsd <- TukeyHSD(md_bulk_evn.aov)
 md_bulk_evn.hsd
 
 md_bulk_evn.let <- multcompLetters4(md_bulk_evn.aov, md_bulk_evn.hsd)
-md_bulk_evn.let <- md_bulk_evn.let$Soils$Letters[sort(names(md_bulk_evn.let$Soils$Letters))]
+md_bulk_evn.let <- md_bulk_evn.let$Soil_a$Letters[sort(names(md_bulk_evn.let$Soil_a$Letters))]
 
 ## Adding Letters ##
 evn_bulk.let <- c(hp_bulk_evn.let,
@@ -4566,7 +4545,7 @@ evn_bulk.plot <- ggplot(bulk.rich, aes(x = `Plant Species`, y = evn.mean, fill =
   theme_prism() +
   scale_fill_manual(values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,1), breaks = seq(0,1,by = 0.25), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ .,name = "Source Community")) +
+  scale_y_continuous(limits = c(0,1), breaks = seq(0,1,by = 0.2), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ .,name = "Source Community")) +
   theme(legend.position = 'none',
         legend.text = element_text(size = 24),
         axis.text.x = element_blank(),
@@ -4578,68 +4557,66 @@ evn_bulk.plot <- ggplot(bulk.rich, aes(x = `Plant Species`, y = evn.mean, fill =
         legend.key.spacing.x = unit(6, 'cm')) +
   labs(tag = "B.")
 
-evn_bulk.plot
-
 # Chao1 Observed ASVs #
 ## Strophostyles ##
-fb_bulk_cha.aov <- aov(Chao1 ~ Soils, data = fb_bulk.richraw)
+fb_bulk_cha.aov <- aov(Chao1 ~ Soil_a, data = fb_bulk.richraw)
 summary(fb_bulk_cha.aov)
 
 fb_bulk_cha.hsd <- TukeyHSD(fb_bulk_cha.aov)
 fb_bulk_cha.hsd
 
 fb_bulk_cha.let <- multcompLetters4(fb_bulk_cha.aov, fb_bulk_cha.hsd)
-fb_bulk_cha.let <- fb_bulk_cha.let$Soils$Letters[sort(names(fb_bulk_cha.let$Soils$Letters))]
+fb_bulk_cha.let <- fb_bulk_cha.let$Soil_a$Letters[sort(names(fb_bulk_cha.let$Soil_a$Letters))]
 
 ## Chamecrista ##
-cc_bulk_cha.aov <- aov(Chao1~ Soils, data = cc_bulk.richraw)
+cc_bulk_cha.aov <- aov(Chao1~ Soil_a, data = cc_bulk.richraw)
 summary(cc_bulk_cha.aov)
 
 cc_bulk_cha.hsd <- TukeyHSD(cc_bulk_cha.aov)
 cc_bulk_cha.hsd
 
 cc_bulk_cha.let <- multcompLetters4(cc_bulk_cha.aov, cc_bulk_cha.hsd)
-cc_bulk_cha.let <- cc_bulk_cha.let$Soils$Letters[sort(names(cc_bulk_cha.let$Soils$Letters))]
+cc_bulk_cha.let <- cc_bulk_cha.let$Soil_a$Letters[sort(names(cc_bulk_cha.let$Soil_a$Letters))]
 
 ## Desmodium ##
-ds_bulk_cha.aov <- aov(Chao1 ~ Soils, data = ds_bulk.richraw)
+ds_bulk_cha.aov <- aov(Chao1 ~ Soil_a, data = ds_bulk.richraw)
 summary(ds_bulk_cha.aov)
 
 ds_bulk_cha.hsd <- TukeyHSD(ds_bulk_cha.aov)
 ds_bulk_cha.hsd
 
 ds_bulk_cha.let <- multcompLetters4(ds_bulk_cha.aov, ds_bulk_cha.hsd)
-ds_bulk_cha.let <- ds_bulk_cha.let$Soils$Letters[sort(names(ds_bulk_cha.let$Soils$Letters))]
+ds_bulk_cha.let <- ds_bulk_cha.let$Soil_a$Letters[sort(names(ds_bulk_cha.let$Soil_a$Letters))]
 
 ## Amphicarpaea ##
-hp_bulk_cha.aov <- aov(Chao1 ~ Soils, data = hp_bulk.richraw)
+hp_bulk_cha.aov <- aov(Chao1 ~ Soil_a, data = hp_bulk.richraw)
 summary(hp_bulk_cha.aov)
 
 hp_bulk_cha.hsd <- TukeyHSD(hp_bulk_cha.aov)
 hp_bulk_cha.hsd
 
 hp_bulk_cha.let <- multcompLetters4(hp_bulk_cha.aov, hp_bulk_cha.hsd)
-hp_bulk_cha.let <- hp_bulk_cha.let$Soils$Letters[sort(names(hp_bulk_cha.let$Soils$Letters))]
+hp_bulk_cha.let <- hp_bulk_cha.let$Soil_a$Letters[sort(names(hp_bulk_cha.let$Soil_a$Letters))]
 
 ## Trifolium ##
-cl_bulk_cha.aov <- aov(Chao1 ~ Soils, data = cl_bulk.richraw)
+cl_bulk_cha.aov <- aov(Chao1 ~ Soil_a, data = cl_bulk.richraw)
 summary(cl_bulk_cha.aov)
 
 cl_bulk_cha.hsd <- TukeyHSD(cl_bulk_cha.aov)
 cl_bulk_cha.hsd
 
 cl_bulk_cha.let <- multcompLetters4(cl_bulk_cha.aov, cl_bulk_cha.hsd)
-cl_bulk_cha.let <- cl_bulk_cha.let$Soils$Letters[sort(names(cl_bulk_cha.let$Soils$Letters))]
+cl_bulk_cha.let <- cl_bulk_cha.let$Soil_a$Letters[sort(names(cl_bulk_cha.let$Soil_a$Letters))]
 
 ## Medicago ##
-md_bulk_cha.aov <- aov(Chao1 ~ Soils, data = md_bulk.richraw)
+md_bulk_cha.aov <- aov(Chao1 ~ Soil_a, data = md_bulk.richraw)
 summary(md_bulk_cha.aov)
 
 md_bulk_cha.hsd <- TukeyHSD(md_bulk_cha.aov)
 md_bulk_cha.hsd
 
 md_bulk_cha.let <- multcompLetters4(md_bulk_cha.aov, md_bulk_cha.hsd)
-md_bulk_cha.let <- md_bulk_cha.let$Soils$Letters[sort(names(md_bulk_cha.let$Soils$Letters))]
+md_bulk_cha.let <- md_bulk_cha.let$Soil_a$Letters[sort(names(md_bulk_cha.let$Soil_a$Letters))]
 
 ## Adding Letters ##
 cha_bulk.let <- c(hp_bulk_cha.let,
@@ -4654,13 +4631,13 @@ bulk.rich <- cbind(bulk.rich, cha_bulk.let)
 cha_bulk.plot <- ggplot(bulk.rich, aes(x = `Plant Species`, y = cha.mean, fill = `Soil Type`, color = `Soil Type`)) +
   geom_bar(stat = 'summary', position = 'dodge', width = 0.7) +
   geom_errorbar(aes(ymin = cha.mean - cha.sd, ymax = cha.mean + cha.sd), show.legend = FALSE, position = position_dodge(width = 0.7), width = 0.2) +
-  geom_text(aes(label = cha_bulk.let, y = cha.mean + cha.sd + 10), show.legend = FALSE, position = position_dodge(width = 0.7), vjust = 0, size = 8) +
+  geom_text(aes(label = cha_bulk.let, y = cha.mean + cha.sd + 5), show.legend = FALSE, position = position_dodge(width = 0.7), vjust = 0, size = 8) +
   ylab('Observed ASV Richness (S)') +
   xlab("") +
   theme_prism() +
   scale_fill_manual(values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,400), breaks = seq(0,400, by = 100), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "Source Community")) +
+  scale_y_continuous(limits = c(0,250), breaks = seq(0,250, by = 50), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "Source Community")) +
   theme(legend.position = 'none',
         legend.text = element_text(size = 24),
         axis.text.x = element_blank(),
@@ -4672,10 +4649,8 @@ cha_bulk.plot <- ggplot(bulk.rich, aes(x = `Plant Species`, y = cha.mean, fill =
         legend.key.spacing.x = unit(6, 'cm')) +
   labs(tag = "A.")
 
-cha_bulk.plot
-
 # All Source Community Sample Plots #
-(cha_bulk.plot) / 
+alpha_bulk.plot <- (cha_bulk.plot) / 
 (evn_bulk.plot) / 
 (sha_bulk.plot) &
   theme(plot.tag = element_text(size = 22))
@@ -4684,76 +4659,76 @@ cha_bulk.plot
 # All Root Samples #
 root.rich <- filter(all_rich.mnsd, Compartment == "Root Endosphere")
 root.richraw <- filter(all.rich, Compartment == 'Root Endosphere')
-root.richraw$Soils <- gsub('Non-PSF Soil', 'Non PSF Soil', root.richraw$Soils)
+root.richraw$Soil_a <- gsub('Non-PSF Soil', 'Non PSF Soil', root.richraw$Soil_a)
 shapiro.test(root.richraw$Shannon)
 
 # Root Shannon Diversity #
 
 ## Strophostyles ##
 fb_root.richraw <- filter(root.richraw, Plant == 'S. helvola')
-fb_root_sha.aov <- aov(Shannon ~ Soils, data = fb_root.richraw)
+fb_root_sha.aov <- aov(Shannon ~ Soil_a, data = fb_root.richraw)
 summary(fb_root_sha.aov)
 
 fb_root_sha.hsd <- TukeyHSD(fb_root_sha.aov)
 fb_root_sha.hsd
 
 fb_root_sha.let <- multcompLetters4(fb_root_sha.aov, fb_root_sha.hsd)
-fb_root_sha.let <- fb_root_sha.let$Soils$Letters[sort(names(fb_root_sha.let$Soils$Letters))]
+fb_root_sha.let <- fb_root_sha.let$Soil_a$Letters[sort(names(fb_root_sha.let$Soil_a$Letters))]
 
 ## Chamecrista ##
 cc_root.richraw <- filter(root.richraw, Plant == 'C. fasciculata')
-cc_root_sha.aov <- aov(Shannon ~ Soils, data = cc_root.richraw)
+cc_root_sha.aov <- aov(Shannon ~ Soil_a, data = cc_root.richraw)
 summary(cc_root_sha.aov)
 
 cc_root_sha.hsd <- TukeyHSD(cc_root_sha.aov)
 cc_root_sha.hsd
 
 cc_root_sha.let <- multcompLetters4(cc_root_sha.aov, cc_root_sha.hsd)
-cc_root_sha.let <- cc_root_sha.let$Soils$Letters[sort(names(cc_root_sha.let$Soils$Letters))]
+cc_root_sha.let <- cc_root_sha.let$Soil_a$Letters[sort(names(cc_root_sha.let$Soil_a$Letters))]
 
 ## Desmodium ##
 ds_root.richraw <- filter(root.richraw, Plant == 'D. canadense')
-ds_root_sha.aov <- aov(Shannon ~ Soils, data = ds_root.richraw)
+ds_root_sha.aov <- aov(Shannon ~ Soil_a, data = ds_root.richraw)
 summary(ds_root_sha.aov)
 
 ds_root_sha.hsd <- TukeyHSD(ds_root_sha.aov)
 ds_root_sha.hsd
 
 ds_root_sha.let <- multcompLetters4(ds_root_sha.aov, ds_root_sha.hsd)
-ds_root_sha.let <- ds_root_sha.let$Soils$Letters[sort(names(ds_root_sha.let$Soils$Letters))]
+ds_root_sha.let <- ds_root_sha.let$Soil_a$Letters[sort(names(ds_root_sha.let$Soil_a$Letters))]
 
 ## Amphicarpaea ##
 hp_root.richraw <- filter(root.richraw, Plant == 'A. bracteata')
-hp_root_sha.aov <- aov(Shannon ~ Soils, data = hp_root.richraw)
+hp_root_sha.aov <- aov(Shannon ~ Soil_a, data = hp_root.richraw)
 summary(hp_root_sha.aov)
 
 hp_root_sha.hsd <- TukeyHSD(hp_root_sha.aov)
 hp_root_sha.hsd
 
 hp_root_sha.let <- multcompLetters4(hp_root_sha.aov, hp_root_sha.hsd)
-hp_root_sha.let <- hp_root_sha.let$Soils$Letters[sort(names(hp_root_sha.let$Soils$Letters))]
+hp_root_sha.let <- hp_root_sha.let$Soil_a$Letters[sort(names(hp_root_sha.let$Soil_a$Letters))]
 
 ## Trifolium ##
 cl_root.richraw <- filter(root.richraw, Plant == 'T. repens')
-cl_root_sha.aov <- aov(Shannon ~ Soils, data = cl_root.richraw)
+cl_root_sha.aov <- aov(Shannon ~ Soil_a, data = cl_root.richraw)
 summary(cl_root_sha.aov)
 
 cl_root_sha.hsd <- TukeyHSD(cl_root_sha.aov)
 cl_root_sha.hsd
 
 cl_root_sha.let <- multcompLetters4(cl_root_sha.aov, cl_root_sha.hsd)
-cl_root_sha.let <- cl_root_sha.let$Soils$Letters[sort(names(cl_root_sha.let$Soils$Letters))]
+cl_root_sha.let <- cl_root_sha.let$Soil_a$Letters[sort(names(cl_root_sha.let$Soil_a$Letters))]
 
 ## Medicago ##
 md_root.richraw <- filter(root.richraw, Plant == 'M. truncatula')
-md_root_sha.aov <- aov(Shannon ~ Soils, data = md_root.richraw)
+md_root_sha.aov <- aov(Shannon ~ Soil_a, data = md_root.richraw)
 summary(md_root_sha.aov)
 
 md_root_sha.hsd <- TukeyHSD(md_root_sha.aov)
 md_root_sha.hsd
 
 md_root_sha.let <- multcompLetters4(md_root_sha.aov, md_root_sha.hsd)
-md_root_sha.let <- md_root_sha.let$Soils$Letters[sort(names(md_root_sha.let$Soils$Letters))]
+md_root_sha.let <- md_root_sha.let$Soil_a$Letters[sort(names(md_root_sha.let$Soil_a$Letters))]
 
 ## Adding Letters ##
 sha_root.let <- c(hp_root_sha.let,
@@ -4768,91 +4743,91 @@ root.rich <- cbind(root.rich, sha_root.let)
 sha_root.plot <- ggplot(root.rich, aes(x = `Plant Species`, y = sha.mean, fill = `Soil Type`, color = `Soil Type`)) +
   geom_bar(stat = 'summary', position = 'dodge', width = 0.7) +
   geom_errorbar(aes(ymin = sha.mean - sha.sd, ymax = sha.mean + sha.sd), show.legend = FALSE, position = position_dodge(width = 0.7), width = 0.2) +
-  geom_text(aes(label = sha_root.let, y = sha.mean + sha.sd + 0.1), show.legend = FALSE, position = position_dodge(width = 0.7), vjust = 0, size = 4) +
+  geom_text(aes(label = sha_root.let, y = sha.mean + sha.sd + 0.1), show.legend = FALSE, position = position_dodge(width = 0.7), vjust = 0, size = 8) +
   ylab('Shannon Diversity (H)') +
   xlab("") +
   theme_prism() +
   scale_fill_manual(values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,4.5), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = 'Root Endosphere')) +
-  theme(legend.position = 'none',
-        legend.text = element_text(size = 24),
-        axis.text.x = element_text(size = 12, face = c('bold.italic'), angle = 45, hjust = 1, vjust = 1),
-        axis.title.y.right = element_text(size = 12, angle = -90, hjust = 0.5),
-        axis.title.y.left = element_text(size =12, angle = 90, hjust = 0.5),
-        axis.ticks.y.right = element_blank(),
+  scale_y_continuous(limits = c(0,4), expand = expansion(mult = c(0, 0.05)), breaks = seq(0, 4, 0.75), sec.axis = sec_axis(~ ., name = 'Root Endosphere')) +
+  theme(legend.position = 'bottom',
+        legend.text = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
+        axis.text.x = element_text(size = 24, face = 'bold.italic', family = "Liberation Sans"),
+        axis.title.y.left = element_text(size = 14, hjust = 0.5),
         axis.text.y.right = element_blank(),
+        axis.ticks.y.right = element_blank(),
         legend.key.width = unit(1, 'cm'),
         legend.key.height = unit(1, 'cm'),
-        legend.key.spacing.x = unit(6, 'cm'))
+        legend.key.spacing.x = unit(6, 'cm')) +
+  labs(tag = "C.")
 
 sha_root.plot
 # Root Shannon Evenness #
 ## Strophostyles ##
 fb_root.richraw <- filter(root.richraw, Plant == 'S. helvola')
-fb_root_evn.aov <- aov(ShaEvn ~ Soils, data = fb_root.richraw)
+fb_root_evn.aov <- aov(ShaEvn ~ Soil_a, data = fb_root.richraw)
 summary(fb_root_evn.aov)
 
 fb_root_evn.hsd <- TukeyHSD(fb_root_evn.aov)
 fb_root_evn.hsd
 
 fb_root_evn.let <- multcompLetters4(fb_root_evn.aov, fb_root_evn.hsd)
-fb_root_evn.let <- fb_root_evn.let$Soils$Letters[sort(names(fb_root_evn.let$Soils$Letters))]
+fb_root_evn.let <- fb_root_evn.let$Soil_a$Letters[sort(names(fb_root_evn.let$Soil_a$Letters))]
 
 ## Chamecrista ##
 cc_root.richraw <- filter(root.richraw, Plant == 'C. fasciculata')
-cc_root_evn.aov <- aov(ShaEvn ~ Soils, data = cc_root.richraw)
+cc_root_evn.aov <- aov(ShaEvn ~ Soil_a, data = cc_root.richraw)
 summary(cc_root_evn.aov)
 
 cc_root_evn.hsd <- TukeyHSD(cc_root_evn.aov)
 cc_root_evn.hsd
 
 cc_root_evn.let <- multcompLetters4(cc_root_evn.aov, cc_root_evn.hsd)
-cc_root_evn.let <- cc_root_evn.let$Soils$Letters[sort(names(cc_root_evn.let$Soils$Letters))]
+cc_root_evn.let <- cc_root_evn.let$Soil_a$Letters[sort(names(cc_root_evn.let$Soil_a$Letters))]
 
 ## Desmodium ##
 ds_root.richraw <- filter(root.richraw, Plant == 'D. canadense')
-ds_root_evn.aov <- aov(ShaEvn ~ Soils, data = ds_root.richraw)
+ds_root_evn.aov <- aov(ShaEvn ~ Soil_a, data = ds_root.richraw)
 summary(ds_root_evn.aov)
 
 ds_root_evn.hsd <- TukeyHSD(ds_root_evn.aov)
 ds_root_evn.hsd
 
 ds_root_evn.let <- multcompLetters4(ds_root_evn.aov, ds_root_evn.hsd)
-ds_root_evn.let <- ds_root_evn.let$Soils$Letters[sort(names(ds_root_evn.let$Soils$Letters))]
+ds_root_evn.let <- ds_root_evn.let$Soil_a$Letters[sort(names(ds_root_evn.let$Soil_a$Letters))]
 
 ## Amphicarpaea ##
 hp_root.richraw <- filter(root.richraw, Plant == 'A. bracteata')
-hp_root_evn.aov <- aov(ShaEvn ~ Soils, data = hp_root.richraw)
+hp_root_evn.aov <- aov(ShaEvn ~ Soil_a, data = hp_root.richraw)
 summary(hp_root_evn.aov)
 
 hp_root_evn.hsd <- TukeyHSD(hp_root_evn.aov)
 hp_root_evn.hsd
 
 hp_root_evn.let <- multcompLetters4(hp_root_evn.aov, hp_root_evn.hsd)
-hp_root_evn.let <- hp_root_evn.let$Soils$Letters[sort(names(hp_root_evn.let$Soils$Letters))]
+hp_root_evn.let <- hp_root_evn.let$Soil_a$Letters[sort(names(hp_root_evn.let$Soil_a$Letters))]
 
 ## Trifolium ##
 cl_root.richraw <- filter(root.richraw, Plant == 'T. repens')
-cl_root_evn.aov <- aov(ShaEvn ~ Soils, data = cl_root.richraw)
+cl_root_evn.aov <- aov(ShaEvn ~ Soil_a, data = cl_root.richraw)
 summary(cl_root_evn.aov)
 
 cl_root_evn.hsd <- TukeyHSD(cl_root_evn.aov)
 cl_root_evn.hsd
 
 cl_root_evn.let <- multcompLetters4(cl_root_evn.aov, cl_root_evn.hsd)
-cl_root_evn.let <- cl_root_evn.let$Soils$Letters[sort(names(cl_root_evn.let$Soils$Letters))]
+cl_root_evn.let <- cl_root_evn.let$Soil_a$Letters[sort(names(cl_root_evn.let$Soil_a$Letters))]
 
 ## Medicago ##
 md_root.richraw <- filter(root.richraw, Plant == 'M. truncatula')
-md_root_evn.aov <- aov(ShaEvn ~ Soils, data = md_root.richraw)
+md_root_evn.aov <- aov(ShaEvn ~ Soil_a, data = md_root.richraw)
 summary(md_root_evn.aov)
 
 md_root_evn.hsd <- TukeyHSD(md_root_evn.aov)
 md_root_evn.hsd
 
 md_root_evn.let <- multcompLetters4(md_root_evn.aov, md_root_evn.hsd)
-md_root_evn.let <- md_root_evn.let$Soils$Letters[sort(names(md_root_evn.let$Soils$Letters))]
+md_root_evn.let <- md_root_evn.let$Soil_a$Letters[sort(names(md_root_evn.let$Soil_a$Letters))]
 
 ## Adding Letters ##
 evn_root.let <- c(hp_root_evn.let,
@@ -4867,90 +4842,90 @@ root.rich <- cbind(root.rich, evn_root.let)
 evn_root.plot <- ggplot(root.rich, aes(x = `Plant Species`, y = evn.mean, fill = `Soil Type`, color = `Soil Type`)) +
   geom_bar(stat = 'summary', position = 'dodge', width = 0.7) +
   geom_errorbar(aes(ymin = evn.mean - evn.sd, ymax = evn.mean + evn.sd), show.legend = FALSE, position = position_dodge(width = 0.7), width = 0.2) +
-  geom_text(aes(label = evn_root.let, y = evn.mean + evn.sd + 0.02), show.legend = FALSE, position = position_dodge(width = 0.7), vjust = 0, size = 4) +
+  geom_text(aes(label = evn_root.let, y = evn.mean + evn.sd + 0.02), show.legend = FALSE, position = position_dodge(width = 0.7), vjust = 0, size = 8) +
   ylab('Shannon Evenness (H/ln(S))') +
   xlab("") +
   theme_prism() +
   scale_fill_manual(values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,1),expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "")) +
-  theme(legend.position = 'bottom',
-        legend.text = element_text(size = 24, face = 'bold', family = 'Liberation Sans'),
-        axis.text.x = element_text(size = 12, face = c('bold.italic'), angle = 45, hjust = 1, vjust = 1),
-        axis.title.y = element_text(size = 12),
+  scale_y_continuous(limits = c(0,1),expand = expansion(mult = c(0, 0.05)), breaks = seq(0,1,0.2), sec.axis = sec_axis(~ ., name = "")) +
+  theme(legend.position = 'none',
+        legend.text = element_text(size = 24),
+        axis.text.x = element_blank(),
+        axis.title.y.left = element_text(size = 14, hjust = 1),
         axis.ticks.y.right = element_blank(),
         axis.text.y.right = element_blank(),
         legend.key.width = unit(1, 'cm'),
         legend.key.height = unit(1, 'cm'),
-        legend.key.spacing.x = unit(6, 'cm'))
+        legend.key.spacing.x = unit(6, 'cm')) +
+  labs(tag = 'B.')
 
-evn_root.plot
 # Chao1 Observed ASVs #
 ## Strophostyles ##
 fb_root.richraw <- filter(root.richraw, Plant == 'S. helvola')
-fb_root_cha.aov <- aov(Chao1 ~ Soils, data = fb_root.richraw)
+fb_root_cha.aov <- aov(Chao1 ~ Soil_a, data = fb_root.richraw)
 summary(fb_root_cha.aov)
 
 fb_root_cha.hsd <- TukeyHSD(fb_root_cha.aov)
 fb_root_cha.hsd
 
 fb_root_cha.let <- multcompLetters4(fb_root_cha.aov, fb_root_cha.hsd)
-fb_root_cha.let <- fb_root_cha.let$Soils$Letters[sort(names(fb_root_cha.let$Soils$Letters))]
+fb_root_cha.let <- fb_root_cha.let$Soil_a$Letters[sort(names(fb_root_cha.let$Soil_a$Letters))]
 
 ## Chamecrista ##
 cc_root.richraw <- filter(root.richraw, Plant == 'C. fasciculata')
-cc_root_cha.aov <- aov(Chao1~ Soils, data = cc_root.richraw)
+cc_root_cha.aov <- aov(Chao1~ Soil_a, data = cc_root.richraw)
 summary(cc_root_cha.aov)
 
 cc_root_cha.hsd <- TukeyHSD(cc_root_cha.aov)
 cc_root_cha.hsd
 
 cc_root_cha.let <- multcompLetters4(cc_root_cha.aov, cc_root_cha.hsd)
-cc_root_cha.let <- cc_root_cha.let$Soils$Letters[sort(names(cc_root_cha.let$Soils$Letters))]
+cc_root_cha.let <- cc_root_cha.let$Soil_a$Letters[sort(names(cc_root_cha.let$Soil_a$Letters))]
 
 ## Desmodium ##
 ds_root.richraw <- filter(root.richraw, Plant == 'D. canadense')
-ds_root_cha.aov <- aov(Chao1 ~ Soils, data = ds_root.richraw)
+ds_root_cha.aov <- aov(Chao1 ~ Soil_a, data = ds_root.richraw)
 summary(ds_root_cha.aov)
 
 ds_root_cha.hsd <- TukeyHSD(ds_root_cha.aov)
 ds_root_cha.hsd
 
 ds_root_cha.let <- multcompLetters4(ds_root_cha.aov, ds_root_cha.hsd)
-ds_root_cha.let <- ds_root_cha.let$Soils$Letters[sort(names(ds_root_cha.let$Soils$Letters))]
+ds_root_cha.let <- ds_root_cha.let$Soil_a$Letters[sort(names(ds_root_cha.let$Soil_a$Letters))]
 
 ## Amphicarpaea ##
 hp_root.richraw <- filter(root.richraw, Plant == 'A. bracteata')
-hp_root_cha.aov <- aov(Chao1 ~ Soils, data = hp_root.richraw)
+hp_root_cha.aov <- aov(Chao1 ~ Soil_a, data = hp_root.richraw)
 summary(hp_root_cha.aov)
 
 hp_root_cha.hsd <- TukeyHSD(hp_root_cha.aov)
 hp_root_cha.hsd
 
 hp_root_cha.let <- multcompLetters4(hp_root_cha.aov, hp_root_cha.hsd)
-hp_root_cha.let <- hp_root_cha.let$Soils$Letters[sort(names(hp_root_cha.let$Soils$Letters))]
+hp_root_cha.let <- hp_root_cha.let$Soil_a$Letters[sort(names(hp_root_cha.let$Soil_a$Letters))]
 
 ## Trifolium ##
 cl_root.richraw <- filter(root.richraw, Plant == 'T. repens')
-cl_root_cha.aov <- aov(Chao1 ~ Soils, data = cl_root.richraw)
+cl_root_cha.aov <- aov(Chao1 ~ Soil_a, data = cl_root.richraw)
 summary(cl_root_cha.aov)
 
 cl_root_cha.hsd <- TukeyHSD(cl_root_cha.aov)
 cl_root_cha.hsd
 
 cl_root_cha.let <- multcompLetters4(cl_root_cha.aov, cl_root_cha.hsd)
-cl_root_cha.let <- cl_root_cha.let$Soils$Letters[sort(names(cl_root_cha.let$Soils$Letters))]
+cl_root_cha.let <- cl_root_cha.let$Soil_a$Letters[sort(names(cl_root_cha.let$Soil_a$Letters))]
 
 ## Medicago ##
 md_root.richraw <- filter(root.richraw, Plant == 'M. truncatula')
-md_root_cha.aov <- aov(Chao1 ~ Soils, data = md_root.richraw)
+md_root_cha.aov <- aov(Chao1 ~ Soil_a, data = md_root.richraw)
 summary(md_root_cha.aov)
 
 md_root_cha.hsd <- TukeyHSD(md_root_cha.aov)
 md_root_cha.hsd
 
 md_root_cha.let <- multcompLetters4(md_root_cha.aov, md_root_cha.hsd)
-md_root_cha.let <- md_root_cha.let$Soils$Letters[sort(names(md_root_cha.let$Soils$Letters))]
+md_root_cha.let <- md_root_cha.let$Soil_a$Letters[sort(names(md_root_cha.let$Soil_a$Letters))]
 
 ## Adding Letters ##
 cha_root.let <- c(hp_root_cha.let,
@@ -4965,25 +4940,31 @@ root.rich <- cbind(root.rich, cha_root.let)
 cha_root.plot <- ggplot(root.rich, aes(x = `Plant Species`, y = cha.mean, fill = `Soil Type`, color = `Soil Type`)) +
   geom_bar(stat = 'summary', position = 'dodge', width = 0.7) +
   geom_errorbar(aes(ymin = cha.mean - cha.sd, ymax = cha.mean + cha.sd), show.legend = FALSE, position = position_dodge(width = 0.7), width = 0.2) +
-  geom_text(aes(label = cha_root.let, y = cha.mean + cha.sd + 2), show.legend = FALSE, position = position_dodge(width = 0.7), vjust = 0, size = 4) +
+  geom_text(aes(label = cha_root.let, y = cha.mean + cha.sd + 2), show.legend = FALSE, position = position_dodge(width = 0.7), vjust = 0, size = 8) +
   ylab('Observed ASV Richness (S)') +
   xlab("") +
   theme_prism() +
   scale_fill_manual(values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,120), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "")) +
+  scale_y_continuous(limits = c(0,100), expand = expansion(mult = c(0, 0.05)), breaks = seq(0,100,20), sec.axis = sec_axis(~ ., name = "")) +
   theme(legend.position = 'none',
         legend.text = element_text(size = 24),
-        axis.text.x = element_text(size = 12, face = c('bold.italic'), angle = 45, hjust = 1, vjust = 1),
-        axis.title.y = element_text(size = 12),
+        axis.text.x = element_blank(),
+        axis.title.y.left = element_text(size = 14, hjust = 1),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         legend.key.width = unit(1, 'cm'),
         legend.key.height = unit(1, 'cm'),
-        legend.key.spacing.x = unit(6, 'cm'))
+        legend.key.spacing.x = unit(6, 'cm')) +
+  labs(tag = "A.")
 
 
 cha_root.plot
+
+alpha_root.plot <- (cha_root.plot) /
+  (evn_root.plot) /
+  (sha_root.plot) &
+  theme(plot.tag = element_text(size = 22))
 
 ## Putting all figures together ##
 (cha_bulk.plot | evn_bulk.plot | sha_bulk.plot) /
