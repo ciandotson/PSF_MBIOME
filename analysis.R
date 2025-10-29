@@ -3142,7 +3142,7 @@ hp_soil_nod.plot <- ggplot(hp_soil_nod.df, aes(x = SC, y = Abundance, fill = ASV
   scale_y_continuous(sec.axis = dup_axis(name = "A. bracteata")) +
   theme_bw() +
   theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
+        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans"),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size =18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
@@ -3366,8 +3366,7 @@ fb_root_nod.plot <- ggplot(fb_root_nod.df, aes(x = SC, y = Abundance, fill = ASV
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
-        legend.position = 'right') +
-  labs(tag = "C.")
+        legend.position = 'right')
 
 # Take and plot only the PSF Nodule #
 fb_proot_nod.df <- filter(fb_root_nod.df, Soil.Origin == "PSF Soil")
@@ -3632,16 +3631,15 @@ hp_root_nod.plot <- ggplot(hp_root_nod.df, aes(x = SC, y = Abundance, fill = ASV
   scale_y_continuous(sec.axis = dup_axis(name = "A. bracteata")) +
   theme_bw() +
   theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
+        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans"),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size =18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
+        legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
-        legend.position = 'right') +
-  labs(tag = "C.")
+        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
+        legend.position = 'right')
 
 ## Clover ##
 cl_root_nod.ps <- subset_samples(root_nod.ps, Plant.Species == "T. repens")
@@ -3945,7 +3943,7 @@ naty.rich <- filter(soil.rich, Plant != "M. truncatula" & Plant != "T. repens")
 naty.bin <- filter(naty.rich, Compartment == "Source Community" & Soil_Treatment == "Non-PSF Soil")
 naty.bin$Plant <- gsub("C. fasciculata", "S. helvola", naty.bin$Plant)
 naty.bin$Plant <- gsub("D. canadense", "A. bracteata", naty.bin$Plant)
-naty_comm.bin <- filter(soil.rich, Tri == "SCBu")
+naty_comm.bin <- filter(soil.rich, Tri == "SCSo")
 naty_comm.bin$Plant <- gsub("S. helvola", "C. fasciculata", naty_comm.bin$Plant)
 naty.rich <- rbind(naty.rich, naty.bin, naty_comm.bin)
 naty_comm.bin$Plant <- gsub("C. fasciculata", "D. canadense", naty_comm.bin$Plant)
@@ -3961,10 +3959,9 @@ naty_sha.lm <- lm(Shannon~Soils*Plants*Comps, naty.rich)
 Anova(naty_sha.lm)
 
 # Do the same with only the non-native plant data #
-nnat.rich <- filter(soil.rich, Plant == "M. truncatula" | Plant == "T. repens" | Tri == "SCBu")
-nnat.rich$Soils <- gsub("Non-PSF Soil", "Non PSF Soil", nnat.rich$Soil_Treatment)
+nnat.rich <- filter(soil.rich, Plant == "M. truncatula" | Plant == "T. repens" | Tri == "SCSo")
 nnat.rich$Plants <- gsub("S. helvola", "T. repens", nnat.rich$Plant)
-nnat.bin <- filter(nnat.rich, Tri == "TNBu" | Tri == "SCBu")
+nnat.bin <- filter(nnat.rich, Tri == "TNSo" | Tri == "SCSo")
 nnat.bin$Plants <- gsub("T. repens", "M. truncatula", nnat.bin$Plant)
 nnat.rich <- rbind(nnat.rich, nnat.bin)
 nnat.rich$Plants <- gsub("S. helvola", "M. truncatula", nnat.rich$Plants)
@@ -4112,7 +4109,7 @@ sha_rhiz.plot <- ggplot(rhiz.rich, aes(x = `Plant Species`, y = sha.mean, fill =
   theme_prism() +
   scale_fill_manual(labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,6.3), breaks = seq(0,6.25, by = 1.25), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ .,name = "Rhizosphere")) +
+  scale_y_continuous(limits = c(0,6.3), breaks = seq(0,6.25, by = 1.25), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ .)) +
   theme(legend.position = 'bottom',
         legend.text = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
         axis.text.x = element_text(size = 24, face = 'bold.italic', family = "Liberation Sans"),
@@ -4308,7 +4305,7 @@ cha_rhiz.plot <- ggplot(rhiz.rich, aes(x = `Plant Species`, y = cha.mean, fill =
   theme_prism() +
   scale_fill_manual(labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,350),expand = expansion(mult = c(0, 0.05)), breaks = seq(0,350,70), sec.axis = sec_axis(~ ., name = "Rhizosphere")) +
+  scale_y_continuous(limits = c(0,350),expand = expansion(mult = c(0, 0.05)), breaks = seq(0,350,70), sec.axis = sec_axis(~ .)) +
   theme(legend.position = 'none',
         legend.text = element_text(size = 24),
         axis.text.x = element_blank(),
@@ -4452,7 +4449,7 @@ sha_bulk.plot <- ggplot(bulk.rich, aes(x = `Plant Species`, y = sha.mean, fill =
   theme_prism() +
   scale_fill_manual(labels = c("Common Soil", "Non-PSF Soil","PSF Soil"), values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(labels = c("Common Soil", "Non-PSF Soil","PSF Soil"), values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,5.2), breaks = seq(0,5, by = 1), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "Source Community")) +
+  scale_y_continuous(limits = c(0,5.2), breaks = seq(0,5, by = 1), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ .)) +
   theme(legend.position = 'bottom',
         legend.text = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
         axis.text.x = element_text(size = 24, face = 'bold.italic', family = "Liberation Sans"),
@@ -4637,7 +4634,7 @@ cha_bulk.plot <- ggplot(bulk.rich, aes(x = `Plant Species`, y = cha.mean, fill =
   theme_prism() +
   scale_fill_manual(values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,250), breaks = seq(0,250, by = 50), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ ., name = "Source Community")) +
+  scale_y_continuous(limits = c(0,250), breaks = seq(0,250, by = 50), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ .)) +
   theme(legend.position = 'none',
         legend.text = element_text(size = 24),
         axis.text.x = element_blank(),
@@ -4749,7 +4746,7 @@ sha_root.plot <- ggplot(root.rich, aes(x = `Plant Species`, y = sha.mean, fill =
   theme_prism() +
   scale_fill_manual(values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,4), expand = expansion(mult = c(0, 0.05)), breaks = seq(0, 4, 0.75), sec.axis = sec_axis(~ ., name = 'Root Endosphere')) +
+  scale_y_continuous(limits = c(0,4), expand = expansion(mult = c(0, 0.05)), breaks = seq(0, 4, 0.75), sec.axis = sec_axis(~ .)) +
   theme(legend.position = 'bottom',
         legend.text = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
         axis.text.x = element_text(size = 24, face = 'bold.italic', family = "Liberation Sans"),
@@ -4761,7 +4758,6 @@ sha_root.plot <- ggplot(root.rich, aes(x = `Plant Species`, y = sha.mean, fill =
         legend.key.spacing.x = unit(6, 'cm')) +
   labs(tag = "C.")
 
-sha_root.plot
 # Root Shannon Evenness #
 ## Strophostyles ##
 fb_root.richraw <- filter(root.richraw, Plant == 'S. helvola')
@@ -4848,7 +4844,7 @@ evn_root.plot <- ggplot(root.rich, aes(x = `Plant Species`, y = evn.mean, fill =
   theme_prism() +
   scale_fill_manual(values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,1),expand = expansion(mult = c(0, 0.05)), breaks = seq(0,1,0.2), sec.axis = sec_axis(~ ., name = "")) +
+  scale_y_continuous(limits = c(0,1),expand = expansion(mult = c(0, 0.05)), breaks = seq(0,1,0.2), sec.axis = sec_axis(~ ., name = "Root Endosphere")) +
   theme(legend.position = 'none',
         legend.text = element_text(size = 24),
         axis.text.x = element_blank(),
@@ -4946,7 +4942,7 @@ cha_root.plot <- ggplot(root.rich, aes(x = `Plant Species`, y = cha.mean, fill =
   theme_prism() +
   scale_fill_manual(values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,100), expand = expansion(mult = c(0, 0.05)), breaks = seq(0,100,20), sec.axis = sec_axis(~ ., name = "")) +
+  scale_y_continuous(limits = c(0,100), expand = expansion(mult = c(0, 0.05)), breaks = seq(0,100,20), sec.axis = sec_axis(~ .)) +
   theme(legend.position = 'none',
         legend.text = element_text(size = 24),
         axis.text.x = element_blank(),
@@ -4958,23 +4954,15 @@ cha_root.plot <- ggplot(root.rich, aes(x = `Plant Species`, y = cha.mean, fill =
         legend.key.spacing.x = unit(6, 'cm')) +
   labs(tag = "A.")
 
-
-cha_root.plot
-
 alpha_root.plot <- (cha_root.plot) /
   (evn_root.plot) /
   (sha_root.plot) &
   theme(plot.tag = element_text(size = 22))
 
-## Putting all figures together ##
-(cha_bulk.plot | evn_bulk.plot | sha_bulk.plot) /
-  (cha_rhiz.plot | evn_rhiz.plot | sha_rhiz.plot) /
-  (cha_root.plot | evn_root.plot | sha_root.plot) +
-  plot_layout(guides = 'auto')
-
 #### Beta Diversity Measurements and Visualizations ####
 # All Soil Samples #
 # Construct a Weighted Unifrac distance matrix and PCoA ordination #
+soil_sub.ps <- subset_samples(soil.ps, Compartment != 'Nodule')
 soil_prop.ps <- transform_sample_counts(soil_sub.ps, function(x) x/sum(x))
 
 set.seed(248)
@@ -5032,16 +5020,9 @@ if(!requireNamespace('lmerTest')) install.packages('lmerTest')
 library(lmerTest); packageVersion('lmerTest')
 
 # Construct a data.frame that has sample info and their loading scores #
-decompose_ps(soil.ps, 'soil')
-for(i in 1:nrow(soil$met)){
-  soil$met$PSC[i] <- paste0(substr(soil$met$Plant[i],1,1), substr(soil$met$Soil_Treatment[i],1,1), substr(soil$met$Compartment[i],1,2))
-}
-soil$met$Plants <- factor(soil$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula', 'Common Soil'))
-soil$met$Comps <- factor(soil$met$Compartment, levels = c('Source Community', 'Rhizosphere'))
-soil$met$Soils <- factor(soil$met$Soil_Treatment, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
+decompose_ps(soil_sub.ps, 'soil_sub')
 
-sample_data(soil.ps) <- soil$met
-soil_nmds.load <- cbind(soil$met, soil_nmds.scores)
+soil_nmds.load <- cbind(soil_sub$met, soil_nmds.scores)
 
 # Test the mixed linear model on the first NMDS axis #
 soil_nmds.vfit1 <- lmer(NMDS1 ~ (1|Soils) + (1|Plants) + (1|Comps) + (1|Soils:Plants) + (1|Soils:Comps) + (1|Plants:Comps) + (1|Soils:Plants:Comps), data = soil_nmds.load, REML = TRUE)
@@ -5095,22 +5076,22 @@ rownames(soil_nmds.pvca) <- rownames(soil_nmds.vca); colnames(soil_nmds.pvca) <-
 soil_nmds.pvca
 
 # Perform PermANOVA using all samples #
-soil.adon <- adonis2(soil.wuni~Soils*Plants*Comps, soil$met, permutations = 999)
-soil.adon_by <- adonis2(soil.wuni~Soils*Plants*Comps, soil$met, permutations = 999, by = 'terms')
+soil.adon <- adonis2(soil.wuni~Soils*Plants*Comps, soil_sub$met, permutations = 999)
+soil.adon_by <- adonis2(soil.wuni~Soils*Plants*Comps, soil_sub$met, permutations = 999, by = 'terms')
 soil.adon
 soil.adon_by
 
 soil.man <- manova(cbind(NMDS1, NMDS2) ~ Soils*Plants*Comps, soil_nmds.load)
 
 # Perform PermDISP using all samples # 
-soil.bdis <- betadisper(soil.wuni, group = soil$met$PSC)
+soil.bdis <- betadisper(soil.wuni, group = soil_sub$met$Tri)
 anova(soil.bdis)
 TukeyHSD(soil.bdis)
 
 ## Native vs Non-Native ##
 # Native #
 # Construct a Weighted Unifrac distance matrix and PCoA ordination #
-naty.ps <- subset_samples(soil.ps, Plant != "M. truncatula")
+naty.ps <- subset_samples(soil_sub.ps, Plant != "M. truncatula")
 naty.ps <- subset_samples(naty.ps, Plant != "T. repens")
 naty_prop.ps <- transform_sample_counts(naty.ps, function(x) x/sum(x))
 
@@ -5120,7 +5101,7 @@ naty.pcoa <- phyloseq::ordinate(naty_prop.ps, 'PCoA', distance = naty.wuni)
 
 # Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
 naty.nmds <- metaMDS(naty.wuni, 
-                     k = 5, try = 100, trymax = 1000, maxit = 999,
+                     k = 6, try = 100, trymax = 1000, maxit = 999,
                      model = 'global', 
                      autotransform = FALSE, previous.best = naty.pcoa$vectors[,1:5])
 
@@ -5155,8 +5136,12 @@ naty_nmds.dist5 <- dist(naty_nmds.scores[,5])
 naty_nmds.fit5 <- lm(as.vector(naty_nmds.dist5)~as.vector(naty.wuni))
 naty_nmds.r5 <- summary(naty_nmds.fit5)$r.squared
 
+naty_nmds.dist6 <- dist(naty_nmds.scores[,6])
+naty_nmds.fit6 <- lm(as.vector(naty_nmds.dist6)~as.vector(naty.wuni))
+naty_nmds.r6 <- summary(naty_nmds.fit6)$r.squared
+
 # Take the sum the R^2 value from each axis #
-naty_nmds.comb <- naty_nmds.r1 + naty_nmds.r2 + naty_nmds.r3 + naty_nmds.r4 + naty_nmds.r5
+naty_nmds.comb <- naty_nmds.r1 + naty_nmds.r2 + naty_nmds.r3 + naty_nmds.r4 + naty_nmds.r5 + naty_nmds.r6
 
 # Divide each axis R^2 by the total of all axes and then multiply by the variation explained by the whole model
 naty_nmds.axisr <- c()
@@ -5166,14 +5151,6 @@ for(i in 1:ncol(naty_nmds.scores)){
 
 # Construct a data.frame that has sample info and their loading scores #
 decompose_ps(naty.ps, 'naty')
-for(i in 1:nrow(naty$met)){
-  naty$met$PSC[i] <- paste0(substr(naty$met$Plant[i],1,1), substr(naty$met$Soil_Treatment[i],1,1), substr(naty$met$Compartment[i],1,2))
-}
-naty$met$Plants <- factor(naty$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula'))
-naty$met$Comps <- factor(naty$met$Compartment, levels = c('Source Community', 'Rhizosphere'))
-naty$met$Soils <- factor(naty$met$Soil_Treatment, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
-
-sample_data(naty.ps) <- naty$met
 naty_nmds.load <- cbind(naty$met, naty_nmds.scores)
 
 # Test the mixed linear model on the first NMDS axis #
@@ -5234,13 +5211,13 @@ naty.adon
 naty.adon_by
 
 # Perform PermDISP using all samples # 
-naty.bdis <- betadisper(naty.wuni, group = naty$met$PSC)
+naty.bdis <- betadisper(naty.wuni, group = naty$met$Tri)
 anova(naty.bdis)
 TukeyHSD(naty.bdis)
 
 # Non-Native #
 # Construct a Weighted Unifrac distance matrix and PCoA ordination #
-nnat.ps <- subset_samples(soil.ps, Plant == "M. truncatula" | Plant == "T. repens" | PSC == "SCBu")
+nnat.ps <- subset_samples(soil.ps, Plant == "M. truncatula" | Plant == "T. repens" | Tri == "SCSo")
 
 nnat_prop.ps <- transform_sample_counts(nnat.ps, function(x) x/sum(x))
 
@@ -5252,7 +5229,7 @@ nnat.pcoa <- phyloseq::ordinate(nnat_prop.ps, 'PCoA', distance = nnat.wuni)
 nnat.nmds <- metaMDS(nnat.wuni, 
                      k = 5, try = 100, trymax = 1000, maxit = 999,
                      model = 'global', 
-                     autotransform = FALSE, previous.best = nnat.pcoa$vectors[,1:5])
+                     autotransform = FALSE, previous.best = nnat.pcoa$vectors[,1:7])
 
 # Save the loading scores for all axes and make a distance matrix from these scores #
 nnat_nmds.scores <- scores(nnat.nmds, display = 'sites')
@@ -5296,14 +5273,6 @@ for(i in 1:ncol(nnat_nmds.scores)){
 
 # Construct a data.frame that has sample info and their loading scores #
 decompose_ps(nnat.ps, 'nnat')
-for(i in 1:nrow(nnat$met)){
-  nnat$met$PSC[i] <- paste0(substr(nnat$met$Plant[i],1,1), substr(nnat$met$Soil_Treatment[i],1,1), substr(nnat$met$Compartment[i],1,2))
-}
-nnat$met$Plants <- factor(nnat$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula'))
-nnat$met$Comps <- factor(nnat$met$Compartment, levels = c('Source Community', 'Rhizosphere'))
-nnat$met$Soils <- factor(nnat$met$Soil_Treatment, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
-
-sample_data(nnat.ps) <- nnat$met
 nnat_nmds.load <- cbind(nnat$met, nnat_nmds.scores)
 
 # Test the mixed linear model on the first NMDS axis #
@@ -5364,7 +5333,7 @@ nnat.adon
 nnat.adon_by
 
 # Perform PermDISP using all samples # 
-nnat.bdis <- betadisper(nnat.wuni, group = nnat$met$PS)
+nnat.bdis <- betadisper(nnat.wuni, group = nnat$met$Tri)
 anova(nnat.bdis)
 TukeyHSD(nnat.bdis)
 
@@ -5498,7 +5467,7 @@ bulk.adon_by
 
 # Perform PermDISP using all samples # 
 bulk.bdis <- betadisper(bulk.wuni, group = bulk$met$PS)
-anova(bulk.bdis)
+bulk_bdis.aov <- anova(bulk.bdis)
 TukeyHSD(bulk.bdis)
 
 # Make an object with the data to be plotted #
@@ -5507,22 +5476,24 @@ bulk_nmds.load <- cbind(bulk$met, bulk_nmds.scores)
 # plot the NMDS ordination of all samples that will be used to make a patchwork plot #
 bulk_nmds.plot <- ggplot(bulk_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape = Soils)) +
   geom_point(size = 12) +
-  scale_color_manual(name = "Source Community Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. canadense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
+  scale_color_manual(name = "Plant Source Community", labels = c("<em>S. helvola</em>", "<em>C. fasciculata</em>", "<em>D. canadense</em>", "<em>A. bracteata</em>", "<em>T. repens</em>", "<em>M. truncatula</em>", "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
   scale_shape_manual(name = "PSF History", labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c(15,17,16)) +
-  xlab(expression("NMDS1 (R"^2 ~ "= 0.8167)")) +
-  ylab(expression("NMDS2 (R"^2 ~ "= 0.1551)")) +
+  labs(x = paste0("NMDS1 (R<sup>2</sup> = ", round(bulk_nmds.axisr[1], 3), ")"),
+       y = paste0("NMDS2 (R<sup>2</sup> = ", round(bulk_nmds.axisr[2], 3), ")")) +
   theme_bw() +
-  theme(legend.position = 'right',
+  theme(legend.position = 'inside',
+        legend.position.inside = c(0.85,0.69),
         panel.grid = element_blank(),
-        legend.text = element_text(size = 20, family = "Liberation Sans"),
+        legend.text = ggtext::element_markdown(size = 20, family = "Liberation Sans", face = 'bold'),
         legend.title = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
-        axis.title = element_text(size= 24, face = 'bold', family = "Liberation Sans"),
-        axis.text = element_text(color = "black", size = 8, family = "Liberation Sans"))
-  
-  annotate(geom = 'text', x = 0.06, y = -0.15,
-           label = expression("(PERMANOVA) F"["9,29"] ~ "= 39.918, P < 0.001  (PERMDISP) F"["9,29"] ~  "= 0.3344, P = 0.9526 3D Stress = 0.0127"),
-           size = 6, family = 'Liberation Sans') +
-  coord_cartesian(ylim = c(-0.145,0.2))
+        legend.background = element_rect(color = 'black'),
+        axis.text = element_text(color = "black", size = 16, family = "Liberation Sans"),
+        axis.title.x = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'),
+        axis.title.y = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black')) +
+  annotate(geom = 'richtext', x = 0.045, y = -0.106,
+           label = paste0("PERMANOVA <em>F</em><sub>9,20</sub> = ", round(bulk.adon$`F`[1], 3), ", <em>p</em> = ", round(bulk.adon$`Pr(>F)`[1], 3), "; PERMDISP <em>F</em><sub>9,20</sub> = ", round(bulk_bdis.aov$`F value`[1], 3), ", <em>p</em> = ", round(bulk_bdis.aov$`Pr(>F)`[1], 3)),
+           size = 8, family = 'Liberation Sans', fontface = 'bold', fill = NA, label.color = NA) +
+  coord_cartesian(ylim = c(-0.1,0.125))
 
 bulk_nmds.plot
 
@@ -5769,7 +5740,7 @@ rhiz.pcoa <- phyloseq::ordinate(rhiz_prop.ps, 'PCoA', distance = rhiz.wuni)
 
 # Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
 rhiz.nmds <- metaMDS(rhiz.wuni, 
-                     k = 4, try = 20, trymax = 1000, maxit = 999,
+                     k = 4, try = 100, trymax = 1000, maxit = 999,
                      model = 'global', 
                      autotransform = FALSE, previous.best = rhiz.pcoa$vectors[,1:5])
 
@@ -5878,7 +5849,7 @@ rhiz.adon_by
 
 # Perform PermDISP using all samples # 
 rhiz.bdis <- betadisper(rhiz.wuni, group = rhiz$met$PS)
-anova(rhiz.bdis)
+rhiz_bdis.aov <- anova(rhiz.bdis)
 TukeyHSD(rhiz.bdis)
 
 # Make an object with the data to be plotted #
@@ -5887,20 +5858,23 @@ rhiz_nmds.load <- cbind(rhiz$met, rhiz_nmds.scores)
 # plot the NMDS ordination of all samples that will be used to make a patchwork plot #
 rhiz_nmds.plot <- ggplot(rhiz_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape = Soils)) +
   geom_point(size = 8) +
-  scale_color_manual(name = "Rhizosphere Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. canadense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
+  scale_color_manual(name = "Plant Rhizosphere", labels = c("<em>S. helvola</em>", "<em>C. fasciculata</em>", "<em>D. canadense</em>", "<em>A. bracteata</em>", "<em>T. repens</em>", "<em>M. truncatula</em>", "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
   scale_shape_manual(name = "PSF History", labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c(15,17,16)) +
-  xlab(expression("NMDS1 (R"^2 ~ "= 0.5386)")) +
-  ylab(expression("NMDS2 (R"^2 ~ "= 0.2525)")) +
+  labs(x = paste0("NMDS1 (R<sup>2</sup> = ", round(rhiz_nmds.axisr[1], 3), ")"),
+       y = paste0("NMDS2 (R<sup>2</sup> = ", round(rhiz_nmds.axisr[2], 3), ")")) +
   theme_bw() +
-  theme(legend.position = 'right',
+  theme(legend.position = 'inside',
+        legend.position.inside = c(0.1,0.3),
         panel.grid = element_blank(),
-        legend.text = element_text(size = 20, family = "Liberation Sans"),
+        legend.text = ggtext::element_markdown(size = 20, family = "Liberation Sans", face = 'bold'),
         legend.title = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
-        axis.title = element_text(size= 24, face = 'bold', family = "Liberation Sans"),
-        axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +
-  annotate('text', x = -0.1, y = -0.29,
-           label = expression("(PERMANOVA) F"["16,70"] ~ "= 25.443, P = 0.001;  (PERMDISP) F"["16,70"] ~  "= 4.9933, P < 0.001; 3D Stress = 0.0224"),
-           size = 6, family = 'Liberation Sans') +
+        legend.background = element_rect(color = 'black'),
+        axis.text = element_text(color = "black", size = 16, family = "Liberation Sans"),
+        axis.title.x = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'),
+        axis.title.y = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'))+
+  annotate(geom = 'richtext', x = -0.125, y = -0.29,
+           label = paste0("PERMANOVA <em>F</em><sub>16,70</sub> = ", round(rhiz.adon$`F`[1], 3), ", <em>p</em> = ", round(rhiz.adon$`Pr(>F)`[1], 3), "; PERMDISP <em>F</em><sub>16,70</sub> = ", round(rhiz_bdis.aov$`F value`[1], 3), ", <em>p</em> < 0.001"),
+           size = 8, family = 'Liberation Sans', fontface = 'bold', fill = NA, label.color = NA) +
   coord_cartesian(ylim = c(-0.28, 0.15))
 
 rhiz_nmds.plot
@@ -6135,7 +6109,7 @@ root.pcoa <- phyloseq::ordinate(root_prop.ps, 'PCoA', distance = root.wuni)
 
 # Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
 root.nmds <- metaMDS(root.wuni, 
-                     k = 11, try = 20, trymax = 1000, maxit = 999,
+                     k = 5, try = 100, trymax = 1000, maxit = 999,
                      model = 'global', 
                      autotransform = FALSE, previous.best = root.pcoa$vectors[,1:5])
 
@@ -6170,32 +6144,8 @@ root_nmds.dist5 <- dist(root_nmds.scores[,5])
 root_nmds.fit5 <- lm(as.vector(root_nmds.dist5)~as.vector(root.wuni))
 root_nmds.r5 <- summary(root_nmds.fit5)$r.squared
 
-root_nmds.dist6 <- dist(root_nmds.scores[,6])
-root_nmds.fit6 <- lm(as.vector(root_nmds.dist6)~as.vector(root.wuni))
-root_nmds.r6 <- summary(root_nmds.fit6)$r.squared
-
-root_nmds.dist7 <- dist(root_nmds.scores[,7])
-root_nmds.fit7 <- lm(as.vector(root_nmds.dist7)~as.vector(root.wuni))
-root_nmds.r7 <- summary(root_nmds.fit7)$r.squared
-
-root_nmds.dist8 <- dist(root_nmds.scores[,8])
-root_nmds.fit8 <- lm(as.vector(root_nmds.dist8)~as.vector(root.wuni))
-root_nmds.r8 <- summary(root_nmds.fit8)$r.squared
-
-root_nmds.dist9 <- dist(root_nmds.scores[,9])
-root_nmds.fit9 <- lm(as.vector(root_nmds.dist9)~as.vector(root.wuni))
-root_nmds.r9 <- summary(root_nmds.fit9)$r.squared
-
-root_nmds.dist10 <- dist(root_nmds.scores[,10])
-root_nmds.fit10 <- lm(as.vector(root_nmds.dist10)~as.vector(root.wuni))
-root_nmds.r10 <- summary(root_nmds.fit10)$r.squared
-
-root_nmds.dist11 <- dist(root_nmds.scores[,11])
-root_nmds.fit11 <- lm(as.vector(root_nmds.dist11)~as.vector(root.wuni))
-root_nmds.r11 <- summary(root_nmds.fit11)$r.squared
-
 # Take the sum the R^2 value from each axis #
-root_nmds.comb <- root_nmds.r1 + root_nmds.r2 + root_nmds.r3 + root_nmds.r4 + root_nmds.r5 + root_nmds.r6 + root_nmds.r7 + root_nmds.r8 + root_nmds.r9 + root_nmds.r10 + root_nmds.r11
+root_nmds.comb <- root_nmds.r1 + root_nmds.r2 + root_nmds.r3 + root_nmds.r4 + root_nmds.r5
 
 # Divide each axis R^2 by the total of all axes and then multiply by the variation explained by the whole model
 root_nmds.axisr <- c()
@@ -6207,11 +6157,8 @@ for(i in 1:ncol(root_nmds.scores)){
 # Construct a data.frame that has sample info and their loading scores #
 decompose_ps(root.ps, 'root')
 for(i in 1:nrow(root$met)){
-  root$met$PS[i] <- paste0(substr(root$met$Plant.Species[i],1,1), substr(root$met$Soil.Origin[i],1,1))
+  root$met$PS[i] <- paste0(substr(root$met$Plant[i],1,1), substr(root$met$Soil_Treatment[i],1,1))
 }
-root$met$Plants <- factor(root$met$Plant.Species, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula'))
-root$met$Comps <- factor(root$met$Compartment, c('Root Endosphere'))
-root$met$Soils <- factor(root$met$Soil.Origin, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
 
 sample_data(root.ps) <- root$met
 root_nmds.load <- cbind(root$met, root_nmds.scores)
@@ -6271,7 +6218,7 @@ root.adon_by
 
 # Perform PermDISP using all samples # 
 root.bdis <- betadisper(root.wuni, group = root$met$PS)
-anova(root.bdis)
+root_bdis.aov <- anova(root.bdis)
 TukeyHSD(root.bdis)
 
 # Make an object with the data to be plotted #
@@ -6280,27 +6227,30 @@ root_nmds.load <- cbind(root$met, root_nmds.scores)
 # plot the NMDS ordination of all samples that will be used to make a patchwork plot #
 root_nmds.plot <- ggplot(root_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape = Soils)) +
   geom_point(size = 8) +
-  scale_color_manual(name = "Root Endosphere Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. canadense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
+  scale_color_manual(name = "Plant Root Endosphere", labels = c("<em>S. helvola</em>", "<em>C. fasciculata</em>", "<em>D. canadense</em>", "<em>A. bracteata</em>", "<em>T. repens</em>", "<em>M. truncatula</em>", "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
   scale_shape_manual(name = "PSF History", labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c(15,17,16)) +
-  xlab(expression("NMDS1 (R"^2 ~ "= 0.5695)")) +
-  ylab(expression("NMDS2 (R"^2 ~ "= 0.1246)")) +
+  labs(x = paste0("NMDS1 (R<sup>2</sup> = ", round(root_nmds.axisr[1], 3), ")"),
+       y = paste0("NMDS2 (R<sup>2</sup> = ", round(root_nmds.axisr[2], 3), ")")) +
   theme_bw() +
-  theme(legend.position = 'right',
+  theme(legend.position = 'inside',
+        legend.position.inside = c(0.85,0.275),
         panel.grid = element_blank(),
-        legend.text = element_text(size = 12, family = "Liberation Sans"),
-        legend.title = element_text(size = 16, family = "Liberation Sans"),
-        axis.title = element_text(size=20, family = "Liberation Sans"),
-        axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +
-  annotate('text', x = 0.08, y = -0.3,
-           label = expression("(PERMANOVA) F"["17,62"] ~ "= 6.4871, P = 0.001;  (PERMDISP) F"["17,62"] ~  "= 0.9935, P = 0.4821; 3D Stress = 0.0188"),
-           size = 8, family = 'Liberation Sans') +
-  coord_cartesian(ylim = c(-0.3, 0.25))
+        legend.text = ggtext::element_markdown(size = 20, family = "Liberation Sans", face = 'bold'),
+        legend.title = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
+        legend.background = element_rect(color = 'black'),
+        axis.text = element_text(color = "black", size = 16, family = "Liberation Sans"),
+        axis.title.x = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'),
+        axis.title.y = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'))+
+  annotate(geom = 'richtext', x = -0.085, y = -0.36,
+           label = paste0("PERMANOVA <em>F</em><sub>17,62</sub> = ", round(root.adon$`F`[1], 3), ", <em>p</em> = ", round(root.adon$`Pr(>F)`[1], 3), "; PERMDISP <em>F</em><sub>17,62</sub> = ", round(root_bdis.aov$`F value`[1], 3), ", <em>p</em> = ", round(root_bdis.aov$`Pr(>F)`[1], 3)),
+           size = 8, family = 'Liberation Sans', fontface = 'bold', fill = NA, label.color = NA) +
+  coord_cartesian(ylim = c(-0.35, 0.2))
 
 root_nmds.plot
 
 # Separate samples by plant species #
 ## Fuzzy Bean ##
-fb_root.ps <- subset_samples(root.ps, Plant.Species == "S. helvola")
+fb_root.ps <- subset_samples(root.ps, Plant == "S. helvola")
 fb_root.ps <- subset_taxa(fb_root.ps, taxa_sums(fb_root.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -6315,7 +6265,7 @@ anova(fb_root.bdis)
 TukeyHSD(fb_root.bdis)
 
 # Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
-fb_root.met <- filter(root_nmds.load, Plant.Species == "S. helvola")
+fb_root.met <- filter(root_nmds.load, Plant == "S. helvola")
 
 # Perform MANOVA on all samples #
 fb_root.man <- manova(cbind(NMDS1,NMDS2)~Soils, fb_root.met)
@@ -6323,22 +6273,22 @@ summary(fb_root.man)
 
 # Subset the data for pairwise MANOVA tests #
 ## PSF vs. Non-PSF ##
-fb_root_pvsn.met <- filter(fb_root.met, Soil.Origin != "Common Soil")
+fb_root_pvsn.met <- filter(fb_root.met, Soil_Treatment != "Common Soil")
 fb_root_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, fb_root_pvsn.met)
 summary(fb_root_pvsn.man)
 
 ## PSF vs. Common ##
-fb_root_pvsc.met <- filter(fb_root.met, Soil.Origin != "Non-PSF Soil")
+fb_root_pvsc.met <- filter(fb_root.met, Soil_Treatment != "Non-PSF Soil")
 fb_root_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, fb_root_pvsc.met)
 summary(fb_root_pvsc.man)
 
 ## Non-PSF vs. Common ##
-fb_root_nvsc.met <- filter(fb_root.met, Soil.Origin != "PSF Soil")
+fb_root_nvsc.met <- filter(fb_root.met, Soil_Treatment != "PSF Soil")
 fb_root_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, fb_root_nvsc.met)
 summary(fb_root_nvsc.man)
 
 ## Chamaecrista ##
-cc_root.ps <- subset_samples(root.ps, Plant.Species == "C. fasciculata")
+cc_root.ps <- subset_samples(root.ps, Plant == "C. fasciculata")
 cc_root.ps <- subset_taxa(cc_root.ps, taxa_sums(cc_root.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -6353,7 +6303,7 @@ anova(cc_root.bdis)
 TukeyHSD(cc_root.bdis)
 
 # Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
-cc_root.met <- filter(root_nmds.load, Plant.Species == "C. fasciculata")
+cc_root.met <- filter(root_nmds.load, Plant == "C. fasciculata")
 
 # Perform MANOVA on all samples #
 cc_root.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_root.met)
@@ -6361,22 +6311,22 @@ summary(cc_root.man)
 
 # Subset the data for pairwise MANOVA tests #
 ## PSF vs. Non-PSF ##
-cc_root_pvsn.met <- filter(cc_root.met, Soil.Origin != "Common Soil")
+cc_root_pvsn.met <- filter(cc_root.met, Soil_Treatment != "Common Soil")
 cc_root_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_root_pvsn.met)
 summary(cc_root_pvsn.man)
 
 ## PSF vs. Common ##
-cc_root_pvsc.met <- filter(cc_root.met, Soil.Origin != "Non-PSF Soil")
+cc_root_pvsc.met <- filter(cc_root.met, Soil_Treatment != "Non-PSF Soil")
 cc_root_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_root_pvsc.met)
 summary(cc_root_pvsc.man)
 
 ## Non-PSF vs. Common ##
-cc_root_nvsc.met <- filter(cc_root.met, Soil.Origin != "PSF Soil")
+cc_root_nvsc.met <- filter(cc_root.met, Soil_Treatment != "PSF Soil")
 cc_root_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_root_nvsc.met)
 summary(cc_root_nvsc.man)
 
 ## Desmodium ##
-ds_root.ps <- subset_samples(root.ps, Plant.Species == "D. canadense")
+ds_root.ps <- subset_samples(root.ps, Plant == "D. canadense")
 ds_root.ps <- subset_taxa(ds_root.ps, taxa_sums(ds_root.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -6391,7 +6341,7 @@ anova(ds_root.bdis)
 TukeyHSD(ds_root.bdis)
 
 # Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
-ds_root.met <- filter(root_nmds.load, Plant.Species == "D. canadense")
+ds_root.met <- filter(root_nmds.load, Plant == "D. canadense")
 
 # Perform MANOVA on all samples #
 ds_root.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_root.met)
@@ -6399,22 +6349,22 @@ summary(ds_root.man)
 
 # Subset the data for pairwise MANOVA tests #
 ## PSF vs. Non-PSF ##
-ds_root_pvsn.met <- filter(ds_root.met, Soil.Origin != "Common Soil")
+ds_root_pvsn.met <- filter(ds_root.met, Soil_Treatment != "Common Soil")
 ds_root_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_root_pvsn.met)
 summary(ds_root_pvsn.man)
 
 ## PSF vs. Common ##
-ds_root_pvsc.met <- filter(ds_root.met, Soil.Origin != "Non-PSF Soil")
+ds_root_pvsc.met <- filter(ds_root.met, Soil_Treatment != "Non-PSF Soil")
 ds_root_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_root_pvsc.met)
 summary(ds_root_pvsc.man)
 
 ## Non-PSF vs. Common ##
-ds_root_nvsc.met <- filter(ds_root.met, Soil.Origin != "PSF Soil")
+ds_root_nvsc.met <- filter(ds_root.met, Soil_Treatment != "PSF Soil")
 ds_root_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_root_nvsc.met)
 summary(ds_root_nvsc.man)
 
 ## Hog Peanut ##
-hp_root.ps <- subset_samples(root.ps, Plant.Species == "A. bracteata")
+hp_root.ps <- subset_samples(root.ps, Plant == "A. bracteata")
 hp_root.ps <- subset_taxa(hp_root.ps, taxa_sums(hp_root.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -6429,7 +6379,7 @@ anova(hp_root.bdis)
 TukeyHSD(hp_root.bdis)
 
 # Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
-hp_root.met <- filter(root_nmds.load, Plant.Species == "A. bracteata")
+hp_root.met <- filter(root_nmds.load, Plant == "A. bracteata")
 
 # Perform MANOVA on all samples #
 hp_root.man <- manova(cbind(NMDS1,NMDS2)~Soils, hp_root.met)
@@ -6437,22 +6387,22 @@ summary(hp_root.man)
 
 # Subset the data for pairwise MANOVA tests #
 ## PSF vs. Non-PSF ##
-hp_root_pvsn.met <- filter(hp_root.met, Soil.Origin != "Common Soil")
+hp_root_pvsn.met <- filter(hp_root.met, Soil_Treatment != "Common Soil")
 hp_root_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, hp_root_pvsn.met)
 summary(hp_root_pvsn.man)
 
 ## PSF vs. Common ##
-hp_root_pvsc.met <- filter(hp_root.met, Soil.Origin != "Non-PSF Soil")
+hp_root_pvsc.met <- filter(hp_root.met, Soil_Treatment != "Non-PSF Soil")
 hp_root_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, hp_root_pvsc.met)
 summary(hp_root_pvsc.man)
 
 ## Non-PSF vs. Common ##
-hp_root_nvsc.met <- filter(hp_root.met, Soil.Origin != "PSF Soil")
+hp_root_nvsc.met <- filter(hp_root.met, Soil_Treatment != "PSF Soil")
 hp_root_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, hp_root_nvsc.met)
 summary(hp_root_nvsc.man)
 
 ## Clover ##
-cl_root.ps <- subset_samples(root.ps, Plant.Species == "T. repens")
+cl_root.ps <- subset_samples(root.ps, Plant == "T. repens")
 cl_root.ps <- subset_taxa(cl_root.ps, taxa_sums(cl_root.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -6467,7 +6417,7 @@ anova(cl_root.bdis)
 TukeyHSD(cl_root.bdis)
 
 # Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
-cl_root.met <- filter(root_nmds.load, Plant.Species == "T. repens")
+cl_root.met <- filter(root_nmds.load, Plant == "T. repens")
 
 # Perform MANOVA on all samples #
 cl_root.man <- manova(cbind(NMDS1,NMDS2)~Soils, cl_root.met)
@@ -6475,22 +6425,22 @@ summary(cl_root.man)
 
 # Subset the data for pairwise MANOVA tests #
 ## PSF vs. Non-PSF ##
-cl_root_pvsn.met <- filter(cl_root.met, Soil.Origin != "Common Soil")
+cl_root_pvsn.met <- filter(cl_root.met, Soil_Treatment != "Common Soil")
 cl_root_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, cl_root_pvsn.met)
 summary(cl_root_pvsn.man)
 
 ## PSF vs. Common ##
-cl_root_pvsc.met <- filter(cl_root.met, Soil.Origin != "Non-PSF Soil")
+cl_root_pvsc.met <- filter(cl_root.met, Soil_Treatment != "Non-PSF Soil")
 cl_root_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, cl_root_pvsc.met)
 summary(cl_root_pvsc.man)
 
 ## Non-PSF vs. Common ##
-cl_root_nvsc.met <- filter(cl_root.met, Soil.Origin != "PSF Soil")
+cl_root_nvsc.met <- filter(cl_root.met, Soil_Treatment != "PSF Soil")
 cl_root_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, cl_root_nvsc.met)
 summary(cl_root_nvsc.man)
 
 ## Medicago ##
-md_root.ps <- subset_samples(root.ps, Plant.Species == "M. truncatula")
+md_root.ps <- subset_samples(root.ps, Plant == "M. truncatula")
 md_root.ps <- subset_taxa(md_root.ps, taxa_sums(md_root.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -6505,7 +6455,7 @@ anova(md_root.bdis)
 TukeyHSD(md_root.bdis)
 
 # Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
-md_root.met <- filter(root_nmds.load, Plant.Species == "M. truncatula")
+md_root.met <- filter(root_nmds.load, Plant == "M. truncatula")
 
 # Perform MANOVA on all samples #
 md_root.man <- manova(cbind(NMDS1,NMDS2)~Soils, md_root.met)
@@ -6513,24 +6463,24 @@ summary(md_root.man)
 
 # Subset the data for pairwise MANOVA tests #
 ## PSF vs. Non-PSF ##
-md_root_pvsn.met <- filter(md_root.met, Soil.Origin != "Common Soil")
+md_root_pvsn.met <- filter(md_root.met, Soil_Treatment != "Common Soil")
 md_root_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Soils, md_root_pvsn.met)
 summary(md_root_pvsn.man)
 
 ## PSF vs. Common ##
-md_root_pvsc.met <- filter(md_root.met, Soil.Origin != "Non-PSF Soil")
+md_root_pvsc.met <- filter(md_root.met, Soil_Treatment != "Non-PSF Soil")
 md_root_pvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, md_root_pvsc.met)
 summary(md_root_pvsc.man)
 
 ## Non-PSF vs. Common ##
-md_root_nvsc.met <- filter(md_root.met, Soil.Origin != "PSF Soil")
+md_root_nvsc.met <- filter(md_root.met, Soil_Treatment != "PSF Soil")
 md_root_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, md_root_nvsc.met)
 summary(md_root_nvsc.man)
 
 # Root Endosphere for Natives #
 # Construct a Weighted Unifrac distance matrix and PCoA ordination #
-raty.ps <- subset_samples(root.ps, Plant.Species != "T. repens")
-raty.ps <- subset_samples(raty.ps, Plant.Species != "M. truncatula") 
+raty.ps <- subset_samples(root.ps, Plant != "T. repens")
+raty.ps <- subset_samples(raty.ps, Plant != "M. truncatula") 
 raty_prop.ps <- transform_sample_counts(raty.ps, function(x) x/sum(x))
 
 set.seed(248)
@@ -6539,7 +6489,7 @@ raty.pcoa <- phyloseq::ordinate(raty_prop.ps, 'PCoA', distance = raty.wuni)
 
 # Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
 raty.nmds <- metaMDS(raty.wuni, 
-                     k = 8, try = 100, trymax = 1000, maxit = 999,
+                     k = 5, try = 100, trymax = 1000, maxit = 999,
                      model = 'global', 
                      autotransform = FALSE, previous.best = raty.pcoa$vectors[,1:8])
 
@@ -6574,20 +6524,8 @@ raty_nmds.dist5 <- dist(raty_nmds.scores[,5])
 raty_nmds.fit5 <- lm(as.vector(raty_nmds.dist5)~as.vector(raty.wuni))
 raty_nmds.r5 <- summary(raty_nmds.fit5)$r.squared
 
-raty_nmds.dist6 <- dist(raty_nmds.scores[,6])
-raty_nmds.fit6 <- lm(as.vector(raty_nmds.dist6)~as.vector(raty.wuni))
-raty_nmds.r6 <- summary(raty_nmds.fit6)$r.squared
-
-raty_nmds.dist7 <- dist(raty_nmds.scores[,7])
-raty_nmds.fit7 <- lm(as.vector(raty_nmds.dist7)~as.vector(raty.wuni))
-raty_nmds.r7 <- summary(raty_nmds.fit7)$r.squared
-
-raty_nmds.dist8 <- dist(raty_nmds.scores[,8])
-raty_nmds.fit8 <- lm(as.vector(raty_nmds.dist8)~as.vector(raty.wuni))
-raty_nmds.r8 <- summary(raty_nmds.fit8)$r.squared
-
 # Take the sum the R^2 value from each axis #
-raty_nmds.comb <- raty_nmds.r1 + raty_nmds.r2 + raty_nmds.r3 + raty_nmds.r4 + raty_nmds.r5 + raty_nmds.r6 + raty_nmds.r7 + raty_nmds.r8
+raty_nmds.comb <- raty_nmds.r1 + raty_nmds.r2 + raty_nmds.r3 + raty_nmds.r4 + raty_nmds.r5
 
 # Divide each axis R^2 by the total of all axes and then multiply by the variation explained by the whole model
 raty_nmds.axisr <- c()
@@ -6599,11 +6537,11 @@ for(i in 1:ncol(raty_nmds.scores)){
 # Construct a data.frame that has sample info and their loading scores #
 decompose_ps(raty.ps, 'raty')
 for(i in 1:nrow(raty$met)){
-  raty$met$PS[i] <- paste0(substr(raty$met$Plant.Species[i],1,1), substr(raty$met$Soil.Origin[i],1,1))
+  raty$met$PS[i] <- paste0(substr(raty$met$Plant[i],1,1), substr(raty$met$Soil_Treatment[i],1,1))
 }
-raty$met$Plants <- factor(raty$met$Plant.Species, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula'))
+raty$met$Plants <- factor(raty$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula'))
 raty$met$Comps <- factor(raty$met$Compartment, c('Root Endosphere'))
-raty$met$Soils <- factor(raty$met$Soil.Origin, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
+raty$met$Soils <- factor(raty$met$Soil_Treatment, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
 
 sample_data(raty.ps) <- raty$met
 raty_nmds.load <- cbind(raty$met, raty_nmds.scores)
@@ -6663,12 +6601,12 @@ raty.adon_by
 
 # Perform PermDISP using all samples # 
 raty.bdis <- betadisper(raty.wuni, group = raty$met$PS)
-anova(raty.bdis)
+raty_bdis.aov <- anova(raty.bdis)
 TukeyHSD(raty.bdis)
 
 # Root Endosphere for Non-Natives #
 # Construct a Weighted Unifrac distance matrix and PCoA ordination #
-rnat.ps <- subset_samples(root.ps, Plant.Species == "T. repens" | Plant.Species == "M. truncatula")
+rnat.ps <- subset_samples(root.ps, Plant == "T. repens" | Plant == "M. truncatula")
 rnat_prop.ps <- transform_sample_counts(rnat.ps, function(x) x/sum(x))
 
 set.seed(248)
@@ -6725,11 +6663,11 @@ for(i in 1:ncol(rnat_nmds.scores)){
 # Construct a data.frame that has sample info and their loading scores #
 decompose_ps(rnat.ps, 'rnat')
 for(i in 1:nrow(rnat$met)){
-  rnat$met$PS[i] <- paste0(substr(rnat$met$Plant.Species[i],1,1), substr(rnat$met$Soil.Origin[i],1,1))
+  rnat$met$PS[i] <- paste0(substr(rnat$met$Plant[i],1,1), substr(rnat$met$Soil_Treatment[i],1,1))
 }
-rnat$met$Plants <- factor(rnat$met$Plant.Species, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula'))
+rnat$met$Plants <- factor(rnat$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula'))
 rnat$met$Comps <- factor(rnat$met$Compartment, c('Root Endosphere'))
-rnat$met$Soils <- factor(rnat$met$Soil.Origin, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
+rnat$met$Soils <- factor(rnat$met$Soil_Treatment, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
 
 sample_data(rnat.ps) <- rnat$met
 rnat_nmds.load <- cbind(rnat$met, rnat_nmds.scores)
@@ -6794,7 +6732,7 @@ TukeyHSD(rnat.bdis)
 
 # Source Community vs Rhizosphere No Plant #
 # Construct a phyloseq object containing only samples in the Non-PSF Soil #
-npsf.ps <- subset_samples(soil.ps, Soil_Treatment == "Non-PSF Soil")
+npsf.ps <- subset_samples(soil_sub.ps, Soil_Treatment == "Non-PSF Soil")
 
 # Construct a Weighted Unifrac distance matrix and PCoA ordination #
 npsf_prop.ps <- transform_sample_counts(npsf.ps, function(x) x/sum(x))
@@ -6805,7 +6743,7 @@ npsf.pcoa <- phyloseq::ordinate(npsf_prop.ps, 'PCoA', distance = npsf.wuni)
 
 # Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
 npsf.nmds <- metaMDS(npsf.wuni, 
-                     k = 4, try = 20, trymax = 1000, maxit = 999,
+                     k = 5, try = 100, trymax = 1000, maxit = 999,
                      model = 'global', 
                      autotransform = FALSE, previous.best = npsf.pcoa$vectors[,1:5])
 
@@ -6836,8 +6774,12 @@ npsf_nmds.dist4 <- dist(npsf_nmds.scores[,4])
 npsf_nmds.fit4 <- lm(as.vector(npsf_nmds.dist4)~as.vector(npsf.wuni))
 npsf_nmds.r4 <- summary(npsf_nmds.fit4)$r.squared
 
+npsf_nmds.dist5 <- dist(npsf_nmds.scores[,5])
+npsf_nmds.fit5 <- lm(as.vector(npsf_nmds.dist5)~as.vector(npsf.wuni))
+npsf_nmds.r5 <- summary(npsf_nmds.fit5)$r.squared
+
 # Take the sum the R^2 value from each axis #
-npsf_nmds.comb <- npsf_nmds.r1 + npsf_nmds.r2 + npsf_nmds.r3 + npsf_nmds.r4
+npsf_nmds.comb <- npsf_nmds.r1 + npsf_nmds.r2 + npsf_nmds.r3 + npsf_nmds.r4 + npsf_nmds.r5
 
 # Divide each axis R^2 by the total of all axes and then multiply by the variation explained by the whole model
 npsf_nmds.axisr <- c()
@@ -6913,7 +6855,7 @@ npsf.adon_by
 
 # Perform PermDISP using all samples # 
 npsf.bdis <- betadisper(npsf.wuni, group = npsf$met$PC)
-anova(npsf.bdis)
+npsf_bdis.aov <- anova(npsf.bdis)
 TukeyHSD(npsf.bdis)
 
 # Make an object with the data to be plotted #
@@ -6923,25 +6865,25 @@ npsf_nmds.load$Plants <- factor(npsf_nmds.load$Plants, levels = c("S. helvola", 
 
 # plot the NMDS ordination of all samples that will be used to make a patchwork plot #
 npsf_nmds.plot <- ggplot(npsf_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape = Comps)) +
-  geom_point(size = 8) +
-  scale_color_manual(name = "Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. canadense')), expression(italic('A. bracteata')), expression(italic('M. truncatula'))), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00", "#6A3D9A")) +
-  scale_shape_manual(name = "Compartment", labels = c("Source Community", "Rhizosphere", "PSF Soil"), values = c(15,16)) +
-  xlab(expression("NMDS1 (R"^2 ~ "= 0.6251)")) +
-  ylab(expression("NMDS2 (R"^2 ~ "= 0.2766)")) +
+  geom_point(size = 10) +
+  scale_color_manual(name = "Host Plant Source", labels = c("<em>S. helvola</em>", "<em>C. fasciculata</em>", "<em>D. canadense</em>", "<em>A. bracteata</em>", "<em>M. truncatula</em>"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00", "#6A3D9A", "#B15928")) +
+  scale_shape_manual(name = "Compartment", labels = c("Source Community", "Rhizosphere"), values = c(15,16)) +
+  labs(x = paste0("NMDS1 (R<sup>2</sup> = ", round(npsf_nmds.axisr[1], 3), ")"),
+       y = paste0("NMDS2 (R<sup>2</sup> = ", round(npsf_nmds.axisr[2], 3), ")")) +
   theme_bw() +
-  theme(legend.position = 'right',
+  theme(legend.position = 'inside',
+        legend.position.inside = c(0.1,0.3),
         panel.grid = element_blank(),
-        legend.text = element_text(size = 20, family = "Liberation Sans"),
+        legend.text = ggtext::element_markdown(size = 20, family = "Liberation Sans", face = 'bold'),
         legend.title = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
-        axis.title = element_text(size= 24, face = 'bold', family = "Liberation Sans"),
-        axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +  
-  annotate('text', x = -0.05, y = -0.3,
-           label = expression("(PERMANOVA) F"["7,27"] ~ "= 26.094, P = 0.001;  (PERMDISP) F"["7,27"] ~  "= 6.0835, P < 0.001; 3D Stress = 0.0083"),
-           size = 8, family = 'Liberation Sans') +
-  coord_cartesian(ylim = c(-0.31,0.23))+
-  labs(tag = "B.")
-
-npsf_nmds.plot
+        legend.background = element_rect(color = 'black'),
+        axis.text = element_text(color = "black", size = 16, family = "Liberation Sans"),
+        axis.title.x = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'),
+        axis.title.y = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'))+
+  annotate(geom = 'richtext', x = -0.02, y = -0.31,
+           label = paste0("PERMANOVA <em>F</em><sub>7,27</sub> = ", round(npsf.adon$`F`[1], 3), ", <em>p</em> = ", round(npsf.adon$`Pr(>F)`[1], 3), "; PERMDISP <em>F</em><sub>7,27</sub> = ", round(npsf_bdis.aov$`F value`[1], 3), ", <em>p</em> < 0.001"),
+           size = 8, family = 'Liberation Sans', fontface = 'bold', fill = NA, label.color = NA) +
+  coord_cartesian(ylim = c(-0.3,0.2))
 
 # Separate samples by plant species #
 ## Fuzzy Bean ##
@@ -7086,7 +7028,7 @@ summary(md_npsf_pvsn.man)
 
 # Source Community vs Rhizosphere PSF Soil #
 # Construct a phyloseq object containing only samples in the Non-PSF Soil #
-wpsf.ps <- subset_samples(soil.ps, Soil_Treatment == "PSF Soil")
+wpsf.ps <- subset_samples(soil_sub.ps, Soil_Treatment == "PSF Soil")
 
 # Construct a Weighted Unifrac distance matrix and PCoA ordination #
 wpsf_prop.ps <- transform_sample_counts(wpsf.ps, function(x) x/sum(x))
@@ -7209,7 +7151,7 @@ wpsf.adon_by
 
 # Perform PermDISP using all samples # 
 wpsf.bdis <- betadisper(wpsf.wuni, group = wpsf$met$PC)
-anova(wpsf.bdis)
+wpsf_bdis.aov <- anova(wpsf.bdis)
 TukeyHSD(wpsf.bdis)
 
 # Make an object with the data to be plotted #
@@ -7217,21 +7159,23 @@ wpsf_nmds.load <- cbind(wpsf$met, wpsf_nmds.scores)
 
 # plot the NMDS ordination of all samples that will be used to make a patchwork plot #
 wpsf_nmds.plot <- ggplot(wpsf_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape = Comps)) +
-  geom_point(size = 8) +
-  scale_color_manual(name = "Community Source", labels = c(expression(italic('S. helvola')), expression(italic('C. fasciculata')), expression(italic('D. canadense')), expression(italic('A. bracteata')), expression(italic('T. repens')), expression(italic('M. truncatula')), "Common Soil"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00","#CAB2D6", "#6A3D9A", "#B15928")) +
-  scale_shape_manual(name = "Compartment", labels = c("Source Community", "Rhizosphere", "PSF Soil"), values = c(15,16)) +
-  xlab(expression("NMDS1 (R"^2 ~ "= 0.4873)")) +
-  ylab(expression("NMDS2 (R"^2 ~ "= 0.3939)")) +
+  geom_point(size = 10) +
+  scale_color_manual(name = "Host Plant Source", labels = c("<em>S. helvola</em>", "<em>C. fasciculata</em>", "<em>D. canadense</em>", "<em>A. bracteata</em>", "<em>T. repens</em>","<em>M. truncatula</em>"), values = c("#A6CEE3","#1F78B4","#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "#B15928")) +
+  scale_shape_manual(name = "Compartment", labels = c("Source Community", "Rhizosphere"), values = c(15,16)) +
+  labs(x = paste0("NMDS1 (R<sup>2</sup> = ", round(wpsf_nmds.axisr[1], 3), ")"),
+       y = paste0("NMDS2 (R<sup>2</sup> = ", round(wpsf_nmds.axisr[2], 3), ")")) +
   theme_bw() +
   theme(legend.position = 'right',
         panel.grid = element_blank(),
-        legend.text = element_text(size = 20, family = "Liberation Sans"),
+        legend.text = ggtext::element_markdown(size = 20, family = "Liberation Sans", face = 'bold'),
         legend.title = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
-        axis.title = element_text(size= 24, face = 'bold', family = "Liberation Sans"),
-        axis.text = element_text(color = "black", size = 8, family = "Liberation Sans")) +  
-  annotate('text', x = -0.025, y = -0.3,
-           label = expression("(PERMANOVA) F"["11,45"] ~ "= 31.072, P = 0.001;  (PERMDISP) F"["11,45"] ~  "= 9.1545, P < 0.001; 3D Stress = 0.0143"),
-           size = 8, family = 'Liberation Sans') +
+        legend.background = element_rect(color = 'black'),
+        axis.text = element_text(color = "black", size = 16, family = "Liberation Sans"),
+        axis.title.x = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'),
+        axis.title.y = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'))+
+  annotate(geom = 'richtext', x = 0.04, y = -0.32,
+           label = paste0("PERMANOVA <em>F</em><sub>11,45</sub> = ", round(wpsf.adon$`F`[1], 3), ", <em>p</em> = ", round(wpsf.adon$`Pr(>F)`[1], 3), "; PERMDISP <em>F</em><sub>11,45</sub> = ", round(wpsf_bdis.aov$`F value`[1], 3), ", <em>p</em> < 0.001"),
+           size = 8, family = 'Liberation Sans', fontface = 'bold', fill = NA, label.color = NA) +
   coord_cartesian(ylim = c(-0.31,0.23)) +
   labs(tag = "A.")
 
@@ -7397,319 +7341,22 @@ md_wpsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, md_wpsf.met)
 summary(md_wpsf.man)
 
 # PSF vs. Non-PSF Soil Plot #
-(wpsf_nmds.plot) / 
+bvsr.plot <- (wpsf_nmds.plot) / 
 (npsf_nmds.plot) +
   plot_layout(guides = "collect") &
-  theme(plot.tag = element_text(size = 22, face = "bold", family = "Liberation Sans"))
-
-#### Non-Nodule Stacked Histograms ####
-library(microbiome); packageVersion('microbiome')
-library(microbiomeutilities); packageVersion("microbiomeutilities")
-
-# Create a phyloseq object that contains all non-nodule reads #
-decompose_ps(soil.ps, 'soil_temp')
-for(i in 1:nrow(soil_temp$met)){
-  soil_temp$met$PS[i] <- paste0(substr(soil_temp$met$Plant[i],1,1), substr(soil_temp$met$Soil_Treatment[i], 1,1))
-}
-soil_temp$met$Plants <- factor(soil_temp$met$Plant, levels = c("S. helvola", "C. fasciculata", "D. canadense", "A. bracteata", "T. repens", "M. truncatula"))
-soil_temp$met$Comps <- factor(soil_temp$met$Compartment, levels = c("Source Community", "Rhizosphere", "Root Endosphere"))
-soil_temp$met$Soils <- factor(soil_temp$met$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
-
-decompose_ps(root.ps, 'root_temp')
-root_temp$met$Comps <- factor(root_temp$met$Compartment, levels = c("Source Community", "Rhizosphere", "Root Endosphere"))
-colnames(root_temp$met) <- colnames(soil_temp$met)
-
-soil_temp.ps <- phyloseq(otu_table(soil_temp$otu, taxa_are_rows = TRUE),
-                         tax_table(as.matrix(soil_temp$tax[,c("Family", "Genus")])),
-                         sample_data(soil_temp$met))
-soil_temp.ps <- tax_glom(soil_temp.ps, taxrank = "Genus")
-taxa_names(soil_temp.ps) <- tax_table(soil_temp.ps)[,"Genus"]
-root_temp.ps <- phyloseq(otu_table(root_temp$otu, taxa_are_rows = TRUE),
-                         tax_table(as.matrix(root_temp$tax[,c("Family", "Genus")])),
-                         sample_data(root_temp$met))
-root_temp.ps <- tax_glom(root_temp.ps, taxrank = "Genus")
-taxa_names(root_temp.ps) <- tax_table(root_temp.ps)[,"Genus"]
-
-all.ps <- merge_phyloseq(soil_temp.ps, root_temp.ps)
-
-# Create a palette for each genus represented in the phyloseq object #
-library(Polychrome); packageVersion("Polychrome")
-all.colr <- createPalette(ntaxa(all.ps), c("#ff0000", "#00ff00", "#0000ff"))
-all.colr <- as.data.frame(all.colr)
-rownames(all.colr) <- sort(taxa_names(all.ps))
-all.colr[350,] <- "#D4D4D4"
-rownames(all.colr)[350] <- "Other"
-
-# Separate by plant species # 
-## Fuzzy Bean ##
-fb_all.ps <- subset_samples(all.ps, Plant == "S. helvola")
-fb_all.ps <- merge_phyloseq(fb_all.ps, subset_samples(all.ps, Plant == "C. fasciculata" & Soil_Treatment == "Non-PSF Soil" & Compartment == "Source Community"))
-
-fb_top.ps <- aggregate_top_taxa2(fb_all.ps, 19, "Genus")
-fb_top.name <- names(sort(taxa_sums(fb_top.ps), decreasing = TRUE))
-fb_top.colr <- all.colr[fb_top.name,]
-
-fb_top.df <- psmelt(fb_top.ps)
-fb_top.df$Genera <- factor(fb_top.df$Genus, levels = fb_top.name)
-fb_top.df$Group <- factor(fb_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
-
-fb_top.plot <- ggplot(fb_top.df, aes(x = Group, y = Abundance, fill = Genera)) +
-  geom_bar(stat='identity', position = 'fill') +
-  facet_wrap(~Comps, scales = "fixed") +
-  xlab('') +
-  ylab('Relative Abundance') +
-  scale_fill_manual(values = fb_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('S. helvola')))) +
-  theme_bw() +
-  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18, angle = -45, hjust = 0),
-        axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.position = "right",
-        legend.box.just = "bottom",
-        legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
-        plot.margin = margin(10, 40, 10, 10),
-        legend.title = element_blank(),
-        axis.text.y.right = element_blank(),
-        axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90)) +
-  labs(tags = "A.")
-fb_top.plot
-
-# Joining histograms #
-(fb_top.plot) /
-(fb_soil_nod.plot | fb_root_nod.plot) +
-  plot_layout(guides = "keep") &
-  theme(plot.tag = element_text(size = 22, face = "bold", family = "Liberation Sans"))
-
-## Chamaecrista ##
-cc_all.ps <- subset_samples(all.ps, Plant == "C. fasciculata")
-cc_all.ps <- merge_phyloseq(cc_all.ps, subset_samples(all.ps, Plant == "S. helvola" & Soil_Treatment == "Common Soil" & Compartment == "Source Community"))
-
-cc_top.ps <- aggregate_top_taxa2(cc_all.ps, 19, "Genus")
-cc_top.name <- names(sort(taxa_sums(cc_top.ps), decreasing = TRUE))
-cc_top.colr <- all.colr[cc_top.name,]
-
-cc_top.df <- psmelt(cc_top.ps)
-cc_top.df$Genera <- factor(cc_top.df$Genus, levels = cc_top.name)
-cc_top.df$Group <- factor(cc_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
-
-cc_top.plot <- ggplot(cc_top.df, aes(x = Group, y = Abundance, fill = Genera)) +
-  geom_bar(stat='identity', position = 'fill') +
-  facet_wrap(~Comps, scales = "fixed") +
-  xlab('') +
-  ylab('Relative Abundance') +
-  scale_fill_manual(values = cc_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('C. fasciculata')))) +
-  theme_bw() +
-  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18, angle = -45, hjust = 0),
-        axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.position = "right",
-        legend.box.just = "bottom",
-        legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
-        plot.margin = margin(10, 40, 10, 10),
-        legend.title = element_blank(),
-        axis.text.y.right = element_blank(),
-        axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90)) +
-  labs(tags = "A.")
-cc_top.plot
-
-# Joining histograms #
-(cc_top.plot) /
-  (cc_soil_nod.plot | cc_root_nod.plot) +
-  plot_layout(guides = "keep") &
-  theme(plot.tag = element_text(size = 22, face = "bold", family = "Liberation Sans"))
-
-## Desmodium ##
-ds_all.ps <- subset_samples(all.ps, Plant == "D. canadense")
-ds_all.ps <- merge_phyloseq(ds_all.ps, subset_samples(all.ps, Plant == "S. helvola" & Soil_Treatment == "Common Soil" & Compartment == "Source Community"))
-
-ds_top.ps <- aggregate_top_taxa2(ds_all.ps, 19, "Genus")
-ds_top.name <- names(sort(taxa_sums(ds_top.ps), decreasing = TRUE))
-ds_top.colr <- all.colr[ds_top.name,]
-
-ds_top.df <- psmelt(ds_top.ps)
-ds_top.df$Genera <- factor(ds_top.df$Genus, levels = ds_top.name)
-ds_top.df$Group <- factor(ds_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
-
-ds_top.plot <- ggplot(ds_top.df, aes(x = Group, y = Abundance, fill = Genera)) +
-  geom_bar(stat='identity', position = 'fill') +
-  facet_wrap(~Comps, scales = "fixed") +
-  xlab('') +
-  ylab('Relative Abundance') +
-  scale_fill_manual(values = ds_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('D. canadense')))) +
-  theme_bw() +
-  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18, angle = -45, hjust = 0),
-        axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.position = "right",
-        legend.box.just = "bottom",
-        legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
-        plot.margin = margin(10, 40, 10, 10),
-        legend.title = element_blank(),
-        axis.text.y.right = element_blank(),
-        axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90)) +
-  labs(tags = "A.")
-ds_top.plot
-
-# Joining histograms #
-(ds_top.plot) /
-  (ds_soil_nod.plot | ds_root_nod.plot) +
-  plot_layout(guides = "keep") &
-  theme(plot.tag = element_text(size = 22, face = "bold", family = "Liberation Sans"))
-
-## Hog Peanut ##
-hp_all.ps <- subset_samples(all.ps, Plant == "A. bracteata")
-hp_all.ps <- merge_phyloseq(hp_all.ps, subset_samples(all.ps, Plant == "S. helvola" & Soil_Treatment == "Common Soil" & Compartment == "Source Community"))
-hp_all.ps <- merge_phyloseq(hp_all.ps, subset_samples(all.ps, Plant == "D. canadense" & Soil_Treatment == "Non-PSF Soil" & Compartment == "Source Community"))
-
-
-hp_top.ps <- aggregate_top_taxa2(hp_all.ps, 19, "Genus")
-hp_top.name <- names(sort(taxa_sums(hp_top.ps), decreasing = TRUE))
-hp_top.colr <- all.colr[hp_top.name,]
-
-hp_top.df <- psmelt(hp_top.ps)
-hp_top.df$Genera <- factor(hp_top.df$Genus, levels = hp_top.name)
-hp_top.df$Group <- factor(hp_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
-
-hp_top.plot <- ggplot(hp_top.df, aes(x = Group, y = Abundance, fill = Genera)) +
-  geom_bar(stat='identity', position = 'fill') +
-  facet_wrap(~Comps, scales = "fixed") +
-  xlab('') +
-  ylab('Relative Abundance') +
-  scale_fill_manual(values = hp_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('A. bracteata')))) +
-  theme_bw() +
-  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18, angle = -45, hjust = 0),
-        axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.position = "right",
-        legend.box.just = "bottom",
-        legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
-        plot.margin = margin(10, 40, 10, 10),
-        legend.title = element_blank(),
-        axis.text.y.right = element_blank(),
-        axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90)) +
-  labs(tags = "A.")
-hp_top.plot
-
-# Joining histograms #
-(hp_top.plot) /
-  (hp_soil_nod.plot | hp_root_nod.plot) +
-  plot_layout(guides = "keep") &
-  theme(plot.tag = element_text(size = 22, face = "bold", family = "Liberation Sans"))
-
-## Clover ##
-cl_all.ps <- subset_samples(all.ps, Plant == "T. repens")
-cl_all.ps <- merge_phyloseq(cl_all.ps, subset_samples(all.ps, Plant == "S. helvola" & Soil_Treatment == "Common Soil" & Compartment == "Source Community"))
-
-
-cl_top.ps <- aggregate_top_taxa2(cl_all.ps, 19, "Genus")
-cl_top.name <- names(sort(taxa_sums(cl_top.ps), decreasing = TRUE))
-cl_top.name <- c("Other", cl_top.name[-2])
-cl_top.colr <- all.colr[cl_top.name,]
-
-cl_top.df <- psmelt(cl_top.ps)
-cl_top.df$Genera <- factor(cl_top.df$Genus, levels = cl_top.name)
-cl_top.df$Group <- factor(cl_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
-
-cl_top.plot <- ggplot(cl_top.df, aes(x = Group, y = Abundance, fill = Genera)) +
-  geom_bar(stat='identity', position = 'fill') +
-  facet_wrap(~Comps, scales = "fixed") +
-  xlab('') +
-  ylab('Relative Abundance') +
-  scale_fill_manual(values = cl_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('T. repens')))) +
-  theme_bw() +
-  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18, angle = -45, hjust = 0),
-        axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.position = "right",
-        legend.box.just = "bottom",
-        legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
-        plot.margin = margin(10, 40, 10, 10),
-        legend.title = element_blank(),
-        axis.text.y.right = element_blank(),
-        axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90)) +
-  labs(tags = "A.")
-cl_top.plot
-
-# Joining histograms #
-(cl_top.plot) /
-  (cl_soil_nod.plot | cl_root_nod.plot) +
-  plot_layout(guides = "keep") &
-  theme(plot.tag = element_text(size = 22, face = "bold", family = "Liberation Sans"))
-
-## Medicago ##
-md_all.ps <- subset_samples(all.ps, Plant == "M. truncatula")
-md_all.ps <- merge_phyloseq(md_all.ps, subset_samples(all.ps, Plant == "S. helvola" & Soil_Treatment == "Common Soil" & Compartment == "Source Community"))
-md_all.ps <- merge_phyloseq(md_all.ps, subset_samples(all.ps, Plant == "T. repens" & Soil_Treatment == "Non-PSF Soil" & Compartment == "Source Community"))
-
-
-md_top.ps <- aggregate_top_taxa2(md_all.ps, 19, "Genus")
-md_top.name <- names(sort(taxa_sums(md_top.ps), decreasing = TRUE))
-md_top.colr <- all.colr[md_top.name,]
-
-md_top.df <- psmelt(md_top.ps)
-md_top.df$Genera <- factor(md_top.df$Genus, levels = md_top.name)
-md_top.df$Group <- factor(md_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
-
-md_top.plot <- ggplot(md_top.df, aes(x = Group, y = Abundance, fill = Genera)) +
-  geom_bar(stat='identity', position = 'fill') +
-  facet_wrap(~Comps, scales = "fixed") +
-  xlab('') +
-  ylab('Relative Abundance') +
-  scale_fill_manual(values = md_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('M. truncatula')))) +
-  theme_bw() +
-  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18, angle = -45, hjust = 0),
-        axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.position = "right",
-        legend.box.just = "bottom",
-        legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
-        plot.margin = margin(10, 40, 10, 10),
-        legend.title = element_blank(),
-        axis.text.y.right = element_blank(),
-        axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90)) +
-  labs(tags = "A.")
-md_top.plot
-
-# Joining histograms #
-(md_top.plot) /
-  (md_soil_nod.plot | md_root_nod.plot) +
-  plot_layout(guides = "keep") &
   theme(plot.tag = element_text(size = 22, face = "bold", family = "Liberation Sans"))
 
 #### Differential Abundance ####
 library(Maaslin2); packageVersion("Maaslin2")
 
 # Make a decomposed phyloseq object and at a variable for each unique tripartite group of the soil and root samples #
-decompose_ps(soil.ps, "soil_maas")
+decompose_ps(soil_sub.ps, "soil_maas")
 for(i in 1:nrow(soil_maas$met)){
   soil_maas$met$PSC[i] <- paste0(substr(soil_maas$met$Plant[i], 1, 1), substr(soil_maas$met$Soil_Treatment[i], 1, 1), substr(soil_maas$met$Compartment[i],1,2)) 
 }
-decompose_ps(root.ps, "root_maas")
+decompose_ps(root_sub.ps, "root_maas")
 for(i in 1:nrow(root_maas$met)){
-  root_maas$met$PSC[i] <- paste0(substr(root_maas$met$Plant.Species[i], 1, 1), substr(root_maas$met$Soil.Origin[i], 1, 1), substr(root_maas$met$Compartment[i],1,2)) 
+  root_maas$met$PSC[i] <- paste0(substr(root_maas$met$Plant[i], 1, 1), substr(root_maas$met$Soil_Treatment[i], 1, 1), substr(root_maas$met$Compartment[i],1,2)) 
 }
 
 # Make a directory for the differential abundance plots #
@@ -9230,7 +8877,7 @@ decompose_ps(fb_root_prop.ps, "fb_root_prop")
 fb_root.meso <- cbind(fb_root_prop$met, t(fb_root_prop$otu["ASV12(Mesorhizobium)",]))
 
 # Make soils a factor with the proper levels #
-fb_root.meso$Soils <- factor(fb_root.meso$Soil.Origin, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+fb_root.meso$Soils <- factor(fb_root.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 # Make annotations for significant differences #
 fb_root.pvsn <- "**"
@@ -9396,7 +9043,7 @@ decompose_ps(cc_root_prop.ps, "cc_root_prop")
 cc_root.meso <- cbind(cc_root_prop$met, t(cc_root_prop$otu[c("ASV3(Bradyrhizobium)", "ASV6(Bradyrhizobium)", "ASV14(Bradyrhizobium"),]))
 
 # Make soils a factor with the proper levels #
-cc_root.meso$Soils <- factor(cc_root.meso$Soil.Origin, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+cc_root.meso$Soils <- factor(cc_root.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 # Make annotations for significant differences #
 cc_root.pvsn <- "ns"
@@ -9637,7 +9284,7 @@ decompose_ps(ds_root_prop.ps, "ds_root_prop")
 ds_root.meso <- cbind(ds_root_prop$met, t(ds_root_prop$otu["ASV7(Bradyrhizobium)",]))
 
 # Make soils a factor with the proper levels #
-ds_root.meso$Soils <- factor(ds_root.meso$Soil.Origin, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+ds_root.meso$Soils <- factor(ds_root.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 # Make annotations for significant differences #
 ds_root.pvsn <- "ns"
@@ -9798,7 +9445,7 @@ decompose_ps(hp_root_prop.ps, "hp_root_prop")
 hp_root.meso <- cbind(hp_root_prop$met, t(hp_root_prop$otu["ASV7(Bradyrhizobium)",]))
 
 # Make soils a factor with the proper levels #
-hp_root.meso$Soils <- factor(hp_root.meso$Soil.Origin, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+hp_root.meso$Soils <- factor(hp_root.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 # Make annotations for significant differences #
 hp_root.pvsn <- "ns"
@@ -9938,7 +9585,7 @@ decompose_ps(cl_root_prop.ps, "cl_root_prop")
 cl_root.meso <- cbind(cl_root_prop$met, t(cl_root_prop$otu["ASV1(Rhizobium)",]))
 
 # Make soils a factor with the proper levels #
-cl_root.meso$Soils <- factor(cl_root.meso$Soil.Origin, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+cl_root.meso$Soils <- factor(cl_root.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 # Make annotations for significant differences #
 cl_root.pvsn <- "ns"
@@ -10100,7 +9747,7 @@ decompose_ps(md_root_prop.ps, "md_root_prop")
 md_root.meso <- cbind(md_root_prop$met, t(md_root_prop$otu[c("ASV4(Sinorhizobium)", "ASV2(Sinorhizobium)"),]))
 
 # Make soils a factor with the proper levels #
-md_root.meso$Soils <- factor(md_root.meso$Soil.Origin, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
+md_root.meso$Soils <- factor(md_root.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 # Make annotations for significant differences #
 md_root.pvsn <- "***"
