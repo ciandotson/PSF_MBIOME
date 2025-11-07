@@ -5780,8 +5780,6 @@ bulk_nmds.plot <- ggplot(bulk_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
            size = 8, family = 'Liberation Sans', fontface = 'bold', fill = NA, label.color = NA) +
   coord_cartesian(ylim = c(-0.1,0.125))
 
-bulk_nmds.plot
-
 ## Fuzzy Bean ##
 # Create a phyloseq object that has all samples of the specific plant species and compartment #
 fb_bulk.ps <- subset_samples(bulk.ps, Plant == "S. helvola" | Plant == "Common Soil" | Plant == "C. fasciculata" & Soil_Treatment == "Non-PSF Soil")
@@ -6025,7 +6023,7 @@ rhiz.pcoa <- phyloseq::ordinate(rhiz_prop.ps, 'PCoA', distance = rhiz.wuni)
 
 # Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
 rhiz.nmds <- metaMDS(rhiz.wuni, 
-                     k = 4, try = 100, trymax = 1000, maxit = 999,
+                     k = 5, try = 100, trymax = 1000, maxit = 999,
                      model = 'global', 
                      autotransform = FALSE, previous.best = rhiz.pcoa$vectors[,1:5])
 
@@ -6056,8 +6054,12 @@ rhiz_nmds.dist4 <- dist(rhiz_nmds.scores[,4])
 rhiz_nmds.fit4 <- lm(as.vector(rhiz_nmds.dist4)~as.vector(rhiz.wuni))
 rhiz_nmds.r4 <- summary(rhiz_nmds.fit4)$r.squared
 
+rhiz_nmds.dist5 <- dist(rhiz_nmds.scores[,5])
+rhiz_nmds.fit5 <- lm(as.vector(rhiz_nmds.dist5)~as.vector(rhiz.wuni))
+rhiz_nmds.r5 <- summary(rhiz_nmds.fit5)$r.squared
+
 # Take the sum the R^2 value from each axis #
-rhiz_nmds.comb <- rhiz_nmds.r1 + rhiz_nmds.r2 + rhiz_nmds.r3 + rhiz_nmds.r4
+rhiz_nmds.comb <- rhiz_nmds.r1 + rhiz_nmds.r2 + rhiz_nmds.r3 + rhiz_nmds.r4 + rhiz_nmds.r5
 
 # Divide each axis R^2 by the total of all axes and then multiply by the variation explained by the whole model
 rhiz_nmds.axisr <- c()
@@ -6157,7 +6159,7 @@ rhiz_nmds.plot <- ggplot(rhiz_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
         axis.text = element_text(color = "black", size = 16, family = "Liberation Sans"),
         axis.title.x = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'),
         axis.title.y = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'))+
-  annotate(geom = 'richtext', x = -0.125, y = -0.29,
+  annotate(geom = 'richtext', x = 0.1, y = -0.29,
            label = paste0("PERMANOVA <em>F</em><sub>16,70</sub> = ", round(rhiz.adon$`F`[1], 3), ", <em>p</em> = ", round(rhiz.adon$`Pr(>F)`[1], 3), "; PERMDISP <em>F</em><sub>16,70</sub> = ", round(rhiz_bdis.aov$`F value`[1], 3), ", <em>p</em> < 0.001"),
            size = 8, family = 'Liberation Sans', fontface = 'bold', fill = NA, label.color = NA) +
   coord_cartesian(ylim = c(-0.28, 0.15))
@@ -7156,8 +7158,7 @@ npsf_nmds.plot <- ggplot(npsf_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
   labs(x = paste0("NMDS1 (R<sup>2</sup> = ", round(npsf_nmds.axisr[1], 3), ")"),
        y = paste0("NMDS2 (R<sup>2</sup> = ", round(npsf_nmds.axisr[2], 3), ")")) +
   theme_bw() +
-  theme(legend.position = 'inside',
-        legend.position.inside = c(0.1,0.3),
+  theme(legend.position = 'none',
         panel.grid = element_blank(),
         legend.text = ggtext::element_markdown(size = 20, family = "Liberation Sans", face = 'bold'),
         legend.title = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
@@ -7165,10 +7166,11 @@ npsf_nmds.plot <- ggplot(npsf_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
         axis.text = element_text(color = "black", size = 16, family = "Liberation Sans"),
         axis.title.x = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'),
         axis.title.y = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'))+
-  annotate(geom = 'richtext', x = -0.02, y = -0.31,
+  annotate(geom = 'richtext', x = -0.02, y = -0.3,
            label = paste0("PERMANOVA <em>F</em><sub>7,27</sub> = ", round(npsf.adon$`F`[1], 3), ", <em>p</em> = ", round(npsf.adon$`Pr(>F)`[1], 3), "; PERMDISP <em>F</em><sub>7,27</sub> = ", round(npsf_bdis.aov$`F value`[1], 3), ", <em>p</em> < 0.001"),
            size = 8, family = 'Liberation Sans', fontface = 'bold', fill = NA, label.color = NA) +
-  coord_cartesian(ylim = c(-0.3,0.2))
+  coord_cartesian(ylim = c(-0.3,0.2)) +
+  labs(tag = 'B.')
 
 # Separate samples by plant species #
 ## Fuzzy Bean ##
@@ -7458,13 +7460,11 @@ wpsf_nmds.plot <- ggplot(wpsf_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
         axis.text = element_text(color = "black", size = 16, family = "Liberation Sans"),
         axis.title.x = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'),
         axis.title.y = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'))+
-  annotate(geom = 'richtext', x = 0.04, y = -0.32,
+  annotate(geom = 'richtext', x = 0.04, y = -0.3,
            label = paste0("PERMANOVA <em>F</em><sub>11,45</sub> = ", round(wpsf.adon$`F`[1], 3), ", <em>p</em> = ", round(wpsf.adon$`Pr(>F)`[1], 3), "; PERMDISP <em>F</em><sub>11,45</sub> = ", round(wpsf_bdis.aov$`F value`[1], 3), ", <em>p</em> < 0.001"),
            size = 8, family = 'Liberation Sans', fontface = 'bold', fill = NA, label.color = NA) +
   coord_cartesian(ylim = c(-0.31,0.23)) +
   labs(tag = "A.")
-
-wpsf_nmds.plot
 
 # Separate samples by plant species #
 ## Fuzzy Bean ##
