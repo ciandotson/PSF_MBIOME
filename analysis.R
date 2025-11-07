@@ -7639,7 +7639,7 @@ decompose_ps(soil_sub.ps, "soil_maas")
 for(i in 1:nrow(soil_maas$met)){
   soil_maas$met$PSC[i] <- paste0(substr(soil_maas$met$Plant[i], 1, 1), substr(soil_maas$met$Soil_Treatment[i], 1, 1), substr(soil_maas$met$Compartment[i],1,2)) 
 }
-decompose_ps(root_sub.ps, "root_maas")
+decompose_ps(root.ps, "root_maas")
 for(i in 1:nrow(root_maas$met)){
   root_maas$met$PSC[i] <- paste0(substr(root_maas$met$Plant[i], 1, 1), substr(root_maas$met$Soil_Treatment[i], 1, 1), substr(root_maas$met$Compartment[i],1,2)) 
 }
@@ -7654,18 +7654,17 @@ if(!dir.exists('./maas_results')){
 # Organize ASVs by number #
 fb_bulk.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(fb_bulk$otu)))
 fb_bulk$otu <- fb_bulk$otu[order(fb_bulk.sort),]
-# Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
-fb_bulk_wpsf.maas <- Maaslin2(input_data = fb_bulk$otu,
-                               input_metadata = fb_bulk$met,
+# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+fb_bulk_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                               input_metadata = soil_maas$met,
                                output = "./maas_results/fb_bulk_wpsf.maas",
-                               fixed_effects = c("Soils"),
+                               fixed_effects = c("PSC"),
                                analysis_method = "LM",
                                normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
+                               transform = "LOG",
                                correction = "BH",
                                max_significance = 0.05,
-                               reference = c("Soils,PSF Soil"), 
+                               reference = c("PSC,SPSo"), 
                                plot_heatmap = FALSE,
                                plot_scatter = FALSE,
                                save_scatter = FALSE)
@@ -7674,89 +7673,84 @@ fb_bulk_wpsf.maas <- Maaslin2(input_data = fb_bulk$otu,
 fb_bulk_wpsf.res <- fb_bulk_wpsf.maas$results
 fb_bulk_wpsf.dares <- c()
 for(i in 1:nrow(fb_bulk_wpsf.res)){
-  if(fb_bulk_wpsf.res$qval[i] < 0.05){
+  if(fb_bulk_wpsf.res$value[i] == "CNSo" | fb_bulk_wpsf.res$value[i] == "SCSo"){
     fb_bulk_wpsf.dares <- rbind(fb_bulk_wpsf.dares, fb_bulk_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
 # Maaslin2 analysis for the Source Community data (PSF Reference) # 
-fb_bulk_npsf.maas <- Maaslin2(input_data = fb_bulk$otu,
-                               input_metadata = fb_bulk$met,
-                               output = "./maas_results/fb_bulk_npsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,Non-PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+fb_bulk_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/fb_bulk_npsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,CNSo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
+
 
 # Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 fb_bulk_npsf.res <- fb_bulk_npsf.maas$results
 fb_bulk_npsf.dares <- c()
 for(i in 1:nrow(fb_bulk_npsf.res)){
-  if(fb_bulk_npsf.res$qval[i] < 0.05){
+  if(fb_bulk_npsf.res$value[i] == "SPSo" | fb_bulk_npsf.res$value[i] == "SCSo"){
     fb_bulk_npsf.dares <- rbind(fb_bulk_npsf.dares, fb_bulk_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
-# Organize ASVs by number #
-fb_rhiz.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(fb_rhiz$otu)))
-fb_rhiz$otu <- fb_rhiz$otu[order(fb_rhiz.sort),]
-
 # Maaslin2 analysis for the Source Community data (PSF Reference) # 
-fb_rhiz_wpsf.maas <- Maaslin2(input_data = fb_rhiz$otu,
-                               input_metadata = fb_rhiz$met,
-                               output = "./maas_results/fb_rhiz_wpsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+fb_rhiz_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/fb_rhiz_wpsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,SPRh"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
 
 # Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
 fb_rhiz_wpsf.res <- fb_rhiz_wpsf.maas$results
 fb_rhiz_wpsf.dares <- c()
 for(i in 1:nrow(fb_rhiz_wpsf.res)){
-  if(fb_rhiz_wpsf.res$qval[i] < 0.05){
+  if(fb_rhiz_wpsf.res$value[i] == "SNRh" | fb_rhiz_wpsf.res$value[i] == "SCRh"){
     fb_rhiz_wpsf.dares <- rbind(fb_rhiz_wpsf.dares, fb_rhiz_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
 # Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
-fb_rhiz_npsf.maas <- Maaslin2(input_data = fb_rhiz$otu,
-                               input_metadata = fb_rhiz$met,
-                               output = "./maas_results/fb_rhiz_npsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,Non-PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+fb_rhiz_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/fb_rhiz_npsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,SNRh"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
 
 # Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
 fb_rhiz_npsf.res <- fb_rhiz_npsf.maas$results
 fb_rhiz_npsf.dares <- c()
 for(i in 1:nrow(fb_rhiz_npsf.res)){
-  if(fb_rhiz_npsf.res$qval[i] < 0.05){
+  if(fb_rhiz_npsf.res$value[i] == "SPRh" | fb_rhiz_npsf.res$value[i] == "SCRh"){
     fb_rhiz_npsf.dares <- rbind(fb_rhiz_npsf.dares, fb_rhiz_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
+
 # Maaslin2 analysis for the root endosphere data (PSF Soil Reference)# 
 fb_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
                               input_metadata = root_maas$met,
@@ -7764,8 +7758,7 @@ fb_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "NONE",
-                              min_prevalence = 0.05,
+                              transform = "LOG",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,SPRo"), 
@@ -7773,26 +7766,23 @@ fb_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
                               plot_scatter = FALSE,
                               save_scatter = FALSE)
 
-# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+# Save only the pairwise comparisons within root soils of Fuzzy Bean #
 fb_root_wpsf.res <- fb_root_wpsf.maas$results
 fb_root_wpsf.dares <- c()
 for(i in 1:nrow(fb_root_wpsf.res)){
   if(fb_root_wpsf.res$value[i] == "SNRo" | fb_root_wpsf.res$value[i] == "SCRo"){
-    if(fb_root_wpsf.res$qval[i] < 0.05){
-      fb_root_wpsf.dares <- rbind(fb_root_wpsf.dares, fb_root_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+    fb_root_wpsf.dares <- rbind(fb_root_wpsf.dares, fb_root_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
-# Maaslin2 analysis for the root endosphere data (Non-PSF Soil Reference)# 
+# Maaslin2 analysis for the root soil data (PSF Reference) # 
 fb_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
                               input_metadata = root_maas$met,
                               output = "./maas_results/fb_root_npsf.maas",
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "NONE",
-                              min_prevalence = 0.05,
+                              transform = "LOG",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,SNRo"), 
@@ -7800,16 +7790,15 @@ fb_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
                               plot_scatter = FALSE,
                               save_scatter = FALSE)
 
-# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+# Save only the pairwise comparisons within root soils of Fuzzy Bean #
 fb_root_npsf.res <- fb_root_npsf.maas$results
 fb_root_npsf.dares <- c()
 for(i in 1:nrow(fb_root_npsf.res)){
   if(fb_root_npsf.res$value[i] == "SPRo" | fb_root_npsf.res$value[i] == "SCRo"){
-    if(fb_root_npsf.res$qval[i] < 0.05){
-      fb_root_npsf.dares <- rbind(fb_root_npsf.dares, fb_root_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+    fb_root_npsf.dares <- rbind(fb_root_npsf.dares, fb_root_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
+
 
 # Maaslin2 analysis for the Non-PSF Soil data # 
 fb_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
@@ -7818,7 +7807,7 @@ fb_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "NONE",
+                         transform = "LOG",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -7830,10 +7819,8 @@ fb_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
 fb_npsf.res <- fb_npsf.maas$results
 fb_npsf.dares <- c()
 for(i in 1:nrow(fb_npsf.res)){
-  if(fb_npsf.res$value[i] == "CNBu"){
-    if(fb_npsf.res$qval[i] < 0.05){
-      fb_npsf.dares <- rbind(fb_npsf.dares, fb_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+  if(fb_npsf.res$value[i] == "CNSo"){
+    fb_npsf.dares <- rbind(fb_npsf.dares, fb_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
@@ -7844,7 +7831,7 @@ fb_comm.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "NONE",
+                         transform = "LOG",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -7856,10 +7843,8 @@ fb_comm.maas <- Maaslin2(input_data = soil_maas$otu,
 fb_comm.res <- fb_comm.maas$results
 fb_comm.dares <- c()
 for(i in 1:nrow(fb_comm.res)){
-  if(fb_comm.res$value[i] == "SCBu"){
-    if(fb_comm.res$qval[i] < 0.05){
-      fb_comm.dares <- rbind(fb_comm.dares, fb_comm.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+  if(fb_comm.res$value[i] == "SCSo"){
+    fb_comm.dares <- rbind(fb_comm.dares, fb_comm.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
@@ -7870,7 +7855,7 @@ fb_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "NONE",
+                         transform = "LOG",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -7883,117 +7868,105 @@ fb_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
 fb_wpsf.res <- fb_wpsf.maas$results
 fb_wpsf.dares <- c()
 for(i in 1:nrow(fb_wpsf.res)){
-  if(fb_wpsf.res$value[i] == "SPBu"){
-    if(fb_wpsf.res$qval[i] < 0.05){
-      fb_wpsf.dares <- rbind(fb_wpsf.dares, fb_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+  if(fb_wpsf.res$value[i] == "SPSo"){
+    fb_wpsf.dares <- rbind(fb_wpsf.dares, fb_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
 ## Chamaecrista ##
-# Organize ASVs by number #
-cc_bulk.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(cc_bulk$otu)))
-cc_bulk$otu <- cc_bulk$otu[order(cc_bulk.sort),]
-# Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
-cc_bulk_wpsf.maas <- Maaslin2(input_data = cc_bulk$otu,
-                               input_metadata = cc_bulk$met,
-                               output = "./maas_results/cc_bulk_wpsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+cc_bulk_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/cc_bulk_wpsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,CPSo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
 
 # Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 cc_bulk_wpsf.res <- cc_bulk_wpsf.maas$results
 cc_bulk_wpsf.dares <- c()
 for(i in 1:nrow(cc_bulk_wpsf.res)){
-  if(cc_bulk_wpsf.res$qval[i] < 0.05){
+  if(cc_bulk_wpsf.res$value[i] == "CNSo" | cc_bulk_wpsf.res$value[i] == "SCSo"){
     cc_bulk_wpsf.dares <- rbind(cc_bulk_wpsf.dares, cc_bulk_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
 # Maaslin2 analysis for the Source Community data (PSF Reference) # 
-cc_bulk_npsf.maas <- Maaslin2(input_data = cc_bulk$otu,
-                               input_metadata = cc_bulk$met,
-                               output = "./maas_results/cc_bulk_npsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,Non-PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+cc_bulk_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/cc_bulk_npsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,CNSo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
+
 
 # Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 cc_bulk_npsf.res <- cc_bulk_npsf.maas$results
 cc_bulk_npsf.dares <- c()
 for(i in 1:nrow(cc_bulk_npsf.res)){
-  if(cc_bulk_npsf.res$qval[i] < 0.05){
+  if(cc_bulk_npsf.res$value[i] == "CPSo" | cc_bulk_npsf.res$value[i] == "SCSo"){
     cc_bulk_npsf.dares <- rbind(cc_bulk_npsf.dares, cc_bulk_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
-# Organize ASVs by number #
-cc_rhiz.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(cc_rhiz$otu)))
-cc_rhiz$otu <- cc_rhiz$otu[order(cc_rhiz.sort),]
-
 # Maaslin2 analysis for the Source Community data (PSF Reference) # 
-cc_rhiz_wpsf.maas <- Maaslin2(input_data = cc_rhiz$otu,
-                               input_metadata = cc_rhiz$met,
-                               output = "./maas_results/cc_rhiz_wpsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+cc_rhiz_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/cc_rhiz_wpsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,CPRh"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
 
 # Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
 cc_rhiz_wpsf.res <- cc_rhiz_wpsf.maas$results
 cc_rhiz_wpsf.dares <- c()
 for(i in 1:nrow(cc_rhiz_wpsf.res)){
-  if(cc_rhiz_wpsf.res$qval[i] < 0.05){
+  if(cc_rhiz_wpsf.res$value[i] == "CNRh" | cc_rhiz_wpsf.res$value[i] == "CCRh"){
     cc_rhiz_wpsf.dares <- rbind(cc_rhiz_wpsf.dares, cc_rhiz_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
 # Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
-cc_rhiz_npsf.maas <- Maaslin2(input_data = cc_rhiz$otu,
-                               input_metadata = cc_rhiz$met,
-                               output = "./maas_results/cc_rhiz_npsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,Non-PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+cc_rhiz_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/cc_rhiz_npsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,CNRh"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
 
 # Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
 cc_rhiz_npsf.res <- cc_rhiz_npsf.maas$results
 cc_rhiz_npsf.dares <- c()
 for(i in 1:nrow(cc_rhiz_npsf.res)){
-  if(cc_rhiz_npsf.res$qval[i] < 0.05){
+  if(cc_rhiz_npsf.res$value[i] == "CPRh" | cc_rhiz_npsf.res$value[i] == "CCRh"){
     cc_rhiz_npsf.dares <- rbind(cc_rhiz_npsf.dares, cc_rhiz_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
@@ -8005,8 +7978,7 @@ cc_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "NONE",
-                              min_prevalence = 0.05,
+                              transform = "LOG",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,CPRo"), 
@@ -8014,26 +7986,23 @@ cc_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
                               plot_scatter = FALSE,
                               save_scatter = FALSE)
 
-# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+# Save only the pairwise comparisons within root soils of Fuzzy Bean #
 cc_root_wpsf.res <- cc_root_wpsf.maas$results
 cc_root_wpsf.dares <- c()
 for(i in 1:nrow(cc_root_wpsf.res)){
   if(cc_root_wpsf.res$value[i] == "CNRo" | cc_root_wpsf.res$value[i] == "CCRo"){
-    if(cc_root_wpsf.res$qval[i] < 0.05){
-      cc_root_wpsf.dares <- rbind(cc_root_wpsf.dares, cc_root_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+    cc_root_wpsf.dares <- rbind(cc_root_wpsf.dares, cc_root_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
-# Maaslin2 analysis for the root endosphere data (Non-PSF Soil Reference)# 
+# Maaslin2 analysis for the root soil data (PSF Reference) # 
 cc_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
                               input_metadata = root_maas$met,
                               output = "./maas_results/cc_root_npsf.maas",
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "NONE",
-                              min_prevalence = 0.05,
+                              transform = "LOG",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,CNRo"), 
@@ -8041,16 +8010,15 @@ cc_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
                               plot_scatter = FALSE,
                               save_scatter = FALSE)
 
-# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+# Save only the pairwise comparisons within root soils of Fuzzy Bean #
 cc_root_npsf.res <- cc_root_npsf.maas$results
 cc_root_npsf.dares <- c()
 for(i in 1:nrow(cc_root_npsf.res)){
   if(cc_root_npsf.res$value[i] == "CPRo" | cc_root_npsf.res$value[i] == "CCRo"){
-    if(cc_root_npsf.res$qval[i] < 0.05){
-      cc_root_npsf.dares <- rbind(cc_root_npsf.dares, cc_root_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+    cc_root_npsf.dares <- rbind(cc_root_npsf.dares, cc_root_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
+
 
 # Maaslin2 analysis for the Non-PSF Soil data # 
 cc_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
@@ -8059,7 +8027,7 @@ cc_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "NONE",
+                         transform = "LOG",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8071,10 +8039,8 @@ cc_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
 cc_npsf.res <- cc_npsf.maas$results
 cc_npsf.dares <- c()
 for(i in 1:nrow(cc_npsf.res)){
-  if(cc_npsf.res$value[i] == "CNBu"){
-    if(cc_npsf.res$qval[i] < 0.05){
-      cc_npsf.dares <- rbind(cc_npsf.dares, cc_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+  if(cc_npsf.res$value[i] == "CNSo"){
+    cc_npsf.dares <- rbind(cc_npsf.dares, cc_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
@@ -8085,7 +8051,7 @@ cc_comm.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "NONE",
+                         transform = "LOG",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8097,10 +8063,8 @@ cc_comm.maas <- Maaslin2(input_data = soil_maas$otu,
 cc_comm.res <- cc_comm.maas$results
 cc_comm.dares <- c()
 for(i in 1:nrow(cc_comm.res)){
-  if(cc_comm.res$value[i] == "SCBu"){
-    if(cc_comm.res$qval[i] < 0.05){
-      cc_comm.dares <- rbind(cc_comm.dares, cc_comm.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+  if(cc_comm.res$value[i] == "SCSo"){
+    cc_comm.dares <- rbind(cc_comm.dares, cc_comm.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
@@ -8111,7 +8075,7 @@ cc_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "NONE",
+                         transform = "LOG",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8124,117 +8088,105 @@ cc_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
 cc_wpsf.res <- cc_wpsf.maas$results
 cc_wpsf.dares <- c()
 for(i in 1:nrow(cc_wpsf.res)){
-  if(cc_wpsf.res$value[i] == "CPBu"){
-    if(cc_wpsf.res$qval[i] < 0.05){
-      cc_wpsf.dares <- rbind(cc_wpsf.dares, cc_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+  if(cc_wpsf.res$value[i] == "CPSo"){
+    cc_wpsf.dares <- rbind(cc_wpsf.dares, cc_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
 ## Desmodium ##
-# Organize ASVs by number #
-ds_bulk.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(ds_bulk$otu)))
-ds_bulk$otu <- ds_bulk$otu[order(ds_bulk.sort),]
-# Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
-ds_bulk_wpsf.maas <- Maaslin2(input_data = ds_bulk$otu,
-                               input_metadata = ds_bulk$met,
-                               output = "./maas_results/ds_bulk_wpsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+ds_bulk_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/ds_bulk_wpsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,DPSo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
 
 # Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 ds_bulk_wpsf.res <- ds_bulk_wpsf.maas$results
 ds_bulk_wpsf.dares <- c()
 for(i in 1:nrow(ds_bulk_wpsf.res)){
-  if(ds_bulk_wpsf.res$qval[i] < 0.05){
+  if(ds_bulk_wpsf.res$value[i] == "DNSo" | ds_bulk_wpsf.res$value[i] == "SCSo"){
     ds_bulk_wpsf.dares <- rbind(ds_bulk_wpsf.dares, ds_bulk_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
 # Maaslin2 analysis for the Source Community data (PSF Reference) # 
-ds_bulk_npsf.maas <- Maaslin2(input_data = ds_bulk$otu,
-                               input_metadata = ds_bulk$met,
-                               output = "./maas_results/ds_bulk_npsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,Non-PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+ds_bulk_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/ds_bulk_npsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,DNSo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
+
 
 # Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 ds_bulk_npsf.res <- ds_bulk_npsf.maas$results
 ds_bulk_npsf.dares <- c()
 for(i in 1:nrow(ds_bulk_npsf.res)){
-  if(ds_bulk_npsf.res$qval[i] < 0.05){
+  if(ds_bulk_npsf.res$value[i] == "DPSo" | ds_bulk_npsf.res$value[i] == "SCSo"){
     ds_bulk_npsf.dares <- rbind(ds_bulk_npsf.dares, ds_bulk_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
-# Organize ASVs by number #
-ds_rhiz.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(ds_rhiz$otu)))
-ds_rhiz$otu <- ds_rhiz$otu[order(ds_rhiz.sort),]
-
 # Maaslin2 analysis for the Source Community data (PSF Reference) # 
-ds_rhiz_wpsf.maas <- Maaslin2(input_data = ds_rhiz$otu,
-                               input_metadata = ds_rhiz$met,
-                               output = "./maas_results/ds_rhiz_wpsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+ds_rhiz_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/ds_rhiz_wpsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,DPRh"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
 
 # Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
 ds_rhiz_wpsf.res <- ds_rhiz_wpsf.maas$results
 ds_rhiz_wpsf.dares <- c()
 for(i in 1:nrow(ds_rhiz_wpsf.res)){
-  if(ds_rhiz_wpsf.res$qval[i] < 0.05){
+  if(ds_rhiz_wpsf.res$value[i] == "DNRh" | ds_rhiz_wpsf.res$value[i] == "DCRh"){
     ds_rhiz_wpsf.dares <- rbind(ds_rhiz_wpsf.dares, ds_rhiz_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
 # Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
-ds_rhiz_npsf.maas <- Maaslin2(input_data = ds_rhiz$otu,
-                               input_metadata = ds_rhiz$met,
-                               output = "./maas_results/ds_rhiz_npsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,Non-PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+ds_rhiz_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/ds_rhiz_npsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,DNRh"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
 
 # Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
 ds_rhiz_npsf.res <- ds_rhiz_npsf.maas$results
 ds_rhiz_npsf.dares <- c()
 for(i in 1:nrow(ds_rhiz_npsf.res)){
-  if(ds_rhiz_npsf.res$qval[i] < 0.05){
+  if(ds_rhiz_npsf.res$value[i] == "DPRh" | ds_rhiz_npsf.res$value[i] == "DCRh"){
     ds_rhiz_npsf.dares <- rbind(ds_rhiz_npsf.dares, ds_rhiz_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
@@ -8246,8 +8198,7 @@ ds_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "NONE",
-                              min_prevalence = 0.05,
+                              transform = "LOG",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,DPRo"), 
@@ -8255,26 +8206,23 @@ ds_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
                               plot_scatter = FALSE,
                               save_scatter = FALSE)
 
-# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+# Save only the pairwise comparisons within root soils of Fuzzy Bean #
 ds_root_wpsf.res <- ds_root_wpsf.maas$results
 ds_root_wpsf.dares <- c()
 for(i in 1:nrow(ds_root_wpsf.res)){
   if(ds_root_wpsf.res$value[i] == "DNRo" | ds_root_wpsf.res$value[i] == "DCRo"){
-    if(ds_root_wpsf.res$qval[i] < 0.05){
-      ds_root_wpsf.dares <- rbind(ds_root_wpsf.dares, ds_root_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+    ds_root_wpsf.dares <- rbind(ds_root_wpsf.dares, ds_root_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
-# Maaslin2 analysis for the root endosphere data (Non-PSF Soil Reference)# 
+# Maaslin2 analysis for the root soil data (PSF Reference) # 
 ds_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
                               input_metadata = root_maas$met,
                               output = "./maas_results/ds_root_npsf.maas",
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "NONE",
-                              min_prevalence = 0.05,
+                              transform = "LOG",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,DNRo"), 
@@ -8282,16 +8230,15 @@ ds_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
                               plot_scatter = FALSE,
                               save_scatter = FALSE)
 
-# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+# Save only the pairwise comparisons within root soils of Fuzzy Bean #
 ds_root_npsf.res <- ds_root_npsf.maas$results
 ds_root_npsf.dares <- c()
 for(i in 1:nrow(ds_root_npsf.res)){
   if(ds_root_npsf.res$value[i] == "DPRo" | ds_root_npsf.res$value[i] == "DCRo"){
-    if(ds_root_npsf.res$qval[i] < 0.05){
-      ds_root_npsf.dares <- rbind(ds_root_npsf.dares, ds_root_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+    ds_root_npsf.dares <- rbind(ds_root_npsf.dares, ds_root_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
+
 
 # Maaslin2 analysis for the Non-PSF Soil data # 
 ds_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
@@ -8300,7 +8247,7 @@ ds_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "NONE",
+                         transform = "LOG",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8312,10 +8259,8 @@ ds_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
 ds_npsf.res <- ds_npsf.maas$results
 ds_npsf.dares <- c()
 for(i in 1:nrow(ds_npsf.res)){
-  if(ds_npsf.res$value[i] == "DNBu"){
-    if(ds_npsf.res$qval[i] < 0.05){
-      ds_npsf.dares <- rbind(ds_npsf.dares, ds_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+  if(ds_npsf.res$value[i] == "DNSo"){
+    ds_npsf.dares <- rbind(ds_npsf.dares, ds_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
@@ -8326,7 +8271,7 @@ ds_comm.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "NONE",
+                         transform = "LOG",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8338,10 +8283,8 @@ ds_comm.maas <- Maaslin2(input_data = soil_maas$otu,
 ds_comm.res <- ds_comm.maas$results
 ds_comm.dares <- c()
 for(i in 1:nrow(ds_comm.res)){
-  if(ds_comm.res$value[i] == "SCBu"){
-    if(ds_comm.res$qval[i] < 0.05){
-      ds_comm.dares <- rbind(ds_comm.dares, ds_comm.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+  if(ds_comm.res$value[i] == "SCSo"){
+    ds_comm.dares <- rbind(ds_comm.dares, ds_comm.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
@@ -8352,7 +8295,7 @@ ds_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "NONE",
+                         transform = "LOG",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8365,117 +8308,105 @@ ds_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
 ds_wpsf.res <- ds_wpsf.maas$results
 ds_wpsf.dares <- c()
 for(i in 1:nrow(ds_wpsf.res)){
-  if(ds_wpsf.res$value[i] == "DPBu"){
-    if(ds_wpsf.res$qval[i] < 0.05){
-      ds_wpsf.dares <- rbind(ds_wpsf.dares, ds_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+  if(ds_wpsf.res$value[i] == "DPSo"){
+    ds_wpsf.dares <- rbind(ds_wpsf.dares, ds_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
 ## Hog Peanut ##
-# Organize ASVs by number #
-hp_bulk.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(hp_bulk$otu)))
-hp_bulk$otu <- hp_bulk$otu[order(hp_bulk.sort),]
-# Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
-hp_bulk_wpsf.maas <- Maaslin2(input_data = hp_bulk$otu,
-                               input_metadata = hp_bulk$met,
-                               output = "./maas_results/hp_bulk_wpsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+hp_bulk_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/hp_bulk_wpsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,APSo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
 
 # Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 hp_bulk_wpsf.res <- hp_bulk_wpsf.maas$results
 hp_bulk_wpsf.dares <- c()
 for(i in 1:nrow(hp_bulk_wpsf.res)){
-  if(hp_bulk_wpsf.res$qval[i] < 0.05){
+  if(hp_bulk_wpsf.res$value[i] == "DNSo" | hp_bulk_wpsf.res$value[i] == "SCSo"){
     hp_bulk_wpsf.dares <- rbind(hp_bulk_wpsf.dares, hp_bulk_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
 # Maaslin2 analysis for the Source Community data (PSF Reference) # 
-hp_bulk_npsf.maas <- Maaslin2(input_data = hp_bulk$otu,
-                               input_metadata = hp_bulk$met,
-                               output = "./maas_results/hp_bulk_npsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,Non-PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+hp_bulk_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/hp_bulk_npsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,DNSo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
+
 
 # Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 hp_bulk_npsf.res <- hp_bulk_npsf.maas$results
 hp_bulk_npsf.dares <- c()
 for(i in 1:nrow(hp_bulk_npsf.res)){
-  if(hp_bulk_npsf.res$qval[i] < 0.05){
+  if(hp_bulk_npsf.res$value[i] == "APSo" | hp_bulk_npsf.res$value[i] == "SCSo"){
     hp_bulk_npsf.dares <- rbind(hp_bulk_npsf.dares, hp_bulk_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
-# Organize ASVs by number #
-hp_rhiz.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(hp_rhiz$otu)))
-hp_rhiz$otu <- hp_rhiz$otu[order(hp_rhiz.sort),]
-
 # Maaslin2 analysis for the Source Community data (PSF Reference) # 
-hp_rhiz_wpsf.maas <- Maaslin2(input_data = hp_rhiz$otu,
-                               input_metadata = hp_rhiz$met,
-                               output = "./maas_results/hp_rhiz_wpsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+hp_rhiz_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/hp_rhiz_wpsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,APRh"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
 
 # Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
 hp_rhiz_wpsf.res <- hp_rhiz_wpsf.maas$results
 hp_rhiz_wpsf.dares <- c()
 for(i in 1:nrow(hp_rhiz_wpsf.res)){
-  if(hp_rhiz_wpsf.res$qval[i] < 0.05){
+  if(hp_rhiz_wpsf.res$value[i] == "ANRh" | hp_rhiz_wpsf.res$value[i] == "ACRh"){
     hp_rhiz_wpsf.dares <- rbind(hp_rhiz_wpsf.dares, hp_rhiz_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
 # Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
-hp_rhiz_npsf.maas <- Maaslin2(input_data = hp_rhiz$otu,
-                               input_metadata = hp_rhiz$met,
-                               output = "./maas_results/hp_rhiz_npsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,Non-PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+hp_rhiz_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/hp_rhiz_npsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,ANRh"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
 
 # Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
 hp_rhiz_npsf.res <- hp_rhiz_npsf.maas$results
 hp_rhiz_npsf.dares <- c()
 for(i in 1:nrow(hp_rhiz_npsf.res)){
-  if(hp_rhiz_npsf.res$qval[i] < 0.05){
+  if(hp_rhiz_npsf.res$value[i] == "APRh" | hp_rhiz_npsf.res$value[i] == "ACRh"){
     hp_rhiz_npsf.dares <- rbind(hp_rhiz_npsf.dares, hp_rhiz_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
@@ -8487,8 +8418,7 @@ hp_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "NONE",
-                              min_prevalence = 0.05,
+                              transform = "LOG",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,APRo"), 
@@ -8496,26 +8426,23 @@ hp_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
                               plot_scatter = FALSE,
                               save_scatter = FALSE)
 
-# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+# Save only the pairwise comparisons within root soils of Fuzzy Bean #
 hp_root_wpsf.res <- hp_root_wpsf.maas$results
 hp_root_wpsf.dares <- c()
 for(i in 1:nrow(hp_root_wpsf.res)){
   if(hp_root_wpsf.res$value[i] == "ANRo" | hp_root_wpsf.res$value[i] == "ACRo"){
-    if(hp_root_wpsf.res$qval[i] < 0.05){
-      hp_root_wpsf.dares <- rbind(hp_root_wpsf.dares, hp_root_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+    hp_root_wpsf.dares <- rbind(hp_root_wpsf.dares, hp_root_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
-# Maaslin2 analysis for the root endosphere data (Non-PSF Soil Reference)# 
+# Maaslin2 analysis for the root soil data (PSF Reference) # 
 hp_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
                               input_metadata = root_maas$met,
                               output = "./maas_results/hp_root_npsf.maas",
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "NONE",
-                              min_prevalence = 0.05,
+                              transform = "LOG",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,ANRo"), 
@@ -8523,16 +8450,15 @@ hp_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
                               plot_scatter = FALSE,
                               save_scatter = FALSE)
 
-# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+# Save only the pairwise comparisons within root soils of Fuzzy Bean #
 hp_root_npsf.res <- hp_root_npsf.maas$results
 hp_root_npsf.dares <- c()
 for(i in 1:nrow(hp_root_npsf.res)){
   if(hp_root_npsf.res$value[i] == "APRo" | hp_root_npsf.res$value[i] == "ACRo"){
-    if(hp_root_npsf.res$qval[i] < 0.05){
-      hp_root_npsf.dares <- rbind(hp_root_npsf.dares, hp_root_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+    hp_root_npsf.dares <- rbind(hp_root_npsf.dares, hp_root_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
+
 
 # Maaslin2 analysis for the Non-PSF Soil data # 
 hp_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
@@ -8541,7 +8467,7 @@ hp_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "NONE",
+                         transform = "LOG",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8553,10 +8479,8 @@ hp_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
 hp_npsf.res <- hp_npsf.maas$results
 hp_npsf.dares <- c()
 for(i in 1:nrow(hp_npsf.res)){
-  if(hp_npsf.res$value[i] == "DNBu"){
-    if(hp_npsf.res$qval[i] < 0.05){
-      hp_npsf.dares <- rbind(hp_npsf.dares, hp_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+  if(hp_npsf.res$value[i] == "DNSo"){
+    hp_npsf.dares <- rbind(hp_npsf.dares, hp_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
@@ -8567,7 +8491,7 @@ hp_comm.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "NONE",
+                         transform = "LOG",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8579,10 +8503,8 @@ hp_comm.maas <- Maaslin2(input_data = soil_maas$otu,
 hp_comm.res <- hp_comm.maas$results
 hp_comm.dares <- c()
 for(i in 1:nrow(hp_comm.res)){
-  if(hp_comm.res$value[i] == "SCBu"){
-    if(hp_comm.res$qval[i] < 0.05){
-      hp_comm.dares <- rbind(hp_comm.dares, hp_comm.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+  if(hp_comm.res$value[i] == "SCSo"){
+    hp_comm.dares <- rbind(hp_comm.dares, hp_comm.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
@@ -8593,7 +8515,7 @@ hp_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "NONE",
+                         transform = "LOG",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8606,92 +8528,81 @@ hp_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
 hp_wpsf.res <- hp_wpsf.maas$results
 hp_wpsf.dares <- c()
 for(i in 1:nrow(hp_wpsf.res)){
-  if(hp_wpsf.res$value[i] == "APBu"){
-    if(hp_wpsf.res$qval[i] < 0.05){
-      hp_wpsf.dares <- rbind(hp_wpsf.dares, hp_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+  if(hp_wpsf.res$value[i] == "APSo"){
+    hp_wpsf.dares <- rbind(hp_wpsf.dares, hp_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
 ## Clover ##
-# Organize ASVs by number #
-cl_bulk.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(cl_bulk$otu)))
-cl_bulk$otu <- cl_bulk$otu[order(cl_bulk.sort),]
-# Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
-cl_bulk_wpsf.maas <- Maaslin2(input_data = cl_bulk$otu,
-                               input_metadata = cl_bulk$met,
-                               output = "./maas_results/cl_bulk_wpsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+cl_bulk_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/cl_bulk_wpsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,TPSo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
 
 # Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 cl_bulk_wpsf.res <- cl_bulk_wpsf.maas$results
 cl_bulk_wpsf.dares <- c()
 for(i in 1:nrow(cl_bulk_wpsf.res)){
-  if(cl_bulk_wpsf.res$qval[i] < 0.05){
+  if(cl_bulk_wpsf.res$value[i] == "TNSo" | cl_bulk_wpsf.res$value[i] == "SCSo"){
     cl_bulk_wpsf.dares <- rbind(cl_bulk_wpsf.dares, cl_bulk_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
 # Maaslin2 analysis for the Source Community data (PSF Reference) # 
-cl_bulk_npsf.maas <- Maaslin2(input_data = cl_bulk$otu,
-                               input_metadata = cl_bulk$met,
-                               output = "./maas_results/cl_bulk_npsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,Non-PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+cl_bulk_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/cl_bulk_npsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,TNSo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
+
 
 # Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 cl_bulk_npsf.res <- cl_bulk_npsf.maas$results
 cl_bulk_npsf.dares <- c()
 for(i in 1:nrow(cl_bulk_npsf.res)){
-  if(cl_bulk_npsf.res$qval[i] < 0.05){
+  if(cl_bulk_npsf.res$value[i] == "TPSo" | cl_bulk_npsf.res$value[i] == "SCSo"){
     cl_bulk_npsf.dares <- rbind(cl_bulk_npsf.dares, cl_bulk_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
-# Organize ASVs by number #
-cl_rhiz.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(cl_rhiz$otu)))
-cl_rhiz$otu <- cl_rhiz$otu[order(cl_rhiz.sort),]
-
 # Maaslin2 analysis for the Source Community data (PSF Reference) # 
-cl_rhiz_wpsf.maas <- Maaslin2(input_data = cl_rhiz$otu,
-                               input_metadata = cl_rhiz$met,
-                               output = "./maas_results/cl_rhiz_wpsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+cl_rhiz_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/cl_rhiz_wpsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,TPRh"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
 
 # Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
 cl_rhiz_wpsf.res <- cl_rhiz_wpsf.maas$results
 cl_rhiz_wpsf.dares <- c()
 for(i in 1:nrow(cl_rhiz_wpsf.res)){
-  if(cl_rhiz_wpsf.res$qval[i] < 0.05){
+  if(cl_rhiz_wpsf.res$value[i] == "TCRh"){
     cl_rhiz_wpsf.dares <- rbind(cl_rhiz_wpsf.dares, cl_rhiz_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
@@ -8703,8 +8614,7 @@ cl_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "NONE",
-                              min_prevalence = 0.05,
+                              transform = "LOG",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,TPRo"), 
@@ -8712,26 +8622,23 @@ cl_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
                               plot_scatter = FALSE,
                               save_scatter = FALSE)
 
-# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+# Save only the pairwise comparisons within root soils of Fuzzy Bean #
 cl_root_wpsf.res <- cl_root_wpsf.maas$results
 cl_root_wpsf.dares <- c()
 for(i in 1:nrow(cl_root_wpsf.res)){
   if(cl_root_wpsf.res$value[i] == "TNRo" | cl_root_wpsf.res$value[i] == "TCRo"){
-    if(cl_root_wpsf.res$qval[i] < 0.05){
-      cl_root_wpsf.dares <- rbind(cl_root_wpsf.dares, cl_root_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+    cl_root_wpsf.dares <- rbind(cl_root_wpsf.dares, cl_root_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
-# Maaslin2 analysis for the root endosphere data (Non-PSF Soil Reference)# 
+# Maaslin2 analysis for the root soil data (PSF Reference) # 
 cl_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
                               input_metadata = root_maas$met,
                               output = "./maas_results/cl_root_npsf.maas",
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "NONE",
-                              min_prevalence = 0.05,
+                              transform = "LOG",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,TNRo"), 
@@ -8739,16 +8646,15 @@ cl_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
                               plot_scatter = FALSE,
                               save_scatter = FALSE)
 
-# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+# Save only the pairwise comparisons within root soils of Fuzzy Bean #
 cl_root_npsf.res <- cl_root_npsf.maas$results
 cl_root_npsf.dares <- c()
 for(i in 1:nrow(cl_root_npsf.res)){
   if(cl_root_npsf.res$value[i] == "TPRo" | cl_root_npsf.res$value[i] == "TCRo"){
-    if(cl_root_npsf.res$qval[i] < 0.05){
-      cl_root_npsf.dares <- rbind(cl_root_npsf.dares, cl_root_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+    cl_root_npsf.dares <- rbind(cl_root_npsf.dares, cl_root_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
+
 
 # Maaslin2 analysis for the Non-PSF Soil data #
 cl_comm.maas <- Maaslin2(input_data = soil_maas$otu,
@@ -8757,7 +8663,7 @@ cl_comm.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "NONE",
+                         transform = "LOG",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8769,10 +8675,8 @@ cl_comm.maas <- Maaslin2(input_data = soil_maas$otu,
 cl_comm.res <- cl_comm.maas$results
 cl_comm.dares <- c()
 for(i in 1:nrow(cl_comm.res)){
-  if(cl_comm.res$value[i] == "SCBu"){
-    if(cl_comm.res$qval[i] < 0.05){
-      cl_comm.dares <- rbind(cl_comm.dares, cl_comm.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+  if(cl_comm.res$value[i] == "SCSo"){
+    cl_comm.dares <- rbind(cl_comm.dares, cl_comm.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
@@ -8783,7 +8687,7 @@ cl_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "NONE",
+                         transform = "LOG",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8796,117 +8700,105 @@ cl_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
 cl_wpsf.res <- cl_wpsf.maas$results
 cl_wpsf.dares <- c()
 for(i in 1:nrow(cl_wpsf.res)){
-  if(cl_wpsf.res$value[i] == "TPBu"){
-    if(cl_wpsf.res$qval[i] < 0.05){
-      cl_wpsf.dares <- rbind(cl_wpsf.dares, cl_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+  if(cl_wpsf.res$value[i] == "TPSo"){
+    cl_wpsf.dares <- rbind(cl_wpsf.dares, cl_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
 ## Medicago ##
-# Organize ASVs by number #
-md_bulk.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(md_bulk$otu)))
-md_bulk$otu <- md_bulk$otu[order(md_bulk.sort),]
-# Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
-md_bulk_wpsf.maas <- Maaslin2(input_data = md_bulk$otu,
-                               input_metadata = md_bulk$met,
-                               output = "./maas_results/md_bulk_wpsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+# Maaslin2 analysis for the bulk soil data (PSF Reference) # 
+md_bulk_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/md_bulk_wpsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,MPSo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
 
 # Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 md_bulk_wpsf.res <- md_bulk_wpsf.maas$results
 md_bulk_wpsf.dares <- c()
 for(i in 1:nrow(md_bulk_wpsf.res)){
-  if(md_bulk_wpsf.res$qval[i] < 0.05){
+  if(md_bulk_wpsf.res$value[i] == "TNSo" | md_bulk_wpsf.res$value[i] == "SCSo"){
     md_bulk_wpsf.dares <- rbind(md_bulk_wpsf.dares, md_bulk_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
 # Maaslin2 analysis for the Source Community data (PSF Reference) # 
-md_bulk_npsf.maas <- Maaslin2(input_data = md_bulk$otu,
-                               input_metadata = md_bulk$met,
-                               output = "./maas_results/md_bulk_npsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,Non-PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+md_bulk_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/md_bulk_npsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,TNSo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
+
 
 # Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 md_bulk_npsf.res <- md_bulk_npsf.maas$results
 md_bulk_npsf.dares <- c()
 for(i in 1:nrow(md_bulk_npsf.res)){
-  if(md_bulk_npsf.res$qval[i] < 0.05){
+  if(md_bulk_npsf.res$value[i] == "MPSo" | md_bulk_npsf.res$value[i] == "SCSo"){
     md_bulk_npsf.dares <- rbind(md_bulk_npsf.dares, md_bulk_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
-# Organize ASVs by number #
-md_rhiz.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(md_rhiz$otu)))
-md_rhiz$otu <- md_rhiz$otu[order(md_rhiz.sort),]
-
 # Maaslin2 analysis for the Source Community data (PSF Reference) # 
-md_rhiz_wpsf.maas <- Maaslin2(input_data = md_rhiz$otu,
-                               input_metadata = md_rhiz$met,
-                               output = "./maas_results/md_rhiz_wpsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+md_rhiz_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/md_rhiz_wpsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,MPRh"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
 
 # Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
 md_rhiz_wpsf.res <- md_rhiz_wpsf.maas$results
 md_rhiz_wpsf.dares <- c()
 for(i in 1:nrow(md_rhiz_wpsf.res)){
-  if(md_rhiz_wpsf.res$qval[i] < 0.05){
+  if(md_rhiz_wpsf.res$value[i] == "MNRh" | md_rhiz_wpsf.res$value[i] == "MCRh"){
     md_rhiz_wpsf.dares <- rbind(md_rhiz_wpsf.dares, md_rhiz_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
 # Maaslin2 analysis for the rhiz soil data (PSF Reference) # 
-md_rhiz_npsf.maas <- Maaslin2(input_data = md_rhiz$otu,
-                               input_metadata = md_rhiz$met,
-                               output = "./maas_results/md_rhiz_npsf.maas",
-                               fixed_effects = c("Soils"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "NONE",
-                               min_prevalence = 0.32,
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("Soils,Non-PSF Soil"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+md_rhiz_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/md_rhiz_npsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "LOG",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,MNRh"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
 
 # Save only the pairwise comparisons within rhiz soils of Fuzzy Bean #
 md_rhiz_npsf.res <- md_rhiz_npsf.maas$results
 md_rhiz_npsf.dares <- c()
 for(i in 1:nrow(md_rhiz_npsf.res)){
-  if(md_rhiz_npsf.res$qval[i] < 0.05){
+  if(md_rhiz_npsf.res$value[i] == "MPRh" | md_rhiz_npsf.res$value[i] == "MCRh"){
     md_rhiz_npsf.dares <- rbind(md_rhiz_npsf.dares, md_rhiz_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
@@ -8918,8 +8810,7 @@ md_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "NONE",
-                              min_prevalence = 0.05,
+                              transform = "LOG",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,MPRo"), 
@@ -8927,26 +8818,23 @@ md_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
                               plot_scatter = FALSE,
                               save_scatter = FALSE)
 
-# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+# Save only the pairwise comparisons within root soils of Fuzzy Bean #
 md_root_wpsf.res <- md_root_wpsf.maas$results
 md_root_wpsf.dares <- c()
 for(i in 1:nrow(md_root_wpsf.res)){
   if(md_root_wpsf.res$value[i] == "MNRo" | md_root_wpsf.res$value[i] == "MCRo"){
-    if(md_root_wpsf.res$qval[i] < 0.05){
-      md_root_wpsf.dares <- rbind(md_root_wpsf.dares, md_root_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+    md_root_wpsf.dares <- rbind(md_root_wpsf.dares, md_root_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
-# Maaslin2 analysis for the root endosphere data (Non-PSF Soil Reference)# 
+# Maaslin2 analysis for the root soil data (PSF Reference) # 
 md_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
                               input_metadata = root_maas$met,
                               output = "./maas_results/md_root_npsf.maas",
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "NONE",
-                              min_prevalence = 0.05,
+                              transform = "LOG",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,MNRo"), 
@@ -8954,16 +8842,15 @@ md_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
                               plot_scatter = FALSE,
                               save_scatter = FALSE)
 
-# Save only the pairwise comparisons within root endosphere of Fuzzy Bean #
+# Save only the pairwise comparisons within root soils of Fuzzy Bean #
 md_root_npsf.res <- md_root_npsf.maas$results
 md_root_npsf.dares <- c()
 for(i in 1:nrow(md_root_npsf.res)){
   if(md_root_npsf.res$value[i] == "MPRo" | md_root_npsf.res$value[i] == "MCRo"){
-    if(md_root_npsf.res$qval[i] < 0.05){
-      md_root_npsf.dares <- rbind(md_root_npsf.dares, md_root_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+    md_root_npsf.dares <- rbind(md_root_npsf.dares, md_root_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
+
 
 # Maaslin2 analysis for the Non-PSF Soil data # 
 md_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
@@ -8972,7 +8859,7 @@ md_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "NONE",
+                         transform = "LOG",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8984,10 +8871,8 @@ md_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
 md_npsf.res <- md_npsf.maas$results
 md_npsf.dares <- c()
 for(i in 1:nrow(md_npsf.res)){
-  if(md_npsf.res$value[i] == "TNBu"){
-    if(md_npsf.res$qval[i] < 0.05){
-      md_npsf.dares <- rbind(md_npsf.dares, md_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+  if(md_npsf.res$value[i] == "TNSo"){
+    md_npsf.dares <- rbind(md_npsf.dares, md_npsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
@@ -8998,7 +8883,7 @@ md_comm.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "NONE",
+                         transform = "LOG",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -9010,10 +8895,8 @@ md_comm.maas <- Maaslin2(input_data = soil_maas$otu,
 md_comm.res <- md_comm.maas$results
 md_comm.dares <- c()
 for(i in 1:nrow(md_comm.res)){
-  if(md_comm.res$value[i] == "SCBu"){
-    if(md_comm.res$qval[i] < 0.05){
-      md_comm.dares <- rbind(md_comm.dares, md_comm.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+  if(md_comm.res$value[i] == "SCSo"){
+    md_comm.dares <- rbind(md_comm.dares, md_comm.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
@@ -9024,7 +8907,7 @@ md_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "NONE",
+                         transform = "LOG",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -9037,10 +8920,8 @@ md_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
 md_wpsf.res <- md_wpsf.maas$results
 md_wpsf.dares <- c()
 for(i in 1:nrow(md_wpsf.res)){
-  if(md_wpsf.res$value[i] == "MPBu"){
-    if(md_wpsf.res$qval[i] < 0.05){
-      md_wpsf.dares <- rbind(md_wpsf.dares, md_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
-    }
+  if(md_wpsf.res$value[i] == "MPSo"){
+    md_wpsf.dares <- rbind(md_wpsf.dares, md_wpsf.res[i, c("feature", "metadata", "value", "coef", "stderr", "pval", "name", "qval", "N", "N.not.zero")]) 
   }
 }
 
