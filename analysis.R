@@ -1220,26 +1220,27 @@ fb_pbulk_top.df$ASVs <- factor(fb_pbulk_top.df$ASV, levels = fb_pbulk_top.name)
 fb_pbulk_top.df$Group <- factor(fb_pbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-fb_pbulk_top.plot <- ggplot(fb_pbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+fb_pbulk_top.plot <- ggplot(fb_pbulk_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = fb_pbulk_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('S. helvola')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>S. helvola</em> in PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans')) +
+  labs(tag = "A.")
 
 ## Non-PSF ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -1253,26 +1254,27 @@ fb_nbulk_top.df$ASVs <- factor(fb_nbulk_top.df$ASV, levels = fb_nbulk_top.name)
 fb_nbulk_top.df$Group <- factor(fb_nbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-fb_nbulk_top.plot <- ggplot(fb_nbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+fb_nbulk_top.plot <- ggplot(fb_nbulk_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = fb_nbulk_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('S. helvola')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>S. helvola</em> in Non-PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "A.")
 
 ## Common ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -1286,26 +1288,27 @@ fb_cbulk_top.df$ASVs <- factor(fb_cbulk_top.df$ASV, levels = fb_cbulk_top.name)
 fb_cbulk_top.df$Group <- factor(fb_cbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cbulk_top.plot <- ggplot(fb_cbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cbulk_top.plot <- ggplot(fb_cbulk_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = fb_cbulk_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('S. helvola')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = 'Common Soil Source Community')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "A.")
 
 fb_bulk.plot <- (fb_pbulk_top.plot | fb_nbulk_top.plot | cbulk_top.plot)
 
@@ -1322,26 +1325,27 @@ fb_prhiz_top.df$ASVs <- factor(fb_prhiz_top.df$ASV, levels = fb_prhiz_top.name)
 fb_prhiz_top.df$Group <- factor(fb_prhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-fb_prhiz_top.plot <- ggplot(fb_prhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+fb_prhiz_top.plot <- ggplot(fb_prhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = fb_prhiz_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('S. helvola')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>S. helvola</em> in PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "B.")
 
 ## Non-PSF ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -1355,26 +1359,27 @@ fb_nrhiz_top.df$ASVs <- factor(fb_nrhiz_top.df$ASV, levels = fb_nrhiz_top.name)
 fb_nrhiz_top.df$Group <- factor(fb_nrhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-fb_nrhiz_top.plot <- ggplot(fb_nrhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+fb_nrhiz_top.plot <- ggplot(fb_nrhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = fb_nrhiz_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('S. helvola')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>S. helvola</em> in Non-PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "B.")
 
 ## Common ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -1388,26 +1393,27 @@ fb_crhiz_top.df$ASVs <- factor(fb_crhiz_top.df$ASV, levels = fb_crhiz_top.name)
 fb_crhiz_top.df$Group <- factor(fb_crhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-fb_crhiz_top.plot <- ggplot(fb_crhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+fb_crhiz_top.plot <- ggplot(fb_crhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = fb_crhiz_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('S. helvola')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>S. helvola</em> in Common Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "B.")
 
 fb_rhiz.plot <- (fb_prhiz_top.plot | fb_nrhiz_top.plot | fb_crhiz_top.plot)
 
@@ -1425,12 +1431,12 @@ fb_proot_top.df$ASVs <- factor(fb_proot_top.df$ASV, levels = unique(fb_proot_top
 fb_proot_top.df$Group <- factor(fb_proot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-fb_proot_top.plot <- ggplot(fb_proot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+fb_proot_top.plot <- ggplot(fb_proot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = fb_proot_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('S. helvola')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>S. helvola</em> in PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
@@ -1444,7 +1450,8 @@ fb_proot_top.plot <- ggplot(fb_proot_top.df, aes(x = SC, y = Abundance, fill = A
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "D.")
 
 ## Non-PSF ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -1459,12 +1466,12 @@ fb_nroot_top.df$ASVs <- factor(fb_nroot_top.df$ASV, levels = unique(fb_nroot_top
 fb_nroot_top.df$Group <- factor(fb_nroot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-fb_nroot_top.plot <- ggplot(fb_nroot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+fb_nroot_top.plot <- ggplot(fb_nroot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = fb_nroot_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('S. helvola')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>S. helvola</em> in Non-PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
@@ -1478,7 +1485,8 @@ fb_nroot_top.plot <- ggplot(fb_nroot_top.df, aes(x = SC, y = Abundance, fill = A
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "D.")
 
 ## Common ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -1493,12 +1501,12 @@ fb_croot_top.df$ASVs <- factor(fb_croot_top.df$ASV, levels = unique(fb_croot_top
 fb_croot_top.df$Group <- factor(fb_croot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-fb_croot_top.plot <- ggplot(fb_croot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+fb_croot_top.plot <- ggplot(fb_croot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = fb_croot_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('S. helvola')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>S. helvola</em> in Common Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
@@ -1512,7 +1520,8 @@ fb_croot_top.plot <- ggplot(fb_croot_top.df, aes(x = SC, y = Abundance, fill = A
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "D.")
 
 fb_root.plot <- (fb_proot_top.plot | fb_nroot_top.plot | fb_croot_top.plot )
 
@@ -1529,26 +1538,27 @@ cc_pbulk_top.df$ASVs <- factor(cc_pbulk_top.df$ASV, levels = cc_pbulk_top.name)
 cc_pbulk_top.df$Group <- factor(cc_pbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cc_pbulk_top.plot <- ggplot(cc_pbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cc_pbulk_top.plot <- ggplot(cc_pbulk_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = cc_pbulk_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('C. fasciculata')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>C. fasciculata</em> in PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "A.")
 
 ## Non-PSF ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -1562,26 +1572,27 @@ cc_nbulk_top.df$ASVs <- factor(cc_nbulk_top.df$ASV, levels = cc_nbulk_top.name)
 cc_nbulk_top.df$Group <- factor(cc_nbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cc_nbulk_top.plot <- ggplot(cc_nbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cc_nbulk_top.plot <- ggplot(cc_nbulk_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = cc_nbulk_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('C. fasciculata')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>C. fasciculata</em> in Non-PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "A.")
 
 cc_bulk.plot <- (cc_pbulk_top.plot | cc_nbulk_top.plot | cbulk_top.plot)
 
@@ -1599,26 +1610,27 @@ cc_prhiz_top.df$ASVs <- factor(cc_prhiz_top.df$ASV, levels = unique(cc_prhiz_top
 cc_prhiz_top.df$Group <- factor(cc_prhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cc_prhiz_top.plot <- ggplot(cc_prhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cc_prhiz_top.plot <- ggplot(cc_prhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = cc_prhiz_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('C. fasciculata')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>C. fasciculata</em> in PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "B.")
 
 ## Non-PSF ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -1633,26 +1645,27 @@ cc_nrhiz_top.df$ASVs <- factor(cc_nrhiz_top.df$ASV, levels = unique(cc_nrhiz_top
 cc_nrhiz_top.df$Group <- factor(cc_nrhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cc_nrhiz_top.plot <- ggplot(cc_nrhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cc_nrhiz_top.plot <- ggplot(cc_nrhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = cc_nrhiz_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('C. fasciculata')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>C. fasciculata</em> in Non-PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "B.")
 
 ## Common ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -1667,26 +1680,27 @@ cc_crhiz_top.df$ASVs <- factor(cc_crhiz_top.df$ASV, levels = unique(cc_crhiz_top
 cc_crhiz_top.df$Group <- factor(cc_crhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cc_crhiz_top.plot <- ggplot(cc_crhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cc_crhiz_top.plot <- ggplot(cc_crhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = cc_crhiz_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('C. fasciculata')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>C. fasciculata</em> in Common Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "B.")
 
 cc_rhiz.plot <- (cc_prhiz_top.plot | cc_nrhiz_top.plot | cc_crhiz_top.plot)
 
@@ -1704,12 +1718,12 @@ cc_proot_top.df$ASVs <- factor(cc_proot_top.df$ASV, levels = unique(cc_proot_top
 cc_proot_top.df$Group <- factor(cc_proot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cc_proot_top.plot <- ggplot(cc_proot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cc_proot_top.plot <- ggplot(cc_proot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = cc_proot_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('C. fasciculata')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>C. fasciculata</em> in PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
@@ -1723,7 +1737,8 @@ cc_proot_top.plot <- ggplot(cc_proot_top.df, aes(x = SC, y = Abundance, fill = A
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "D.")
 
 ## Non-PSF ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -1738,12 +1753,12 @@ cc_nroot_top.df$ASVs <- factor(cc_nroot_top.df$ASV, levels = unique(cc_nroot_top
 cc_nroot_top.df$Group <- factor(cc_nroot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cc_nroot_top.plot <- ggplot(cc_nroot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cc_nroot_top.plot <- ggplot(cc_nroot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = cc_nroot_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('C. fasciculata')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>C. fasciculata</em> in Non-PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
@@ -1757,7 +1772,8 @@ cc_nroot_top.plot <- ggplot(cc_nroot_top.df, aes(x = SC, y = Abundance, fill = A
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "D.")
 
 ## Common ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -1772,12 +1788,12 @@ cc_croot_top.df$ASVs <- factor(cc_croot_top.df$ASV, levels = unique(cc_croot_top
 cc_croot_top.df$Group <- factor(cc_croot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cc_croot_top.plot <- ggplot(cc_croot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cc_croot_top.plot <- ggplot(cc_croot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = cc_croot_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('C. fasciculata')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>C. fasciculata</em> in Common Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
@@ -1791,7 +1807,8 @@ cc_croot_top.plot <- ggplot(cc_croot_top.df, aes(x = SC, y = Abundance, fill = A
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "D.")
 
 cc_root.plot <- (cc_proot_top.plot | cc_nroot_top.plot | cc_croot_top.plot)
 
@@ -1808,26 +1825,27 @@ ds_pbulk_top.df$ASVs <- factor(ds_pbulk_top.df$ASV, levels = ds_pbulk_top.name)
 ds_pbulk_top.df$Group <- factor(ds_pbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-ds_pbulk_top.plot <- ggplot(ds_pbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+ds_pbulk_top.plot <- ggplot(ds_pbulk_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = ds_pbulk_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('D. canadense')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>D. canadense</em> in PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "A.")
 
 ## Non-PSF ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -1841,26 +1859,27 @@ ds_nbulk_top.df$ASVs <- factor(ds_nbulk_top.df$ASV, levels = ds_nbulk_top.name)
 ds_nbulk_top.df$Group <- factor(ds_nbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-ds_nbulk_top.plot <- ggplot(ds_nbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+ds_nbulk_top.plot <- ggplot(ds_nbulk_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = ds_nbulk_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('D. canadense')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>D. canadense</em> in Non-PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "A.")
 
 ds_bulk.plot <- (ds_pbulk_top.plot | ds_nbulk_top.plot | cbulk_top.plot)
 
@@ -1878,26 +1897,27 @@ ds_prhiz_top.df$ASVs <- factor(ds_prhiz_top.df$ASV, levels = unique(ds_prhiz_top
 ds_prhiz_top.df$Group <- factor(ds_prhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-ds_prhiz_top.plot <- ggplot(ds_prhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+ds_prhiz_top.plot <- ggplot(ds_prhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = ds_prhiz_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('D. canadense')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>D. canadense</em> in PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "B.")
 
 ## Non-PSF ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -1912,26 +1932,27 @@ ds_nrhiz_top.df$ASVs <- factor(ds_nrhiz_top.df$ASV, levels = unique(ds_nrhiz_top
 ds_nrhiz_top.df$Group <- factor(ds_nrhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-ds_nrhiz_top.plot <- ggplot(ds_nrhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+ds_nrhiz_top.plot <- ggplot(ds_nrhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = ds_nrhiz_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('D. canadense')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>D. canadense</em> in Non-PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "B.")
 
 ## Common ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -1946,26 +1967,27 @@ ds_crhiz_top.df$ASVs <- factor(ds_crhiz_top.df$ASV, levels = unique(ds_crhiz_top
 ds_crhiz_top.df$Group <- factor(ds_crhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-ds_crhiz_top.plot <- ggplot(ds_crhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+ds_crhiz_top.plot <- ggplot(ds_crhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = ds_crhiz_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('D. canadense')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>D. canadense</em> in Common Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "B.")
 
 ds_rhiz.plot <- (ds_prhiz_top.plot | ds_nrhiz_top.plot | ds_crhiz_top.plot)
 
@@ -1983,12 +2005,12 @@ ds_proot_top.df$ASVs <- factor(ds_proot_top.df$ASV, levels = unique(ds_proot_top
 ds_proot_top.df$Group <- factor(ds_proot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-ds_proot_top.plot <- ggplot(ds_proot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+ds_proot_top.plot <- ggplot(ds_proot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = ds_proot_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('D. canadense')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>D. canadense</em> in PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
@@ -2002,7 +2024,8 @@ ds_proot_top.plot <- ggplot(ds_proot_top.df, aes(x = SC, y = Abundance, fill = A
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "D.")
 
 ## Non-PSF ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -2017,12 +2040,12 @@ ds_nroot_top.df$ASVs <- factor(ds_nroot_top.df$ASV, levels = unique(ds_nroot_top
 ds_nroot_top.df$Group <- factor(ds_nroot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-ds_nroot_top.plot <- ggplot(ds_nroot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+ds_nroot_top.plot <- ggplot(ds_nroot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = ds_nroot_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('D. canadense')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>D. canadense</em> in Non-PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
@@ -2036,7 +2059,8 @@ ds_nroot_top.plot <- ggplot(ds_nroot_top.df, aes(x = SC, y = Abundance, fill = A
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "D.")
 
 ## Common ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -2051,12 +2075,12 @@ ds_croot_top.df$ASVs <- factor(ds_croot_top.df$ASV, levels = unique(ds_croot_top
 ds_croot_top.df$Group <- factor(ds_croot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-ds_croot_top.plot <- ggplot(ds_croot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+ds_croot_top.plot <- ggplot(ds_croot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = ds_croot_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('D. canadense')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>D. canadense</em> in Common Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
@@ -2070,7 +2094,8 @@ ds_croot_top.plot <- ggplot(ds_croot_top.df, aes(x = SC, y = Abundance, fill = A
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "D.")
 
 ds_root.plot <- (ds_proot_top.plot | ds_nroot_top.plot | ds_croot_top.plot)
 
@@ -2087,26 +2112,27 @@ hp_pbulk_top.df$ASVs <- factor(hp_pbulk_top.df$ASV, levels = hp_pbulk_top.name)
 hp_pbulk_top.df$Group <- factor(hp_pbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-hp_pbulk_top.plot <- ggplot(hp_pbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+hp_pbulk_top.plot <- ggplot(hp_pbulk_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = hp_pbulk_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('A. bracteta')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>A. bracteata</em> in PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "A.")
 
 ## Non-PSF ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -2120,26 +2146,27 @@ hp_nbulk_top.df$ASVs <- factor(hp_nbulk_top.df$ASV, levels = hp_nbulk_top.name)
 hp_nbulk_top.df$Group <- factor(hp_nbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-hp_nbulk_top.plot <- ggplot(hp_nbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+hp_nbulk_top.plot <- ggplot(hp_nbulk_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = hp_nbulk_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('A. bracteta')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>A. bracteata</em> in Non-PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "A.")
 
 hp_bulk.plot <- ( hp_pbulk_top.plot | hp_nbulk_top.plot | cbulk_top.plot)
 
@@ -2157,26 +2184,27 @@ hp_prhiz_top.df$ASVs <- factor(hp_prhiz_top.df$ASV, levels = unique(hp_prhiz_top
 hp_prhiz_top.df$Group <- factor(hp_prhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-hp_prhiz_top.plot <- ggplot(hp_prhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+hp_prhiz_top.plot <- ggplot(hp_prhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = hp_prhiz_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('A. bracteta')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>A. bracteata</em> in PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "B.")
 
 ## Non-PSF ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -2191,26 +2219,27 @@ hp_nrhiz_top.df$ASVs <- factor(hp_nrhiz_top.df$ASV, levels = unique(hp_nrhiz_top
 hp_nrhiz_top.df$Group <- factor(hp_nrhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-hp_nrhiz_top.plot <- ggplot(hp_nrhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+hp_nrhiz_top.plot <- ggplot(hp_nrhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = hp_nrhiz_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('A. bracteta')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>A. bracteata</em> in Non-PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "B.")
 
 ## Common ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -2225,26 +2254,27 @@ hp_crhiz_top.df$ASVs <- factor(hp_crhiz_top.df$ASV, levels = unique(hp_crhiz_top
 hp_crhiz_top.df$Group <- factor(hp_crhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-hp_crhiz_top.plot <- ggplot(hp_crhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+hp_crhiz_top.plot <- ggplot(hp_crhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = hp_crhiz_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('A. bracteta')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>A. bracteata</em> in Common Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "B.")
 
 hp_rhiz.plot <- (hp_prhiz_top.plot | hp_nrhiz_top.plot | hp_crhiz_top.plot)
 
@@ -2262,12 +2292,12 @@ hp_proot_top.df$ASVs <- factor(hp_proot_top.df$ASV, levels = unique(hp_proot_top
 hp_proot_top.df$Group <- factor(hp_proot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-hp_proot_top.plot <- ggplot(hp_proot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+hp_proot_top.plot <- ggplot(hp_proot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = hp_proot_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('A. bracteata')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>A. bracteata</em> in PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
@@ -2281,7 +2311,8 @@ hp_proot_top.plot <- ggplot(hp_proot_top.df, aes(x = SC, y = Abundance, fill = A
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "D.")
 
 ## Non-PSF ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -2296,12 +2327,12 @@ hp_nroot_top.df$ASVs <- factor(hp_nroot_top.df$ASV, levels = unique(hp_nroot_top
 hp_nroot_top.df$Group <- factor(hp_nroot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-hp_nroot_top.plot <- ggplot(hp_nroot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+hp_nroot_top.plot <- ggplot(hp_nroot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = hp_nroot_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('A. bracteata')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>A. bracteata</em> in Non-PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
@@ -2315,7 +2346,8 @@ hp_nroot_top.plot <- ggplot(hp_nroot_top.df, aes(x = SC, y = Abundance, fill = A
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "C.")
 
 ## Common ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -2330,12 +2362,12 @@ hp_croot_top.df$ASVs <- factor(hp_croot_top.df$ASV, levels = unique(hp_croot_top
 hp_croot_top.df$Group <- factor(hp_croot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-hp_croot_top.plot <- ggplot(hp_croot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+hp_croot_top.plot <- ggplot(hp_croot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = hp_croot_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('A. bracteata')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>A. bracteata</em> in Common Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
@@ -2349,7 +2381,8 @@ hp_croot_top.plot <- ggplot(hp_croot_top.df, aes(x = SC, y = Abundance, fill = A
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "C.")
 
 hp_root.plot <- (hp_proot_top.plot | hp_nroot_top.plot | hp_croot_top.plot)
 
@@ -2366,26 +2399,27 @@ cl_pbulk_top.df$ASVs <- factor(cl_pbulk_top.df$ASV, levels = cl_pbulk_top.name)
 cl_pbulk_top.df$Group <- factor(cl_pbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cl_pbulk_top.plot <- ggplot(cl_pbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cl_pbulk_top.plot <- ggplot(cl_pbulk_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = cl_pbulk_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('T. repens')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>T. repens</em> in PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "A.")
 
 ## Non-PSF ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -2399,26 +2433,27 @@ cl_nbulk_top.df$ASVs <- factor(cl_nbulk_top.df$ASV, levels = cl_nbulk_top.name)
 cl_nbulk_top.df$Group <- factor(cl_nbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cl_nbulk_top.plot <- ggplot(cl_nbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cl_nbulk_top.plot <- ggplot(cl_nbulk_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = cl_nbulk_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('T. repens')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>T. repens</em> in Non-PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "A.")
 
 cl_bulk.plot <- (cl_pbulk_top.plot | cl_nbulk_top.plot | cbulk_top.plot)
 
@@ -2436,26 +2471,27 @@ cl_prhiz_top.df$ASVs <- factor(cl_prhiz_top.df$ASV, levels = unique(cl_prhiz_top
 cl_prhiz_top.df$Group <- factor(cl_prhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cl_prhiz_top.plot <- ggplot(cl_prhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cl_prhiz_top.plot <- ggplot(cl_prhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = cl_prhiz_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('T. repens')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>T. repens</em> in PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "B.")
 
 ## Common ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -2470,26 +2506,27 @@ cl_crhiz_top.df$ASVs <- factor(cl_crhiz_top.df$ASV, levels = unique(cl_crhiz_top
 cl_crhiz_top.df$Group <- factor(cl_crhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cl_crhiz_top.plot <- ggplot(cl_crhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cl_crhiz_top.plot <- ggplot(cl_crhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = cl_crhiz_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('T. repens')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>T. repens</em> in Common Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "B.")
 
 cl_rhiz.plot <- (cl_prhiz_top.plot | cl_crhiz_top.plot)
 
@@ -2507,12 +2544,12 @@ cl_proot_top.df$ASVs <- factor(cl_proot_top.df$ASV, levels = unique(cl_proot_top
 cl_proot_top.df$Group <- factor(cl_proot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cl_proot_top.plot <- ggplot(cl_proot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cl_proot_top.plot <- ggplot(cl_proot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = cl_proot_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('T. repens')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>T. repens</em> in PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
@@ -2526,7 +2563,8 @@ cl_proot_top.plot <- ggplot(cl_proot_top.df, aes(x = SC, y = Abundance, fill = A
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "D.")
 
 ## Non-PSF ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -2541,12 +2579,12 @@ cl_nroot_top.df$ASVs <- factor(cl_nroot_top.df$ASV, levels = unique(cl_nroot_top
 cl_nroot_top.df$Group <- factor(cl_nroot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cl_nroot_top.plot <- ggplot(cl_nroot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cl_nroot_top.plot <- ggplot(cl_nroot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = cl_nroot_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('T. repens')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>T. repens</em> in Non-PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
@@ -2560,7 +2598,8 @@ cl_nroot_top.plot <- ggplot(cl_nroot_top.df, aes(x = SC, y = Abundance, fill = A
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "C.")
 
 ## Common ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -2575,12 +2614,12 @@ cl_croot_top.df$ASVs <- factor(cl_croot_top.df$ASV, levels = unique(cl_croot_top
 cl_croot_top.df$Group <- factor(cl_croot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-cl_croot_top.plot <- ggplot(cl_croot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cl_croot_top.plot <- ggplot(cl_croot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = cl_croot_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('T. repens')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>T. repens</em> in Common Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
@@ -2594,7 +2633,8 @@ cl_croot_top.plot <- ggplot(cl_croot_top.df, aes(x = SC, y = Abundance, fill = A
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "D.")
 
 cl_root.plot <- (cl_proot_top.plot | cl_nroot_top.plot | cl_croot_top.plot)
 
@@ -2610,28 +2650,51 @@ md_pbulk_top.df$ASVs <- factor(md_pbulk_top.df$ASV, levels = md_pbulk_top.name)
 md_pbulk_top.df$Group <- factor(md_pbulk_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-md_pbulk_top.plot <- ggplot(md_pbulk_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+md_pbulk_top.plot <- ggplot(md_pbulk_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = md_pbulk_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('M. truncatula')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>M. truncatula</em> in PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "A.")
 
-md_bulk.plot <- (md_pbulk_top.plot | cl_nbulk_top.plot | cbulk_top.plot)
+md_nbulk_top.plot <- ggplot(cl_nbulk_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
+  geom_bar(stat='identity', position = 'fill') +
+  xlab('') +
+  ylab('Relative Abundance') +
+  scale_fill_manual(values = cl_nbulk_top.colr) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>M. truncatula</em> in Non-PSF Soil')) +
+  theme_bw() +
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
+        axis.title = element_text(size = 22, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 50, b = 10),
+        plot.margin = margin(10, 40, 10, 10),
+        legend.title = element_blank(),
+        axis.text.y.right = element_blank(),
+        axis.ticks.y.right = element_blank(),
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "A.")
+
+md_bulk.plot <- (md_pbulk_top.plot | md_nbulk_top.plot | cbulk_top.plot)
 
 ### Medicago Rhizosphere ###
 ## PSF ##
@@ -2647,26 +2710,27 @@ md_prhiz_top.df$ASVs <- factor(md_prhiz_top.df$ASV, levels = unique(md_prhiz_top
 md_prhiz_top.df$Group <- factor(md_prhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-md_prhiz_top.plot <- ggplot(md_prhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+md_prhiz_top.plot <- ggplot(md_prhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = md_prhiz_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('M. truncatula')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>M. truncatula</em> in PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "B.")
 
 ## Non-PSF ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -2681,26 +2745,27 @@ md_nrhiz_top.df$ASVs <- factor(md_nrhiz_top.df$ASV, levels = unique(md_nrhiz_top
 md_nrhiz_top.df$Group <- factor(md_nrhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-md_nrhiz_top.plot <- ggplot(md_nrhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+md_nrhiz_top.plot <- ggplot(md_nrhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = md_nrhiz_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('M. truncatula')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>M. truncatula</em> in Non-PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "B.")
 
 ## Common ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -2715,26 +2780,27 @@ md_crhiz_top.df$ASVs <- factor(md_crhiz_top.df$ASV, levels = unique(md_crhiz_top
 md_crhiz_top.df$Group <- factor(md_crhiz_top.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-md_crhiz_top.plot <- ggplot(md_crhiz_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+md_crhiz_top.plot <- ggplot(md_crhiz_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = md_crhiz_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('M. truncatula')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>M. truncatula</em> in Common Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
         strip.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.text = element_text(size = 14, family = "Liberation Sans"),
         legend.position = "right",
         legend.box.just = "bottom",
         legend.justification = "left",
-        legend.margin = margin(t = 40, b = 20),
+        legend.margin = margin(t = 50, b = 10),
         plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "B.")
 
 md_rhiz.plot <- (md_prhiz_top.plot | md_nrhiz_top.plot | md_crhiz_top.plot)
 
@@ -2752,12 +2818,12 @@ md_proot_top.df$ASVs <- factor(md_proot_top.df$ASV, levels = unique(md_proot_top
 md_proot_top.df$Group <- factor(md_proot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-md_proot_top.plot <- ggplot(md_proot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+md_proot_top.plot <- ggplot(md_proot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = md_proot_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('M. truncatula')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>M. truncatula</em> in PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
@@ -2771,7 +2837,8 @@ md_proot_top.plot <- ggplot(md_proot_top.df, aes(x = SC, y = Abundance, fill = A
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "D.")
 
 ## Non-PSF ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -2786,12 +2853,12 @@ md_nroot_top.df$ASVs <- factor(md_nroot_top.df$ASV, levels = unique(md_nroot_top
 md_nroot_top.df$Group <- factor(md_nroot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-md_nroot_top.plot <- ggplot(md_nroot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+md_nroot_top.plot <- ggplot(md_nroot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = md_nroot_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('M. truncatula')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>M. truncatula</em> in Non-PSF Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
@@ -2805,7 +2872,8 @@ md_nroot_top.plot <- ggplot(md_nroot_top.df, aes(x = SC, y = Abundance, fill = A
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "D.")
 
 ## Common ##
 # Create a phyloseq with the top 19 asvs and the rest converted to "Other
@@ -2820,12 +2888,12 @@ md_croot_top.df$ASVs <- factor(md_croot_top.df$ASV, levels = unique(md_croot_top
 md_croot_top.df$Group <- factor(md_croot_top.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
 # Plot the figure #
-md_croot_top.plot <- ggplot(md_croot_top.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+md_croot_top.plot <- ggplot(md_croot_top.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('Relative Abundance') +
   scale_fill_manual(values = md_croot_top.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = expression(italic('M. truncatula')))) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>M. truncatula</em> in Common Soil')) +
   theme_bw() +
   theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
@@ -2839,7 +2907,8 @@ md_croot_top.plot <- ggplot(md_croot_top.df, aes(x = SC, y = Abundance, fill = A
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, face = 'bold', angle = -90))
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "D.")
 
 md_root.plot <- (md_proot_top.plot | md_nroot_top.plot | md_croot_top.plot)
 
@@ -2877,71 +2946,85 @@ fb_soil_nod.plot <- ggplot(fb_soil_nod.df, aes(x = SC, y = Abundance, fill = ASV
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
-        legend.position = 'right') +
-  labs(tag = "B.")
+        legend.position = 'right')
 
 # Take and plot just the PSF Soil Nodule #
 fb_psoil_nod.df <- filter(fb_soil_nod.df, Soil_Treatment == "PSF Soil")
 
-fb_psoil_nod.plot <- ggplot(fb_psoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+fb_psoil_nod.plot <- ggplot(fb_psoil_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Soil ASV", values = fb_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "S. helvola")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>S. helvola</em> in PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Soil ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(color = "black", size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "C.")
 
 # Take and plot just the Non-PSF Soil Nodule #
 fb_nsoil_nod.df <- filter(fb_soil_nod.df, Soil_Treatment == "Non-PSF Soil")
 
-fb_nsoil_nod.plot <- ggplot(fb_nsoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+fb_nsoil_nod.plot <- ggplot(fb_nsoil_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Soil ASV", values = fb_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "S. helvola")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>S. helvola</em> in Non-PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Soil ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(color = "black", size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "C.")
 
 # Take and plot just the Common Soil Nodule #
 fb_csoil_nod.df <- filter(fb_soil_nod.df, Soil_Treatment == "Common Soil")
 
-fb_csoil_nod.plot <- ggplot(fb_csoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+fb_csoil_nod.plot <- ggplot(fb_csoil_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Soil ASV", values = fb_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "S. helvola")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>S. helvola</em> in Common Soil')) +
+  scale_x_discrete(labels = "Nodule (Soil ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(color = "black", size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "C.")
 
 ## Chamaecrista ##
 cc_soil_nod.ps <- subset_samples(soil_nod.ps, Plant == "C. fasciculata")
@@ -2969,50 +3052,59 @@ cc_soil_nod.plot <- ggplot(cc_soil_nod.df, aes(x = SC, y = Abundance, fill = ASV
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
         axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
-        legend.position = 'right') +
-  labs(tag = "B.")
+        legend.position = 'right')
 
 # Take and plot just the PSF Soil Nodule #
 cc_psoil_nod.df <- filter(cc_soil_nod.df, Soil_Treatment == "PSF Soil")
 
-cc_psoil_nod.plot <- ggplot(cc_psoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cc_psoil_nod.plot <- ggplot(cc_psoil_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Soil ASV", values = cc_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "C. fasciculata")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>C. fasciculata</em> in PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Soil ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(color = "black", size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "C.")
 
 # Take and plot just the Non-PSF Soil Nodule #
 cc_nsoil_nod.df <- filter(cc_soil_nod.df, Soil_Treatment == "Non-PSF Soil")
 
-cc_nsoil_nod.plot <- ggplot(cc_nsoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cc_nsoil_nod.plot <- ggplot(cc_nsoil_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Soil ASV", values = cc_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "C. fasciculata")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>C. fasciculata</em> in Non-PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Soil ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(color = "black", size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "C.")
 
 # Take and plot just the Common Soil Nodule #
 cc_csoil_nod.df <- filter(cc_soil_nod.df, Soil_Treatment == "Common Soil")
@@ -3022,18 +3114,23 @@ cc_csoil_nod.plot <- ggplot(cc_csoil_nod.df, aes(x = SC, y = Abundance, fill = A
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Soil ASV", values = cc_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "C. fasciculata")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>C. fasciculata</em> in Common Soil')) +
+  scale_x_discrete(labels = "Nodule (Soil ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(color = "black", size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "C.")
 
 ## Desmodium ##
 ds_soil_nod.ps <- subset_samples(soil_nod.ps, Plant == "D. canadense")
@@ -3065,44 +3162,54 @@ ds_soil_nod.plot <- ggplot(ds_soil_nod.df, aes(x = SC, y = Abundance, fill = ASV
 # Take and plot just the PSF Soil Nodule #
 ds_psoil_nod.df <- filter(ds_soil_nod.df, Soil_Treatment == "PSF Soil")
 
-ds_psoil_nod.plot <- ggplot(ds_psoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+ds_psoil_nod.plot <- ggplot(ds_psoil_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Soil ASV", values = ds_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "D. canadense")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>D. canadense</em> in PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Soil ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(color = "black", size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "C.")
 
 # Take and plot just the Non-PSF Soil Nodule #
 ds_nsoil_nod.df <- filter(ds_soil_nod.df, Soil_Treatment == "Non-PSF Soil")
 
-ds_nsoil_nod.plot <- ggplot(ds_nsoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+ds_nsoil_nod.plot <- ggplot(ds_nsoil_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Soil ASV", values = ds_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "D. canadense")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>D. canadense</em> in Non-PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Soil ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(color = "black", size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "C.")
 
 # Take and plot just the Non-PSF Soil Nodule #
 ds_csoil_nod.df <- filter(ds_soil_nod.df, Soil_Treatment == "Common Soil")
@@ -3112,18 +3219,23 @@ ds_csoil_nod.plot <- ggplot(ds_csoil_nod.df, aes(x = SC, y = Abundance, fill = A
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Soil ASV", values = ds_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "D. canadense")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>D. canadense</em> in Common Soil')) +
+  scale_x_discrete(labels = "Nodule (Soil ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(color = "black", size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "C.")
 
 ## Hog Peanut ##
 hp_soil_nod.ps <- subset_samples(soil_nod.ps, Plant == "A. bracteata")
@@ -3134,23 +3246,28 @@ hp_soil_nod.df <- psmelt(hp_soil_nod.ps)
 hp_soil_nod.df$ASVs <- factor(hp_soil_nod.df$ASV, levels = hp_nod_soil.name)
 hp_soil_nod.df$Soil <- factor(hp_soil_nod.df$Soil_Treatment, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-hp_soil_nod.plot <- ggplot(hp_soil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+hp_soil_nod.plot <- ggplot(hp_soil_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Soil ASV", values = hp_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "A. bracteata")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>A. bracteata</em> in PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Soil ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right') 
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "C.")
 
 ## Clover ##
 cl_soil_nod.ps <- subset_samples(soil_nod.ps, Plant == "T. repens")
@@ -3188,60 +3305,75 @@ cl_psoil_nod.plot <- ggplot(cl_psoil_nod.df, aes(x = SC, y = Abundance, fill = A
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Soil ASV", values = cl_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "T. repens")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>T. repens</em> in PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Soil ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(color = "black", size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "C.")
 
 # Take and plot just the PSF Soil Nodule #
 cl_nsoil_nod.df <- filter(cl_soil_nod.df, Soil_Treatment == "Non-PSF Soil")
 
-cl_nsoil_nod.plot <- ggplot(cl_nsoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cl_nsoil_nod.plot <- ggplot(cl_nsoil_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Soil ASV", values = cl_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "T. repens")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>T. repens</em> in Non-PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Soil ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(color = "black", size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "B.")
 
 # Take and plot just the PSF Soil Nodule #
 cl_csoil_nod.df <- filter(cl_soil_nod.df, Soil_Treatment == "Common Soil")
 
-cl_csoil_nod.plot <- ggplot(cl_csoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cl_csoil_nod.plot <- ggplot(cl_csoil_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Soil ASV", values = cl_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "T. repens")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>T. repens</em> in Common Soil')) +
+  scale_x_discrete(labels = "Nodule (Soil ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(color = "black", size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "C.")
 
 ## Medicago ##
 md_soil_nod.ps <- subset_samples(soil_nod.ps, Plant == "M. truncatula")
@@ -3274,65 +3406,80 @@ md_soil_nod.plot <- ggplot(md_soil_nod.df, aes(x = SC, y = Abundance, fill = ASV
 # Take and plot just the PSF Soil Nodule #
 md_psoil_nod.df <- filter(md_soil_nod.df, Soil_Treatment == "PSF Soil")
 
-md_psoil_nod.plot <- ggplot(md_psoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+md_psoil_nod.plot <- ggplot(md_psoil_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Soil ASV", values = md_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "M. truncatula")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>M. truncatula</em> in PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Soil ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(color = "black", size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "C.")
 
 # Take and plot just the Non-PSF Soil Nodule #
 md_nsoil_nod.df <- filter(md_soil_nod.df, Soil_Treatment == "Non-PSF Soil")
 
-md_nsoil_nod.plot <- ggplot(md_nsoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+md_nsoil_nod.plot <- ggplot(md_nsoil_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Soil ASV", values = md_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "M. truncatula")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>M. truncatula</em> in Non-PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Soil ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(color = "black", size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "C.")
 
 # Take and plot just the Common Soil Nodule #
 md_csoil_nod.df <- filter(md_soil_nod.df, Soil_Treatment == "Common Soil")
 
-md_csoil_nod.plot <- ggplot(md_csoil_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+md_csoil_nod.plot <- ggplot(md_csoil_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Soil ASV", values = md_soil_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "M. truncatula")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>M. truncatula</em> in Common Soil')) +
+  scale_x_discrete(labels = "Nodule (Soil ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(color = "black", size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "C.")
 
 #### Root Nodule Stacked Histograms ####
 # Create a tree for ASVs that are found in the nodules and are in the Order Hyphomicrobiales #
@@ -3371,65 +3518,82 @@ fb_root_nod.plot <- ggplot(fb_root_nod.df, aes(x = SC, y = Abundance, fill = ASV
 # Take and plot only the PSF Nodule #
 fb_proot_nod.df <- filter(fb_root_nod.df, Soil.Origin == "PSF Soil")
 
-fb_proot_nod.plot <- ggplot(fb_proot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+fb_proot_nod.plot <- ggplot(fb_proot_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Root ASV", values = fb_root_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "S. helvola")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>S. helvola</em> in PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Root ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "E.")
 
 # Take and plot only the Non-PSF Nodule #
 fb_nroot_nod.df <- filter(fb_root_nod.df, Soil.Origin == "Non-PSF Soil")
 
-fb_nroot_nod.plot <- ggplot(fb_nroot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+fb_nroot_nod.plot <- ggplot(fb_nroot_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Root ASV", values = fb_root_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "S. helvola")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>S. helvola</em> in Non-PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Root ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "E.")
+
 
 # Take and plot only the Non-PSF Nodule #
 fb_croot_nod.df <- filter(fb_root_nod.df, Soil.Origin == "Common Soil")
 
-fb_croot_nod.plot <- ggplot(fb_croot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+fb_croot_nod.plot <- ggplot(fb_croot_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Root ASV", values = fb_root_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "S. helvola")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>S. helvola</em> in Common Soil')) +
+  scale_x_discrete(labels = "Nodule (Root ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "E.")
+
 
 ## Chamaecrista ##
 cc_root_nod.ps <- subset_samples(root_nod.ps, Plant.Species == "C. fasciculata")
@@ -3441,86 +3605,106 @@ cc_root_nod.df <- psmelt(cc_root_nod.ps)
 cc_root_nod.df$ASVs <- factor(cc_root_nod.df$ASV, levels = cc_nod_root.name)
 cc_root_nod.df$Soil <- factor(cc_root_nod.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-cc_root_nod.plot <- ggplot(cc_root_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cc_root_nod.plot <- ggplot(cc_root_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Root ASV", values = cc_root_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "C. fasciculata")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>C. fasciculata</em> in PSF Soil')) +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))
 
 # Take and plot only the PSF Nodule #
 cc_proot_nod.df <- filter(cc_root_nod.df, Soil.Origin == "PSF Soil")
 
-cc_proot_nod.plot <- ggplot(cc_proot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cc_proot_nod.plot <- ggplot(cc_proot_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Root ASV", values = cc_root_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "C. fasciculata")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>C. fasciculata</em> in PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Root ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "E.")
+
 
 # Take and plot only the Non-PSF Nodule #
 cc_nroot_nod.df <- filter(cc_root_nod.df, Soil.Origin == "Non-PSF Soil")
 
-cc_nroot_nod.plot <- ggplot(cc_nroot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cc_nroot_nod.plot <- ggplot(cc_nroot_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Root ASV", values = cc_root_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "C. fasciculata")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>C. fasciculata</em> in Non-PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Root ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "E.")
+
 
 # Take and plot only the Non-PSF Nodule #
 cc_croot_nod.df <- filter(cc_root_nod.df, Soil.Origin == "Common Soil")
 
-cc_croot_nod.plot <- ggplot(cc_croot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cc_croot_nod.plot <- ggplot(cc_croot_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Root ASV", values = cc_root_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "C. fasciculata")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>C. fasciculata</em> in Common Soil')) +
+  scale_x_discrete(labels = "Nodule (Root ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "E.")
 
 ## Desmodium ##
 ds_root_nod.ps <- subset_samples(root_nod.ps, Plant.Species == "D. canadense")
@@ -3532,87 +3716,105 @@ ds_root_nod.df <- psmelt(ds_root_nod.ps)
 ds_root_nod.df$ASVs <- factor(ds_root_nod.df$ASV, levels = ds_nod_root.name)
 ds_root_nod.df$Soil <- factor(ds_root_nod.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-ds_root_nod.plot <- ggplot(ds_root_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+ds_root_nod.plot <- ggplot(ds_root_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Root ASV", values = ds_root_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "D. canadense")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>D. canadense</em> in PSF Soil')) +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans", angle = -45, hjust= 0.1, vjust = 0.6),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
-        legend.title = element_text(size = 18, face = "bold", family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
+        legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'bold', angle = -90),
-        legend.position = 'right') +
-  labs(tag = "C.")
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))
+
 
 # Take and plot only the PSF Nodule #
 ds_proot_nod.df <- filter(ds_root_nod.df, Soil.Origin == "PSF Soil")
 
-ds_proot_nod.plot <- ggplot(ds_proot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+ds_proot_nod.plot <- ggplot(ds_proot_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Root ASV", values = ds_root_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "D. canadense")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>D. canadense</em> in PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Root ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "E.")
 
 # Take and plot only the Non-PSF Nodule #
 ds_nroot_nod.df <- filter(ds_root_nod.df, Soil.Origin == "Non-PSF Soil")
 
-ds_nroot_nod.plot <- ggplot(ds_nroot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+ds_nroot_nod.plot <- ggplot(ds_nroot_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Root ASV", values = ds_root_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "D. canadense")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>D. canadense</em> in Non-PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Root ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "E.")
 
 # Take and plot only the Non-PSF Nodule #
 ds_croot_nod.df <- filter(ds_root_nod.df, Soil.Origin == "Common Soil")
 
-ds_croot_nod.plot <- ggplot(ds_croot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+ds_croot_nod.plot <- ggplot(ds_croot_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Root ASV", values = ds_root_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "D. canadense")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>D. canadense</em> in Common Soil')) +
+  scale_x_discrete(labels = "Nodule (Root ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "E.")
 
 ## Hog Peanut ##
 hp_root_nod.ps <- subset_samples(root_nod.ps, Plant.Species == "A. bracteata")
@@ -3623,23 +3825,27 @@ hp_root_nod.df <- psmelt(hp_root_nod.ps)
 hp_root_nod.df$ASVs <- factor(hp_root_nod.df$ASV, levels = hp_nod_root.name)
 hp_root_nod.df$Soil <- factor(hp_root_nod.df$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
 
-hp_root_nod.plot <- ggplot(hp_root_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+hp_root_nod.plot <- ggplot(hp_root_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Root ASV",values = hp_root_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "A. bracteata")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>A. bracteata</em> in PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Root ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))
 
 ## Clover ##
 cl_root_nod.ps <- subset_samples(root_nod.ps, Plant.Species == "T. repens")
@@ -3672,65 +3878,80 @@ cl_root_nod.plot <- ggplot(cl_root_nod.df, aes(x = SC, y = Abundance, fill = ASV
 # Take and plot only the PSF Nodule #
 cl_proot_nod.df <- filter(cl_root_nod.df, Soil.Origin == "PSF Soil")
 
-cl_proot_nod.plot <- ggplot(cl_proot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cl_proot_nod.plot <- ggplot(cl_proot_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Root ASV", values = cl_root_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "T. repens")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>T. repens</em> in PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Root ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "E.")
 
 # Take and plot only the PSF Nodule #
 cl_nroot_nod.df <- filter(cl_root_nod.df, Soil.Origin == "Non-PSF Soil")
 
-cl_nroot_nod.plot <- ggplot(cl_nroot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cl_nroot_nod.plot <- ggplot(cl_nroot_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Root ASV", values = cl_root_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "T. repens")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>T. repens</em> in Non-PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Root ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "D.")
 
 # Take and plot only the PSF Nodule #
 cl_croot_nod.df <- filter(cl_root_nod.df, Soil.Origin == "Common Soil")
 
-cl_croot_nod.plot <- ggplot(cl_croot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+cl_croot_nod.plot <- ggplot(cl_croot_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Root ASV", values = cl_root_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "T. repens")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>T. repens</em> in Common Soil')) +
+  scale_x_discrete(labels = "Nodule (Root ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "E.")
 
 ## Medicago ##
 md_root_nod.ps <- subset_samples(root_nod.ps, Plant.Species == "M. truncatula")
@@ -3763,128 +3984,196 @@ md_root_nod.plot <- ggplot(md_root_nod.df, aes(x = SC, y = Abundance, fill = ASV
 # Take and plot only the PSF Nodule #
 md_proot_nod.df <- filter(md_root_nod.df, Soil.Origin == "PSF Soil")
 
-md_proot_nod.plot <- ggplot(md_proot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+md_proot_nod.plot <- ggplot(md_proot_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Root ASV", values = md_root_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "M. truncatula")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>M. truncatula</em> in PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Root ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "E.")
 
 # Take and plot only the Non-PSF Nodule #
 md_nroot_nod.df <- filter(md_root_nod.df, Soil.Origin == "Non-PSF Soil")
 
-md_nroot_nod.plot <- ggplot(md_nroot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+md_nroot_nod.plot <- ggplot(md_nroot_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Root ASV", values = md_root_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "M. truncatula")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>M. truncatula</em> in Non-PSF Soil')) +
+  scale_x_discrete(labels = "Nodule (Root ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "E.")
 
 # Take and plot only the Common Nodule #
 md_croot_nod.df <- filter(md_root_nod.df, Soil.Origin == "Common Soil")
 
-md_croot_nod.plot <- ggplot(md_croot_nod.df, aes(x = SC, y = Abundance, fill = ASVs)) +
+md_croot_nod.plot <- ggplot(md_croot_nod.df, aes(x = Comps, y = Abundance, fill = ASVs)) +
   geom_bar(stat='identity', position = 'fill') +
   xlab('') +
   ylab('') +
   scale_fill_manual(name = "Root ASV", values = md_root_nod.colr) +
-  scale_y_continuous(sec.axis = dup_axis(name = "M. truncatula")) +
+  scale_y_continuous(sec.axis = dup_axis(name = '<em>M. truncatula</em> in Common Soil')) +
+  scale_x_discrete(labels = "Nodule (Root ASVs)") +
   theme_bw() +
-  theme(axis.text = element_text(color = "black", size = 18, family = "Liberation Sans"),
-        axis.text.x.bottom = element_text(size = 18, family = "Liberation Sans"),
+  theme(axis.text.x.bottom = element_text(color = "black", family = "Liberation Sans", size = 18),
         axis.title = element_text(size = 22, family = "Liberation Sans"),
-        strip.text = element_text(size =18, family = "Liberation Sans"),
+        strip.text = element_text(size = 18, family = "Liberation Sans"),
         legend.text = element_text(size = 18, family = "Liberation Sans"),
+        legend.position = "right",
+        legend.box.just = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = 40, b = 20),
+        plot.margin = margin(10, 40, 10, 10),
         legend.title = element_blank(),
         axis.text.y.right = element_blank(),
         axis.ticks.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 18, family = "Liberation Sans", face = 'italic', angle = -90),
-        legend.position = 'right')
+        axis.title.y.right = ggtext::element_markdown(size = 18, face = 'bold', angle = -90, family = 'Liberation Sans'))+
+  labs(tag = "E.")
 
-save.image("./test.RData")
 
 ## Putting them all together ##
 # Fuzzy Bean #
 fb_psf.plot <- (fb_pbulk_top.plot | fb_prhiz_top.plot | fb_psoil_nod.plot) /
-  (fb_proot_top.plot | fb_proot_nod.plot)
+  plot_spacer() /
+  (fb_proot_top.plot | fb_proot_nod.plot) +
+  plot_layout(heights = c(1, 0.1,1)) &
+  theme(plot.tag = element_text(size = 18, face = 'bold', family = 'Liberation Sans'))
 
 fb_nsf.plot <- (fb_nbulk_top.plot | fb_nrhiz_top.plot | fb_nsoil_nod.plot) /
-  (fb_nroot_top.plot | fb_nroot_nod.plot)
+  plot_spacer() /
+  (fb_nroot_top.plot | fb_nroot_nod.plot) +
+  plot_layout(heights = c(1, 0.1,1)) &
+  theme(plot.tag = element_text(size = 18, face = 'bold', family = 'Liberation Sans'))
 
 fb_com.plot <- (cbulk_top.plot | fb_crhiz_top.plot | fb_csoil_nod.plot) /
-  (fb_croot_top.plot | fb_croot_nod.plot)
+  plot_spacer() /
+  (fb_croot_top.plot | fb_croot_nod.plot)+
+  plot_layout(heights = c(1, 0.1,1)) &
+  theme(plot.tag = element_text(size = 18, face = 'bold', family = 'Liberation Sans'))
 
 # Chamaecrista #
 cc_psf.plot <- (cc_pbulk_top.plot | cc_prhiz_top.plot | cc_psoil_nod.plot) /
-  (cc_proot_top.plot | cc_proot_nod.plot)
+  plot_spacer() /
+  (cc_proot_top.plot | cc_proot_nod.plot)+
+  plot_layout(heights = c(1, 0.1,1)) &
+  theme(plot.tag = element_text(size = 18, face = 'bold', family = 'Liberation Sans'))
 
 cc_nsf.plot <- (cc_nbulk_top.plot | cc_nrhiz_top.plot | cc_nsoil_nod.plot) /
-  (cc_nroot_top.plot | cc_nroot_nod.plot)
+  plot_spacer() /
+  (cc_nroot_top.plot | cc_nroot_nod.plot)+
+  plot_layout(heights = c(1, 0.1,1)) &
+  theme(plot.tag = element_text(size = 18, face = 'bold', family = 'Liberation Sans'))
 
 cc_com.plot <- (cbulk_top.plot | cc_crhiz_top.plot | cc_csoil_nod.plot) /
-  (cc_croot_top.plot | cc_croot_nod.plot)
+  plot_spacer() /
+  (cc_croot_top.plot | cc_croot_nod.plot)+
+  plot_layout(heights = c(1, 0.1,1)) &
+  theme(plot.tag = element_text(size = 18, face = 'bold', family = 'Liberation Sans'))
 
 # Desmodium #
 ds_psf.plot <- (ds_pbulk_top.plot | ds_prhiz_top.plot | ds_psoil_nod.plot) /
-  (ds_proot_top.plot | ds_proot_nod.plot)
+  plot_spacer() /
+  (ds_proot_top.plot | ds_proot_nod.plot)+
+  plot_layout(heights = c(1, 0.1,1)) &
+  theme(plot.tag = element_text(size = 18, face = 'bold', family = 'Liberation Sans'))
 
 ds_nsf.plot <- (ds_nbulk_top.plot | ds_nrhiz_top.plot | ds_nsoil_nod.plot) /
-  (ds_nroot_top.plot | ds_nroot_nod.plot)
+  plot_spacer() /
+  (ds_nroot_top.plot | ds_nroot_nod.plot)+
+  plot_layout(heights = c(1, 0.1,1)) &
+  theme(plot.tag = element_text(size = 18, face = 'bold', family = 'Liberation Sans'))
 
 ds_com.plot <- (cbulk_top.plot | ds_crhiz_top.plot | ds_csoil_nod.plot) /
-  (ds_croot_top.plot | ds_croot_nod.plot)
+  plot_spacer() /
+  (ds_croot_top.plot | ds_croot_nod.plot)+
+  plot_layout(heights = c(1, 0.1,1)) &
+  theme(plot.tag = element_text(size = 18, face = 'bold', family = 'Liberation Sans'))
 
 # Hog Peanut #
 hp_psf.plot <- (hp_pbulk_top.plot | hp_prhiz_top.plot | hp_soil_nod.plot) /
-  (hp_proot_top.plot | hp_root_nod.plot)
+  plot_spacer() /
+  (hp_proot_top.plot | hp_root_nod.plot) +
+  plot_layout(heights = c(1, 0.1,1)) &
+  theme(plot.tag = element_text(size = 18, face = 'bold', family = 'Liberation Sans'))
 
 hp_nsf.plot <- (hp_nbulk_top.plot | hp_nrhiz_top.plot) /
-  (hp_nroot_top.plot)
+  plot_spacer() /
+  (hp_nroot_top.plot) +
+  plot_layout(heights = c(1, 0.1,1)) &
+  theme(plot.tag = element_text(size = 18, face = 'bold', family = 'Liberation Sans'))
 
-hp_com.plot <- (cbulk_top.plot | hp_crhiz_top.plot | hp_soil_nod.plot) /
-  (hp_croot_top.plot | hp_root_nod.plot)
+hp_com.plot <- (cbulk_top.plot | hp_crhiz_top.plot) /
+  plot_spacer() /
+  (hp_croot_top.plot) +
+  plot_layout(heights = c(1, 0.1,1)) &
+  theme(plot.tag = element_text(size = 18, face = 'bold', family = 'Liberation Sans'))
 
 # Clover #
 cl_psf.plot <- (cl_pbulk_top.plot | cl_prhiz_top.plot | cl_psoil_nod.plot) /
-  (cl_proot_top.plot | cl_proot_nod.plot)
+  plot_spacer() /
+  (cl_proot_top.plot | cl_proot_nod.plot)+
+  plot_layout(heights = c(1, 0.1,1)) &
+  theme(plot.tag = element_text(size = 18, face = 'bold', family = 'Liberation Sans'))
 
 cl_nsf.plot <- (cl_nbulk_top.plot | cl_nsoil_nod.plot) /
-  (cl_nroot_top.plot | cl_nroot_nod.plot)
+  plot_spacer() /
+  (cl_nroot_top.plot | cl_nroot_nod.plot)+
+  plot_layout(heights = c(1, 0.1,1)) &
+  theme(plot.tag = element_text(size = 18, face = 'bold', family = 'Liberation Sans'))
 
 cl_com.plot <- (cbulk_top.plot | cl_crhiz_top.plot | cl_csoil_nod.plot) /
-  (cl_croot_top.plot | cl_croot_nod.plot)
+  plot_spacer() /
+  (cl_croot_top.plot | cl_croot_nod.plot) +
+  plot_layout(heights = c(1, 0.1,1)) &
+  theme(plot.tag = element_text(size = 18, face = 'bold', family = 'Liberation Sans'))
 
 # Medicago #
 md_psf.plot <- (md_pbulk_top.plot | md_prhiz_top.plot | md_psoil_nod.plot) /
-  (md_proot_top.plot | md_proot_nod.plot)
+  plot_spacer() /
+  (md_proot_top.plot | md_proot_nod.plot) +
+  plot_layout(heights = c(1, 0.1,1)) &
+  theme(plot.tag = element_text(size = 18, face = 'bold', family = 'Liberation Sans'))
 
 md_nsf.plot <- (cl_nbulk_top.plot | md_nrhiz_top.plot | md_nsoil_nod.plot) /
-  (md_nroot_top.plot | md_nroot_nod.plot)
+  plot_spacer() /
+  (md_nroot_top.plot | md_nroot_nod.plot) +
+  plot_layout(heights = c(1, 0.1,1)) &
+  theme(plot.tag = element_text(size = 18, face = 'bold', family = 'Liberation Sans'))
 
 md_com.plot <- (cbulk_top.plot | md_crhiz_top.plot | md_csoil_nod.plot) /
-  (md_croot_top.plot | md_croot_nod.plot)
+  plot_spacer() /
+  (md_croot_top.plot | md_croot_nod.plot) +
+  plot_layout(heights = c(1, 0.1,1)) &
+  theme(plot.tag = element_text(size = 18, face = 'bold', family = 'Liberation Sans'))
 
 #### Alpha Diversity Analysis and Visualization ####
 # Add additional variables as factors for Soils #
@@ -5101,7 +5390,7 @@ naty.pcoa <- phyloseq::ordinate(naty_prop.ps, 'PCoA', distance = naty.wuni)
 
 # Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
 naty.nmds <- metaMDS(naty.wuni, 
-                     k = 6, try = 100, trymax = 1000, maxit = 999,
+                     k = 5, try = 100, trymax = 1000, maxit = 999,
                      model = 'global', 
                      autotransform = FALSE, previous.best = naty.pcoa$vectors[,1:5])
 
@@ -5136,12 +5425,8 @@ naty_nmds.dist5 <- dist(naty_nmds.scores[,5])
 naty_nmds.fit5 <- lm(as.vector(naty_nmds.dist5)~as.vector(naty.wuni))
 naty_nmds.r5 <- summary(naty_nmds.fit5)$r.squared
 
-naty_nmds.dist6 <- dist(naty_nmds.scores[,6])
-naty_nmds.fit6 <- lm(as.vector(naty_nmds.dist6)~as.vector(naty.wuni))
-naty_nmds.r6 <- summary(naty_nmds.fit6)$r.squared
-
 # Take the sum the R^2 value from each axis #
-naty_nmds.comb <- naty_nmds.r1 + naty_nmds.r2 + naty_nmds.r3 + naty_nmds.r4 + naty_nmds.r5 + naty_nmds.r6
+naty_nmds.comb <- naty_nmds.r1 + naty_nmds.r2 + naty_nmds.r3 + naty_nmds.r4 + naty_nmds.r5
 
 # Divide each axis R^2 by the total of all axes and then multiply by the variation explained by the whole model
 naty_nmds.axisr <- c()
