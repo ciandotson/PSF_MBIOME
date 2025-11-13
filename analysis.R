@@ -386,13 +386,13 @@ decompose_ps <- function(ps, label){
   met.tab <- as(sample_data(ps), 'data.frame')
   dna.tab <- refseq(ps)
   fra.tab <- cbind(tax.tab, otu.tab)
-    decomposed = list(
+  decomposed = list(
     tax = tax.tab,
     otu = otu.tab,
     met = met.tab,
     dna = dna.tab,
     fra = fra.tab
-    )
+  )
   assign(label, decomposed, envir = .GlobalEnv)
   invisible(decomposed)
 }
@@ -467,9 +467,9 @@ filt_soil$tax <- as.matrix(filt_soil$tax)
 save.image("./test.RData")
 # Make phyloseq object with filtered tables #
 soil.ps <- phyloseq(otu_table(filt_soil$otu, taxa_are_rows = TRUE),
-                        sample_data(filt_soil$met),
-                        tax_table(filt_soil$tax),
-                        refseq(filt_soil$dna))
+                    sample_data(filt_soil$met),
+                    tax_table(filt_soil$tax),
+                    refseq(filt_soil$dna))
 
 soil.ps <- subset_taxa(soil.ps, taxa_sums(soil.ps) > 100)
 
@@ -521,9 +521,8 @@ soil.ps <- phyloseq(otu_table(soil$otu, taxa_are_rows = TRUE),
 # Save a separate decomposed phyloseq object to fix the taxonomy table later #
 decompose_ps(soil.ps, 'soil.tax')
 
-# Join very closely related taxa (98.5% similarity based on cophenetic distances) #
-soil.ps <- tip_glom(soil.ps, h = 0.032)
-soil.ps <- tip_glom(soil.ps, h = 0.032)
+# Join extremely closely related taxa #
+soil.ps <- tip_glom(soil.ps, h = 0.004)
 
 # Use the separate taxonomy table to preserve the taxonomic ranks of the newly agglomerated taxa #
 fin_soil.tax <- c()
@@ -793,10 +792,8 @@ root.ps <- phyloseq(otu_table(root$otu, taxa_are_rows = TRUE),
 # Create a separate decomposed phyloseq object to save the taxonomy of the ASVs #
 decompose_ps(root.ps, 'root.tax')
 
-# Join very closely related taxa #
-root.ps <- tip_glom(root.ps, h = 0.032)
-root.ps <- tip_glom(root.ps, h = 0.032)
-# For whatever reason, this must be run twice to get a convergent result #
+# Join extremely closely related taxa #
+root.ps <- tip_glom(root.ps, h = 0.004)
 
 # Use the separate taxonomy table to preserve the taxonomic ranks of the newly agglomerated taxa #
 fin_root.tax <- c()
@@ -832,7 +829,7 @@ for(i in 1:nrow(soil$met)){
 decompose_ps(root.ps, 'root')
 root$met$Plants <- factor(root$met$Plant.Species, levels = c("S. helvola", "C. fasciculata", "D. canadense", "A. bracteata", "T. repens", "M. truncatula"))
 root$met$Comps <- factor(root$met$Compartment, levels = c("Root Endosphere", "Nodule"))
-root$met$Soils <- factor(root$met$Soil.Origin, levels = c("PSF Soil", "Non-PSF Soil", "Common Soil"))
+root$met$Soils <- factor(root$met$Soil.Origin, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 for(i in 1:nrow(root$met)){
   root$met$SC[i] <- paste0(root$met$Soil.Origin[i], '; ', root$met$Compartment[i]) 
@@ -4227,41 +4224,6 @@ Anova(soil_evn.lm)
 soil_sha.lm <- lm(Shannon~Soils*Plants*Comps, soil.rich)
 Anova(soil_sha.lm)
 
-# Do the same with only the native plant data #
-naty.rich <- filter(soil.rich, Plant != "M. truncatula" & Plant != "T. repens")
-naty.bin <- filter(naty.rich, Compartment == "Source Community" & Soil_Treatment == "Non-PSF Soil")
-naty.bin$Plant <- gsub("C. fasciculata", "S. helvola", naty.bin$Plant)
-naty.bin$Plant <- gsub("D. canadense", "A. bracteata", naty.bin$Plant)
-naty_comm.bin <- filter(soil.rich, Tri == "SCSo")
-naty_comm.bin$Plant <- gsub("S. helvola", "C. fasciculata", naty_comm.bin$Plant)
-naty.rich <- rbind(naty.rich, naty.bin, naty_comm.bin)
-naty_comm.bin$Plant <- gsub("C. fasciculata", "D. canadense", naty_comm.bin$Plant)
-naty.rich <- rbind(naty.rich, naty_comm.bin)
-naty_comm.bin$Plant <- gsub("D. canadense", "A. bracteata", naty_comm.bin$Plant)
-naty.rich <- rbind(naty.rich, naty_comm.bin)
-
-naty_cha.lm <- lm(Chao1~Soils*Plants*Comps, naty.rich)
-Anova(naty_cha.lm)
-naty_evn.lm <- lm(ShaEvn~Soils*Plants*Comps, naty.rich)
-Anova(naty_evn.lm)
-naty_sha.lm <- lm(Shannon~Soils*Plants*Comps, naty.rich)
-Anova(naty_sha.lm)
-
-# Do the same with only the non-native plant data #
-nnat.rich <- filter(soil.rich, Plant == "M. truncatula" | Plant == "T. repens" | Tri == "SCSo")
-nnat.rich$Plants <- gsub("S. helvola", "T. repens", nnat.rich$Plant)
-nnat.bin <- filter(nnat.rich, Tri == "TNSo" | Tri == "SCSo")
-nnat.bin$Plants <- gsub("T. repens", "M. truncatula", nnat.bin$Plant)
-nnat.rich <- rbind(nnat.rich, nnat.bin)
-nnat.rich$Plants <- gsub("S. helvola", "M. truncatula", nnat.rich$Plants)
-
-nnat_cha.lm <- lm(Chao1~Soils*Plants*Comps, nnat.rich)
-Anova(nnat_cha.lm, type = "II")
-nnat_evn.lm <- lm(ShaEvn~Soils*Plants*Comps, nnat.rich)
-Anova(nnat_evn.lm)
-nnat_sha.lm <- lm(Shannon~Soils*Plants*Comps, nnat.rich)
-Anova(nnat_sha.lm)
-
 # Now do the same for the roots #
 root.rich <- filter(all.rich, Compartment == "Root Endosphere")
 root_cha.lm <- lm(Chao1~Soils*Plants, root.rich)
@@ -4270,24 +4232,6 @@ root_evn.lm <- lm(ShaEvn~Soils*Plants, root.rich)
 Anova(root_evn.lm)
 root_sha.lm <- lm(Shannon~Soils*Plants, root.rich)
 Anova(root_sha.lm)
-
-# Now do the same for the native roots #
-raty.rich <- filter(root.rich, Plant != "T. repens" & Plant != "M. truncatula")
-raty_cha.lm <- lm(Chao1~Soils*Plants, raty.rich)
-Anova(raty_cha.lm, type = "II")
-raty_evn.lm <- lm(ShaEvn~Soils*Plants, raty.rich)
-Anova(raty_evn.lm)
-raty_sha.lm <- lm(Shannon~Soils*Plants, raty.rich)
-Anova(raty_sha.lm)
-
-# Now do the same for the non-native roots #
-rnat.rich <- filter(root.rich, Plant == "T. repens" | Plant == "M. truncatula")
-rnat_cha.lm <- lm(Chao1~Soils*Plants, rnat.rich)
-Anova(rnat_cha.lm, type = "II")
-rnat_evn.lm <- lm(ShaEvn~Soils*Plants, rnat.rich)
-Anova(rnat_evn.lm)
-rnat_sha.lm <- lm(Shannon~Soils*Plants, rnat.rich)
-Anova(rnat_sha.lm)
 
 # Find the mean and standard error for each unique tripartite grouping
 all_rich.mnsd <- all.rich %>%
@@ -4408,7 +4352,7 @@ sha_rhiz.plot <- ggplot(rhiz.rich, aes(x = `Plant Species`, y = sha.mean, fill =
         legend.key.width = unit(1, 'cm'),
         legend.key.height = unit(1, 'cm'),
         legend.key.spacing.x = unit(6, 'cm')) +
-    labs(tag = "C.")
+  labs(tag = "C.")
 
 # Rhizosphere Shannon Evenness #
 ## Strophostyles ##
@@ -4507,7 +4451,7 @@ evn_rhiz.plot <- ggplot(rhiz.rich, aes(x = `Plant Species`, y = evn.mean, fill =
         legend.key.height = unit(1, 'cm'),
         legend.key.spacing.x = unit(6, 'cm')) +
   labs(tag = "B.")
-  
+
 # Chao1 Observed ASVs #
 ## Strophostyles ##
 fb_rhiz.richraw <- filter(rhiz.richraw, Plant == 'S. helvola')
@@ -4937,10 +4881,10 @@ cha_bulk.plot <- ggplot(bulk.rich, aes(x = `Plant Species`, y = cha.mean, fill =
 
 # All Source Community Sample Plots #
 alpha_bulk.plot <- (cha_bulk.plot) / 
-(evn_bulk.plot) / 
-(sha_bulk.plot) &
+  (evn_bulk.plot) / 
+  (sha_bulk.plot) &
   theme(plot.tag = element_text(size = 22))
-  
+
 
 # All Root Samples #
 root.rich <- filter(all_rich.mnsd, Compartment == "Root Endosphere")
@@ -5500,134 +5444,10 @@ naty.bdis <- betadisper(naty.wuni, group = naty$met$Tri)
 anova(naty.bdis)
 TukeyHSD(naty.bdis)
 
-# Non-Native #
-# Construct a Weighted Unifrac distance matrix and PCoA ordination #
-nnat.ps <- subset_samples(soil.ps, Plant == "M. truncatula" | Plant == "T. repens" | Tri == "SCSo")
-
-nnat_prop.ps <- transform_sample_counts(nnat.ps, function(x) x/sum(x))
-
-set.seed(248)
-nnat.wuni <- phyloseq::distance(nnat_prop.ps, method = 'wunifrac')
-nnat.pcoa <- phyloseq::ordinate(nnat_prop.ps, 'PCoA', distance = nnat.wuni)
-
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-nnat.nmds <- metaMDS(nnat.wuni, 
-                     k = 5, try = 100, trymax = 1000, maxit = 999,
-                     model = 'global', 
-                     autotransform = FALSE, previous.best = nnat.pcoa$vectors[,1:7])
-
-# Save the loading scores for all axes and make a distance matrix from these scores #
-nnat_nmds.scores <- scores(nnat.nmds, display = 'sites')
-nnat_nmds.dist <- dist(nnat_nmds.scores)
-
-# Fit a linear model using the vectorized weighted Unifrac ditsance matrix as a predictor of the vectorized loading score distance matrix to fine total R^2 of the model # 
-nnat_nmds.ffit <- lm(as.vector(nnat_nmds.dist) ~ as.vector(nnat.wuni))
-summary(nnat_nmds.ffit)
-nnat_nmds.totr2 <- summary(nnat_nmds.ffit)$r.squared
-
-# Axes Variance Calculation #
-# Fit linear models as before expect to preidtc the distance matrix of each individual axis #
-nnat_nmds.dist1 <- dist(nnat_nmds.scores[,1])
-nnat_nmds.fit1 <- lm(as.vector(nnat_nmds.dist1)~as.vector(nnat.wuni))
-nnat_nmds.r1 <- summary(nnat_nmds.fit1)$r.squared
-
-nnat_nmds.dist2 <- dist(nnat_nmds.scores[,2])
-nnat_nmds.fit2 <- lm(as.vector(nnat_nmds.dist2)~as.vector(nnat.wuni))
-nnat_nmds.r2 <- summary(nnat_nmds.fit2)$r.squared
-
-nnat_nmds.dist3 <- dist(nnat_nmds.scores[,3])
-nnat_nmds.fit3 <- lm(as.vector(nnat_nmds.dist3)~as.vector(nnat.wuni))
-nnat_nmds.r3 <- summary(nnat_nmds.fit3)$r.squared
-
-nnat_nmds.dist4 <- dist(nnat_nmds.scores[,4])
-nnat_nmds.fit4 <- lm(as.vector(nnat_nmds.dist4)~as.vector(nnat.wuni))
-nnat_nmds.r4 <- summary(nnat_nmds.fit4)$r.squared
-
-nnat_nmds.dist5 <- dist(nnat_nmds.scores[,5])
-nnat_nmds.fit5 <- lm(as.vector(nnat_nmds.dist5)~as.vector(nnat.wuni))
-nnat_nmds.r5 <- summary(nnat_nmds.fit5)$r.squared
-
-# Take the sum the R^2 value from each axis #
-nnat_nmds.comb <- nnat_nmds.r1 + nnat_nmds.r2 + nnat_nmds.r3 + nnat_nmds.r4 + nnat_nmds.r5
-
-# Divide each axis R^2 by the total of all axes and then multiply by the variation explained by the whole model
-nnat_nmds.axisr <- c()
-for(i in 1:ncol(nnat_nmds.scores)){
-  nnat_nmds.axisr[i] <- (get(paste0('nnat_nmds.r', i)) / nnat_nmds.comb) * nnat_nmds.totr2 
-}
-
-# Construct a data.frame that has sample info and their loading scores #
-decompose_ps(nnat.ps, 'nnat')
-nnat_nmds.load <- cbind(nnat$met, nnat_nmds.scores)
-
-# Test the mixed linear model on the first NMDS axis #
-nnat_nmds.vfit1 <- lmer(NMDS1 ~ (1|Soils) + (1|Plants) + (1|Comps) + (1|Soils:Plants) + (1|Soils:Comps) + (1|Plants:Comps) + (1|Soils:Plants:Comps), data = nnat_nmds.load, REML = TRUE)
-summary(nnat_nmds.vfit1)
-nnat_nmds.vca1 <- as.data.frame(VarCorr(nnat_nmds.vfit1))
-
-# Using Loop to do each NMDS axis #
-nnat_nmds.vca <- matrix(nrow = 8, ncol = ncol(nnat_nmds.scores))
-hold <- c()
-for(i in 1:ncol(nnat_nmds.scores)){
-  hold <- lmer(nnat_nmds.scores[,i] ~ (1|Soils) + (1|Plants) + (1|Comps) + (1|Soils:Plants) + (1|Soils:Comps) + (1|Plants:Comps) + (1|Soils:Plants:Comps), data = nnat_nmds.load, REML = TRUE)
-  hold <- as.data.frame(VarCorr(hold))
-  nnat_nmds.vca[1,i] <- hold[1,4]
-  nnat_nmds.vca[2,i] <- hold[2,4]
-  nnat_nmds.vca[3,i] <- hold[3,4]
-  nnat_nmds.vca[4,i] <- hold[4,4]
-  nnat_nmds.vca[5,i] <- hold[5,4]
-  nnat_nmds.vca[6,i] <- hold[6,4]
-  nnat_nmds.vca[7,i] <- hold[7,4]
-  nnat_nmds.vca[8,i] <- hold[8,4]
-}
-
-# Save the variance components to their assigned variable/variable interaction and their NMDS loading axis #
-rownames(nnat_nmds.vca) <- c('Soil x Plant X Comp', 'Soil x Plant', 'Plant x Comp', 'Soil x Comp', 'Plant', 'Soil', 'Comp', 'Residual')
-colnames(nnat_nmds.vca) <- colnames(nnat_nmds.scores)
-
-# Calculate the total variance of each variance component#
-nnat_nmds.vtot <- colSums(nnat_nmds.vca)
-
-# Weight each variance component by the amount of variation each axis explains #
-nnat_nmds.wvca <- matrix(nrow = nrow(nnat_nmds.vca), ncol = length(nnat_nmds.axisr))
-for(i in 1:length(nnat_nmds.axisr)){
-  for(j in 1:nrow(nnat_nmds.vca)){
-    nnat_nmds.wvca[j,i] <- nnat_nmds.vca[j,i]*nnat_nmds.axisr[i] 
-  }
-}
-# Take the total variance explained by each predictor and take the sum of those values #
-rownames(nnat_nmds.wvca) <- rownames(nnat_nmds.vca); colnames(nnat_nmds.wvca) <- colnames(nnat_nmds.vca)
-nnat_nmds.tvca <- rowSums(nnat_nmds.wvca)
-nnat_nmds.tvca <- as.data.frame(nnat_nmds.tvca)
-nnat_nmds.ptot <- colSums(nnat_nmds.tvca)
-
-# Take the variance explained by each predictor and divide by the total variance explained and multiply by 100% #
-nnat_nmds.pvca <- matrix(nrow = nrow(nnat_nmds.tvca), ncol = 1)
-for(i in 1:nrow(nnat_nmds.tvca)){
-  nnat_nmds.pvca[i,1] <- nnat_nmds.tvca[i,1] / nnat_nmds.ptot * 100
-}
-
-# Save the variation explained percentages of each predictor/predictor interaction #
-rownames(nnat_nmds.pvca) <- rownames(nnat_nmds.vca); colnames(nnat_nmds.pvca) <- 'Variance Explained'
-nnat_nmds.pvca
-
-# Perform PermANOVA using all samples #
-nnat.adon <- adonis2(nnat.wuni~Soils*Plants*Comps, nnat$met, permutations = 999)
-nnat.adon_by <- adonis2(nnat.wuni~Soils*Plants*Comps, nnat$met, permutations = 999, by = 'terms')
-nnat.adon
-nnat.adon_by
-
-# Perform PermDISP using all samples # 
-nnat.bdis <- betadisper(nnat.wuni, group = nnat$met$Tri)
-anova(nnat.bdis)
-TukeyHSD(nnat.bdis)
-
-
 # Source Communitys #
 # Construct a Weighted Unifrac distance matrix and PCoA ordination #
-bulk.ps <- subset_samples(soil.ps, Compartment == "Source Community")
+bulk.ps <- subset_samples(soil_sub.ps, Compartment == "Source Community")
 bulk.ps <- subset_taxa(bulk.ps, taxa_sums(bulk.ps) > 0)
-
 bulk_prop.ps <- transform_sample_counts(bulk.ps, function(x) x/sum(x))
 
 set.seed(248)
@@ -5636,9 +5456,9 @@ bulk.pcoa <- phyloseq::ordinate(bulk_prop.ps, 'PCoA', distance = bulk.wuni)
 
 # Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
 bulk.nmds <- metaMDS(bulk.wuni, 
-                    k = 5, try = 100, trymax = 1000, maxit = 999,
-                    model = 'global', 
-                    autotransform = FALSE, previous.best = bulk.pcoa$vectors[,1:5])
+                     k = 5, try = 100, trymax = 1000, maxit = 999,
+                     model = 'global', 
+                     autotransform = FALSE, previous.best = bulk.pcoa$vectors[,1:5])
 
 # Save the loading scores for all axes and make a distance matrix from these scores #
 bulk_nmds.scores <- scores(bulk.nmds, display = 'sites')
@@ -5681,21 +5501,21 @@ for(i in 1:ncol(bulk_nmds.scores)){
 }
 
 # Construct a data.frame that has sample info and their loading scores #
-decompose_ps(bulk.ps, 'bulk')
-for(i in 1:nrow(bulk$met)){
-  bulk$met$PS[i] <- paste0(substr(bulk$met$Plant[i],1,1), substr(bulk$met$Soil_Treatment[i],1,1))
+decompose_ps(bulk_prop.ps, 'bulk_prop')
+for(i in 1:nrow(bulk_prop$met)){
+  bulk_prop$met$PS[i] <- paste0(substr(bulk_prop$met$Plant[i],1,1), substr(bulk_prop$met$Soil_Treatment[i],1,1))
 }
-for(i in 1:nrow(bulk$met)){
-  if(bulk$met$PS[i] == "SC"){
-    bulk$met$Plant[i] = "Common Soil"
+for(i in 1:nrow(bulk_prop$met)){
+  if(bulk_prop$met$PS[i] == "SC"){
+    bulk_prop$met$Plant[i] = "Common Soil"
   }
 }
-bulk$met$Plants <- factor(bulk$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula', 'Common Soil'))
-bulk$met$Comps <- factor(bulk$met$Compartment, c('Source Community'))
-bulk$met$Soils <- factor(bulk$met$Soil_Treatment, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
+bulk_prop$met$Plants <- factor(bulk_prop$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula', 'Common Soil'))
+bulk_prop$met$Comps <- factor(bulk_prop$met$Compartment, c('Source Community'))
+bulk_prop$met$Soils <- factor(bulk_prop$met$Soil_Treatment, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
 
-sample_data(bulk.ps) <- bulk$met
-bulk_nmds.load <- cbind(bulk$met, bulk_nmds.scores)
+sample_data(bulk_prop.ps) <- bulk_prop$met
+bulk_nmds.load <- cbind(bulk_prop$met, bulk_nmds.scores)
 
 # Test the mixed linear model on the first NMDS axis #
 bulk_nmds.vfit1 <- lmer(NMDS1 ~ (1|Soils) + (1|Plants) +(1|Soils:Plants), data = bulk_nmds.load, REML = TRUE)
@@ -5745,18 +5565,18 @@ rownames(bulk_nmds.pvca) <- rownames(bulk_nmds.vca); colnames(bulk_nmds.pvca) <-
 bulk_nmds.pvca
 
 # Perform PermANOVA using all samples #
-bulk.adon <- adonis2(bulk.wuni~Soils*Plants, bulk$met, permutations = 999)
-bulk.adon_by <- adonis2(bulk.wuni~Soils*Plants, bulk$met, permutations = 999, by = 'terms')
+bulk.adon <- adonis2(bulk.wuni~Soils*Plants, bulk_prop$met, permutations = 999)
+bulk.adon_by <- adonis2(bulk.wuni~Soils*Plants, bulk_prop$met, permutations = 999, by = 'terms')
 bulk.adon
 bulk.adon_by
 
 # Perform PermDISP using all samples # 
-bulk.bdis <- betadisper(bulk.wuni, group = bulk$met$PS)
+bulk.bdis <- betadisper(bulk.wuni, group = bulk_prop$met$PS)
 bulk_bdis.aov <- anova(bulk.bdis)
 TukeyHSD(bulk.bdis)
 
 # Make an object with the data to be plotted #
-bulk_nmds.load <- cbind(bulk$met, bulk_nmds.scores)
+bulk_nmds.load <- cbind(bulk_prop$met, bulk_nmds.scores)
 
 # plot the NMDS ordination of all samples that will be used to make a patchwork plot #
 bulk_nmds.plot <- ggplot(bulk_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape = Soils)) +
@@ -5766,8 +5586,7 @@ bulk_nmds.plot <- ggplot(bulk_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
   labs(x = paste0("NMDS1 (R<sup>2</sup> = ", round(bulk_nmds.axisr[1], 3), ")"),
        y = paste0("NMDS2 (R<sup>2</sup> = ", round(bulk_nmds.axisr[2], 3), ")")) +
   theme_bw() +
-  theme(legend.position = 'inside',
-        legend.position.inside = c(0.85,0.69),
+  theme(legend.position = 'none',
         panel.grid = element_blank(),
         legend.text = ggtext::element_markdown(size = 20, family = "Liberation Sans", face = 'bold'),
         legend.title = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
@@ -5775,10 +5594,10 @@ bulk_nmds.plot <- ggplot(bulk_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
         axis.text = element_text(color = "black", size = 16, family = "Liberation Sans"),
         axis.title.x = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'),
         axis.title.y = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black')) +
-  annotate(geom = 'richtext', x = 0.045, y = -0.106,
+  annotate(geom = 'richtext', x = 0.045, y = -0.125,
            label = paste0("PERMANOVA <em>F</em><sub>9,20</sub> = ", round(bulk.adon$`F`[1], 3), ", <em>p</em> = ", round(bulk.adon$`Pr(>F)`[1], 3), "; PERMDISP <em>F</em><sub>9,20</sub> = ", round(bulk_bdis.aov$`F value`[1], 3), ", <em>p</em> = ", round(bulk_bdis.aov$`Pr(>F)`[1], 3)),
            size = 8, family = 'Liberation Sans', fontface = 'bold', fill = NA, label.color = NA) +
-  coord_cartesian(ylim = c(-0.1,0.125))
+  coord_cartesian(ylim = c(-0.125,0.125))
 
 ## Fuzzy Bean ##
 # Create a phyloseq object that has all samples of the specific plant species and compartment #
@@ -6070,16 +5889,16 @@ for(i in 1:ncol(rhiz_nmds.scores)){
 ### Calculating Variance Components ###
 
 # Construct a data.frame that has sample info and their loading scores #
-decompose_ps(rhiz.ps, 'rhiz')
-for(i in 1:nrow(rhiz$met)){
-  rhiz$met$PS[i] <- paste0(substr(rhiz$met$Plant[i],1,1), substr(rhiz$met$Soil_Treatment[i],1,1))
+decompose_ps(rhiz_prop.ps, 'rhiz_prop')
+for(i in 1:nrow(rhiz_prop$met)){
+  rhiz_prop$met$PS[i] <- paste0(substr(rhiz_prop$met$Plant[i],1,1), substr(rhiz_prop$met$Soil_Treatment[i],1,1))
 }
-rhiz$met$Plants <- factor(rhiz$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula'))
-rhiz$met$Comps <- factor(rhiz$met$Compartment, c('Rhizosphere'))
-rhiz$met$Soils <- factor(rhiz$met$Soil_Treatment, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
+rhiz_prop$met$Plants <- factor(rhiz_prop$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula'))
+rhiz_prop$met$Comps <- factor(rhiz_prop$met$Compartment, c('Rhizosphere'))
+rhiz_prop$met$Soils <- factor(rhiz_prop$met$Soil_Treatment, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
 
-sample_data(rhiz.ps) <- rhiz$met
-rhiz_nmds.load <- cbind(rhiz$met, rhiz_nmds.scores)
+sample_data(rhiz_prop.ps) <- rhiz_prop$met
+rhiz_nmds.load <- cbind(rhiz_prop$met, rhiz_nmds.scores)
 
 # Test the mixed linear model on the first NMDS axis #
 rhiz_nmds.vfit1 <- lmer(NMDS1 ~ (1|Soils) + (1|Plants) +(1|Soils:Plants), data = rhiz_nmds.load, REML = TRUE)
@@ -6129,18 +5948,18 @@ rownames(rhiz_nmds.pvca) <- rownames(rhiz_nmds.vca); colnames(rhiz_nmds.pvca) <-
 rhiz_nmds.pvca
 
 # Perform PermANOVA using all samples #
-rhiz.adon <- adonis2(rhiz.wuni~Plants*Soils, rhiz$met, permutations = 999)
-rhiz.adon_by <- adonis2(rhiz.wuni~Plants*Soils, rhiz$met, permutations = 999, by = 'terms')
+rhiz.adon <- adonis2(rhiz.wuni~Plants*Soils, rhiz_prop$met, permutations = 999)
+rhiz.adon_by <- adonis2(rhiz.wuni~Plants*Soils, rhiz_prop$met, permutations = 999, by = 'terms')
 rhiz.adon
 rhiz.adon_by
 
 # Perform PermDISP using all samples # 
-rhiz.bdis <- betadisper(rhiz.wuni, group = rhiz$met$PS)
+rhiz.bdis <- betadisper(rhiz.wuni, group = rhiz_prop$met$PS)
 rhiz_bdis.aov <- anova(rhiz.bdis)
 TukeyHSD(rhiz.bdis)
 
 # Make an object with the data to be plotted #
-rhiz_nmds.load <- cbind(rhiz$met, rhiz_nmds.scores)
+rhiz_nmds.load <- cbind(rhiz_prop$met, rhiz_nmds.scores)
 
 # plot the NMDS ordination of all samples that will be used to make a patchwork plot #
 rhiz_nmds.plot <- ggplot(rhiz_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape = Soils)) +
@@ -6159,12 +5978,10 @@ rhiz_nmds.plot <- ggplot(rhiz_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
         axis.text = element_text(color = "black", size = 16, family = "Liberation Sans"),
         axis.title.x = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'),
         axis.title.y = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'))+
-  annotate(geom = 'richtext', x = 0.1, y = -0.29,
+  annotate(geom = 'richtext', x = -0.03, y = -0.165,
            label = paste0("PERMANOVA <em>F</em><sub>16,70</sub> = ", round(rhiz.adon$`F`[1], 3), ", <em>p</em> = ", round(rhiz.adon$`Pr(>F)`[1], 3), "; PERMDISP <em>F</em><sub>16,70</sub> = ", round(rhiz_bdis.aov$`F value`[1], 3), ", <em>p</em> < 0.001"),
            size = 8, family = 'Liberation Sans', fontface = 'bold', fill = NA, label.color = NA) +
-  coord_cartesian(ylim = c(-0.28, 0.15))
-
-rhiz_nmds.plot
+  coord_cartesian(ylim = c(-0.16, 0.125))
 
 # Separate samples by plant species #
 ## Fuzzy Bean ##
@@ -6442,13 +6259,13 @@ for(i in 1:ncol(root_nmds.scores)){
 
 ### Calculating Variance Components ###
 # Construct a data.frame that has sample info and their loading scores #
-decompose_ps(root.ps, 'root')
-for(i in 1:nrow(root$met)){
-  root$met$PS[i] <- paste0(substr(root$met$Plant[i],1,1), substr(root$met$Soil_Treatment[i],1,1))
+decompose_ps(root_prop.ps, 'root_prop')
+for(i in 1:nrow(root_prop$met)){
+  root_prop$met$PS[i] <- paste0(substr(root_prop$met$Plant[i],1,1), substr(root_prop$met$Soil_Treatment[i],1,1))
 }
 
-sample_data(root.ps) <- root$met
-root_nmds.load <- cbind(root$met, root_nmds.scores)
+sample_data(root_prop.ps) <- root_prop$met
+root_nmds.load <- cbind(root_prop$met, root_nmds.scores)
 
 # Test the mixed linear model on the first NMDS axis #
 root_nmds.vfit1 <- lmer(NMDS1 ~ (1|Soils) + (1|Plants) +(1|Soils:Plants), data = root_nmds.load, REML = TRUE)
@@ -6504,12 +6321,12 @@ root.adon
 root.adon_by
 
 # Perform PermDISP using all samples # 
-root.bdis <- betadisper(root.wuni, group = root$met$PS)
+root.bdis <- betadisper(root.wuni, group = root_prop$met$PS)
 root_bdis.aov <- anova(root.bdis)
 TukeyHSD(root.bdis)
 
 # Make an object with the data to be plotted #
-root_nmds.load <- cbind(root$met, root_nmds.scores)
+root_nmds.load <- cbind(root_prop$met, root_nmds.scores)
 
 # plot the NMDS ordination of all samples that will be used to make a patchwork plot #
 root_nmds.plot <- ggplot(root_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape = Soils)) +
@@ -6519,8 +6336,7 @@ root_nmds.plot <- ggplot(root_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
   labs(x = paste0("NMDS1 (R<sup>2</sup> = ", round(root_nmds.axisr[1], 3), ")"),
        y = paste0("NMDS2 (R<sup>2</sup> = ", round(root_nmds.axisr[2], 3), ")")) +
   theme_bw() +
-  theme(legend.position = 'inside',
-        legend.position.inside = c(0.85,0.275),
+  theme(legend.position = 'right',
         panel.grid = element_blank(),
         legend.text = ggtext::element_markdown(size = 20, family = "Liberation Sans", face = 'bold'),
         legend.title = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
@@ -6528,12 +6344,10 @@ root_nmds.plot <- ggplot(root_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
         axis.text = element_text(color = "black", size = 16, family = "Liberation Sans"),
         axis.title.x = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'),
         axis.title.y = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'))+
-  annotate(geom = 'richtext', x = -0.085, y = -0.36,
+  annotate(geom = 'richtext', x = 0.025, y = -0.22,
            label = paste0("PERMANOVA <em>F</em><sub>17,62</sub> = ", round(root.adon$`F`[1], 3), ", <em>p</em> = ", round(root.adon$`Pr(>F)`[1], 3), "; PERMDISP <em>F</em><sub>17,62</sub> = ", round(root_bdis.aov$`F value`[1], 3), ", <em>p</em> = ", round(root_bdis.aov$`Pr(>F)`[1], 3)),
            size = 8, family = 'Liberation Sans', fontface = 'bold', fill = NA, label.color = NA) +
-  coord_cartesian(ylim = c(-0.35, 0.2))
-
-root_nmds.plot
+  coord_cartesian(ylim = c(-0.21, 0.3))
 
 # Separate samples by plant species #
 ## Fuzzy Bean ##
@@ -6891,132 +6705,6 @@ raty.bdis <- betadisper(raty.wuni, group = raty$met$PS)
 raty_bdis.aov <- anova(raty.bdis)
 TukeyHSD(raty.bdis)
 
-# Root Endosphere for Non-Natives #
-# Construct a Weighted Unifrac distance matrix and PCoA ordination #
-rnat.ps <- subset_samples(root.ps, Plant == "T. repens" | Plant == "M. truncatula")
-rnat_prop.ps <- transform_sample_counts(rnat.ps, function(x) x/sum(x))
-
-set.seed(248)
-rnat.wuni <- phyloseq::distance(rnat_prop.ps, method = 'wunifrac')
-rnat.pcoa <- phyloseq::ordinate(rnat_prop.ps, 'PCoA', distance = rnat.wuni)
-
-# Perform an NMDS analysis using the weighted Unifrac distance matrix, with the PCoA ordination as the starting ordination # 
-rnat.nmds <- metaMDS(rnat.wuni, 
-                     k = 5, try = 100, trymax = 1000, maxit = 999,
-                     model = 'global', 
-                     autotransform = FALSE, previous.best = rnat.pcoa$vectors[,1:5])
-
-# Save the loading scores for all axes and make a distance matrix from these scores #
-rnat_nmds.scores <- scores(rnat.nmds, display = 'sites')
-rnat_nmds.dist <- dist(rnat_nmds.scores)
-
-# Fit a linear model using the vectorized weighted Unifrac ditsance matrix as a predictor of the vectorized loading score distance matrix to fine total R^2 of the model # 
-rnat_nmds.ffit <- lm(as.vector(rnat_nmds.dist) ~ as.vector(rnat.wuni))
-summary(rnat_nmds.ffit)
-rnat_nmds.totr2 <- summary(rnat_nmds.ffit)$r.squared
-
-# Axes Variance Calculation #
-# Fit linear models as before expect to predict the distance matrix of each individual axis #
-rnat_nmds.dist1 <- dist(rnat_nmds.scores[,1])
-rnat_nmds.fit1 <- lm(as.vector(rnat_nmds.dist1)~as.vector(rnat.wuni))
-rnat_nmds.r1 <- summary(rnat_nmds.fit1)$r.squared
-
-rnat_nmds.dist2 <- dist(rnat_nmds.scores[,2])
-rnat_nmds.fit2 <- lm(as.vector(rnat_nmds.dist2)~as.vector(rnat.wuni))
-rnat_nmds.r2 <- summary(rnat_nmds.fit2)$r.squared
-
-rnat_nmds.dist3 <- dist(rnat_nmds.scores[,3])
-rnat_nmds.fit3 <- lm(as.vector(rnat_nmds.dist3)~as.vector(rnat.wuni))
-rnat_nmds.r3 <- summary(rnat_nmds.fit3)$r.squared
-
-rnat_nmds.dist4 <- dist(rnat_nmds.scores[,4])
-rnat_nmds.fit4 <- lm(as.vector(rnat_nmds.dist4)~as.vector(rnat.wuni))
-rnat_nmds.r4 <- summary(rnat_nmds.fit4)$r.squared
-
-rnat_nmds.dist5 <- dist(rnat_nmds.scores[,5])
-rnat_nmds.fit5 <- lm(as.vector(rnat_nmds.dist5)~as.vector(rnat.wuni))
-rnat_nmds.r5 <- summary(rnat_nmds.fit5)$r.squared
-
-# Take the sum the R^2 value from each axis #
-rnat_nmds.comb <- rnat_nmds.r1 + rnat_nmds.r2 + rnat_nmds.r3 + rnat_nmds.r4 + rnat_nmds.r5
-
-# Divide each axis R^2 by the total of all axes and then multiply by the variation explained by the whole model
-rnat_nmds.axisr <- c()
-for(i in 1:ncol(rnat_nmds.scores)){
-  rnat_nmds.axisr[i] <- (get(paste0('rnat_nmds.r', i)) / rnat_nmds.comb) * rnat_nmds.totr2 
-}
-
-### Calculating Variance Components ###
-# Construct a data.frame that has sample info and their loading scores #
-decompose_ps(rnat.ps, 'rnat')
-for(i in 1:nrow(rnat$met)){
-  rnat$met$PS[i] <- paste0(substr(rnat$met$Plant[i],1,1), substr(rnat$met$Soil_Treatment[i],1,1))
-}
-rnat$met$Plants <- factor(rnat$met$Plant, levels = c('S. helvola', 'C. fasciculata', 'D. canadense', 'A. bracteata', 'T. repens', 'M. truncatula'))
-rnat$met$Comps <- factor(rnat$met$Compartment, c('Root Endosphere'))
-rnat$met$Soils <- factor(rnat$met$Soil_Treatment, levels = c('Common Soil', "Non-PSF Soil", "PSF Soil"))
-
-sample_data(rnat.ps) <- rnat$met
-rnat_nmds.load <- cbind(rnat$met, rnat_nmds.scores)
-
-# Test the mixed linear model on the first NMDS axis #
-rnat_nmds.vfit1 <- lmer(NMDS1 ~ (1|Soils) + (1|Plants) +(1|Soils:Plants), data = rnat_nmds.load, REML = TRUE)
-summary(rnat_nmds.vfit1)
-rnat_nmds.vca1 <- as.data.frame(VarCorr(rnat_nmds.vfit1))
-
-# Using Loop to do each NMDS axis #
-rnat_nmds.vca <- matrix(nrow = 4, ncol = ncol(rnat_nmds.scores))
-hold <- c()
-for(i in 1:ncol(rnat_nmds.scores)){
-  hold <- lmer(rnat_nmds.scores[,i] ~  (1|Soils) + (1|Plants) +(1|Soils:Plants), data = rnat_nmds.load, REML = TRUE)
-  hold <- as.data.frame(VarCorr(hold))
-  rnat_nmds.vca[1,i] <- hold[1,4]
-  rnat_nmds.vca[2,i] <- hold[2,4]
-  rnat_nmds.vca[3,i] <- hold[3,4]
-  rnat_nmds.vca[4,i] <- hold[4,4]
-}
-
-# Save the variance components to their assigned variable/variable interaction and their NMDS loading axis #
-rownames(rnat_nmds.vca) <- c('PSF History x Plant', 'PSF History', 'Plant', 'Residual')
-colnames(rnat_nmds.vca) <- colnames(rnat_nmds.scores)
-
-# Calculate the total variance of each variance component#
-rnat_nmds.vtot <- colSums(rnat_nmds.vca)
-
-# Weight each variance component by the amount of variation each axis explains #
-rnat_nmds.wvca <- matrix(nrow = nrow(rnat_nmds.vca), ncol = length(rnat_nmds.axisr))
-for(i in 1:length(rnat_nmds.axisr)){
-  for(j in 1:nrow(rnat_nmds.vca)){
-    rnat_nmds.wvca[j,i] <- rnat_nmds.vca[j,i]*rnat_nmds.axisr[i] 
-  }
-}
-# Take the total variance explained by each predictor and take the sum of those values #
-rownames(rnat_nmds.wvca) <- rownames(rnat_nmds.vca); colnames(rnat_nmds.wvca) <- colnames(rnat_nmds.vca)
-rnat_nmds.tvca <- rowSums(rnat_nmds.wvca)
-rnat_nmds.tvca <- as.data.frame(rnat_nmds.tvca)
-rnat_nmds.ptot <- colSums(rnat_nmds.tvca)
-
-# Take the variance explained by each predictor and divide by the total variance explained and multiply by 100% #
-rnat_nmds.pvca <- matrix(nrow = nrow(rnat_nmds.tvca), ncol = 1)
-for(i in 1:nrow(rnat_nmds.tvca)){
-  rnat_nmds.pvca[i,1] <- rnat_nmds.tvca[i,1] / rnat_nmds.ptot * 100
-}
-
-# Save the variation explained percentages of each predictor/predictor interaction #
-rownames(rnat_nmds.pvca) <- rownames(rnat_nmds.vca); colnames(rnat_nmds.pvca) <- 'Variance Explained'
-rnat_nmds.pvca
-
-# Perform PermANOVA using all samples #
-rnat.adon <- adonis2(rnat.wuni~Plants*Soils, rnat$met, permutations = 999)
-rnat.adon_by <- adonis2(rnat.wuni~Plants*Soils, rnat$met, permutations = 999, by = 'terms')
-rnat.adon
-rnat.adon_by
-
-# Perform PermDISP using all samples # 
-rnat.bdis <- betadisper(rnat.wuni, group = rnat$met$PS)
-anova(rnat.bdis)
-TukeyHSD(rnat.bdis)
-
 # Source Community vs Rhizosphere No Plant #
 # Construct a phyloseq object containing only samples in the Non-PSF Soil #
 npsf.ps <- subset_samples(soil_sub.ps, Soil_Treatment == "Non-PSF Soil")
@@ -7166,10 +6854,10 @@ npsf_nmds.plot <- ggplot(npsf_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
         axis.text = element_text(color = "black", size = 16, family = "Liberation Sans"),
         axis.title.x = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'),
         axis.title.y = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'))+
-  annotate(geom = 'richtext', x = -0.02, y = -0.3,
+  annotate(geom = 'richtext', x = 0.025, y = -0.226,
            label = paste0("PERMANOVA <em>F</em><sub>7,27</sub> = ", round(npsf.adon$`F`[1], 3), ", <em>p</em> = ", round(npsf.adon$`Pr(>F)`[1], 3), "; PERMDISP <em>F</em><sub>7,27</sub> = ", round(npsf_bdis.aov$`F value`[1], 3), ", <em>p</em> < 0.001"),
            size = 8, family = 'Liberation Sans', fontface = 'bold', fill = NA, label.color = NA) +
-  coord_cartesian(ylim = c(-0.3,0.2)) +
+  coord_cartesian(ylim = c(-0.225,0.2)) +
   labs(tag = 'B.')
 
 # Separate samples by plant species #
@@ -7195,12 +6883,6 @@ fb_npsf.met <- filter(npsf_nmds.load, Plant == "S. helvola" | Plant == "C. fasci
 fb_npsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, fb_npsf.met)
 summary(fb_npsf.man)
 
-# Subset the data for pairwise MANOVA tests #
-## Source Community vs. Rhizosphere ##
-fb_npsf_pvsn.met <- filter(fb_npsf.met, Soil_Treatment != "Common Soil")
-fb_npsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, fb_npsf_pvsn.met)
-summary(fb_npsf_pvsn.man)
-
 ## Chamaecrista ##
 cc_npsf.ps <- subset_samples(npsf.ps, Plant == "C. fasciculata")
 cc_npsf.ps <- subset_taxa(cc_npsf.ps, taxa_sums(cc_npsf.ps) > 0)
@@ -7222,12 +6904,6 @@ cc_npsf.met <- filter(npsf_nmds.load, Plant == "C. fasciculata")
 # Perform MANOVA on all samples #
 cc_npsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, cc_npsf.met)
 summary(cc_npsf.man)
-
-# Subset the data for pairwise MANOVA tests #
-## Source Community vs. Rhizosphere ##
-cc_npsf_pvsn.met <- filter(cc_npsf.met, Soil_Treatment != "Common Soil")
-cc_npsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, cc_npsf_pvsn.met)
-summary(cc_npsf_pvsn.man)
 
 ## Desmodium ##
 ds_npsf.ps <- subset_samples(npsf.ps, Plant == "D. canadense")
@@ -7251,12 +6927,6 @@ ds_npsf.met <- filter(npsf_nmds.load, Plant == "D. canadense")
 ds_npsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, ds_npsf.met)
 summary(ds_npsf.man)
 
-# Subset the data for pairwise MANOVA tests #
-## Source Community vs. Rhizosphere ##
-ds_npsf_pvsn.met <- filter(ds_npsf.met, Soil_Treatment != "Common Soil")
-ds_npsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, ds_npsf_pvsn.met)
-summary(ds_npsf_pvsn.man)
-
 ## Hog Peanut ##
 hp_npsf.ps <- subset_samples(npsf.ps, Plant == "A. bracteata" | Plant == "D. canadense" & Compartment == "Source Community")
 hp_npsf.ps <- subset_taxa(hp_npsf.ps, taxa_sums(hp_npsf.ps) > 0)
@@ -7279,12 +6949,6 @@ hp_npsf.met <- filter(npsf_nmds.load, Plant == "A. bracteata" | Plant == "D. can
 hp_npsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, hp_npsf.met)
 summary(hp_npsf.man)
 
-# Subset the data for pairwise MANOVA tests #
-## Source Community vs. Rhizosphere ##
-hp_npsf_pvsn.met <- filter(hp_npsf.met, Soil_Treatment != "Common Soil")
-hp_npsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, hp_npsf_pvsn.met)
-summary(hp_npsf_pvsn.man)
-
 ## Medicago ##
 md_npsf.ps <- subset_samples(npsf.ps, Plant == "M. truncatula" | Plant == "T. repens" & Compartment == "Source Community")
 md_npsf.ps <- subset_taxa(md_npsf.ps, taxa_sums(md_npsf.ps) > 0)
@@ -7306,12 +6970,6 @@ md_npsf.met <- filter(npsf_nmds.load, Plants == "M. truncatula")
 # Perform MANOVA on all samples #
 md_npsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, md_npsf.met)
 summary(md_npsf.man)
-
-# Subset the data for pairwise MANOVA tests #
-## Source Community vs. Rhizosphere ##
-md_npsf_pvsn.met <- filter(md_npsf.met, Soil_Treatment != "Common Soil")
-md_npsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, md_npsf_pvsn.met)
-summary(md_npsf_pvsn.man)
 
 # Source Community vs Rhizosphere PSF Soil #
 # Construct a phyloseq object containing only samples in the Non-PSF Soil #
@@ -7460,10 +7118,10 @@ wpsf_nmds.plot <- ggplot(wpsf_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
         axis.text = element_text(color = "black", size = 16, family = "Liberation Sans"),
         axis.title.x = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'),
         axis.title.y = ggtext::element_markdown(family = 'Liberation Sans', face = 'bold', size = 24, color = 'black'))+
-  annotate(geom = 'richtext', x = 0.04, y = -0.3,
+  annotate(geom = 'richtext', x = 0.02, y = -0.21,
            label = paste0("PERMANOVA <em>F</em><sub>11,45</sub> = ", round(wpsf.adon$`F`[1], 3), ", <em>p</em> = ", round(wpsf.adon$`Pr(>F)`[1], 3), "; PERMDISP <em>F</em><sub>11,45</sub> = ", round(wpsf_bdis.aov$`F value`[1], 3), ", <em>p</em> < 0.001"),
            size = 8, family = 'Liberation Sans', fontface = 'bold', fill = NA, label.color = NA) +
-  coord_cartesian(ylim = c(-0.31,0.23)) +
+  coord_cartesian(ylim = c(-0.21,0.15)) +
   labs(tag = "A.")
 
 # Separate samples by plant species #
@@ -7489,12 +7147,6 @@ fb_wpsf.met <- filter(wpsf_nmds.load, Plant == "S. helvola")
 fb_wpsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, fb_wpsf.met)
 summary(fb_wpsf.man)
 
-# Subset the data for pairwise MANOVA tests #
-## Source Community vs. Rhizosphere ##
-fb_wpsf_pvsn.met <- filter(fb_wpsf.met, Soil_Treatment != "Common Soil")
-fb_wpsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, fb_wpsf_pvsn.met)
-summary(fb_wpsf_pvsn.man)
-
 ## Chamaecrista ##
 cc_wpsf.ps <- subset_samples(wpsf.ps, Plant == "C. fasciculata")
 cc_wpsf.ps <- subset_taxa(cc_wpsf.ps, taxa_sums(cc_wpsf.ps) > 0)
@@ -7516,13 +7168,6 @@ cc_wpsf.met <- filter(wpsf_nmds.load, Plant == "C. fasciculata")
 # Perform MANOVA on all samples #
 cc_wpsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, cc_wpsf.met)
 summary(cc_wpsf.man)
-
-# Subset the data for pairwise MANOVA tests #
-## Source Community vs. Rhizosphere ##
-cc_wpsf_pvsn.met <- filter(cc_wpsf.met, Soil_Treatment != "Common Soil")
-cc_wpsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, cc_wpsf_pvsn.met)
-summary(cc_wpsf_pvsn.man)
-
 
 ## Desmodium ##
 ds_wpsf.ps <- subset_samples(wpsf.ps, Plant == "D. canadense")
@@ -7546,13 +7191,6 @@ ds_wpsf.met <- filter(wpsf_nmds.load, Plant == "D. canadense")
 ds_wpsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, ds_wpsf.met)
 summary(ds_wpsf.man)
 
-# Subset the data for pairwise MANOVA tests #
-## Source Community vs. Rhizosphere ##
-ds_wpsf_pvsn.met <- filter(ds_wpsf.met, Soil_Treatment != "Common Soil")
-ds_wpsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, ds_wpsf_pvsn.met)
-summary(ds_wpsf_pvsn.man)
-
-
 ## Hog Peanut ##
 hp_wpsf.ps <- subset_samples(wpsf.ps, Plant == "A. bracteata")
 hp_wpsf.ps <- subset_taxa(hp_wpsf.ps, taxa_sums(hp_wpsf.ps) > 0)
@@ -7574,12 +7212,6 @@ hp_wpsf.met <- filter(wpsf_nmds.load, Plant == "A. bracteata")
 # Perform MANOVA on all samples #
 hp_wpsf.man <- manova(cbind(NMDS1,NMDS2)~Comps, hp_wpsf.met)
 summary(hp_wpsf.man)
-
-# Subset the data for pairwise MANOVA tests #
-## Source Community vs. Rhizosphere ##
-hp_wpsf_pvsn.met <- filter(hp_wpsf.met, Soil_Treatment != "Common Soil")
-hp_wpsf_pvsn.man <- manova(cbind(NMDS1,NMDS2)~Comps, hp_wpsf_pvsn.met)
-summary(hp_wpsf_pvsn.man)
 
 ## Clover ##
 cl_wpsf.ps <- subset_samples(wpsf.ps, Plant == "T. repens")
@@ -7627,7 +7259,7 @@ summary(md_wpsf.man)
 
 # PSF vs. Non-PSF Soil Plot #
 bvsr.plot <- (wpsf_nmds.plot) / 
-(npsf_nmds.plot) +
+  (npsf_nmds.plot) +
   plot_layout(guides = "collect") &
   theme(plot.tag = element_text(size = 22, face = "bold", family = "Liberation Sans"))
 
@@ -7651,23 +7283,20 @@ if(!dir.exists('./maas_results')){
 
 ### Perform Maaslin2 analyses on a per plant basis ###
 ## Fuzzy Bean ##
-# Organize ASVs by number #
-fb_bulk.sort <- as.numeric(sub("ASV([0-9]+).*", "\\1", rownames(fb_bulk$otu)))
-fb_bulk$otu <- fb_bulk$otu[order(fb_bulk.sort),]
 # Maaslin2 analysis for the bulk soil data (PSF Reference) # 
 fb_bulk_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
-                               input_metadata = soil_maas$met,
-                               output = "./maas_results/fb_bulk_wpsf.maas",
-                               fixed_effects = c("PSC"),
-                               analysis_method = "LM",
-                               normalization = "CSS",
-                               transform = "LOG",
-                               correction = "BH",
-                               max_significance = 0.05,
-                               reference = c("PSC,SPSo"), 
-                               plot_heatmap = FALSE,
-                               plot_scatter = FALSE,
-                               save_scatter = FALSE)
+                              input_metadata = soil_maas$met,
+                              output = "./maas_results/fb_bulk_wpsf.maas",
+                              fixed_effects = c("PSC"),
+                              analysis_method = "LM",
+                              normalization = "CSS",
+                              transform = "NONE",
+                              correction = "BH",
+                              max_significance = 0.05,
+                              reference = c("PSC,SPSo"), 
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE,
+                              save_scatter = FALSE)
 
 # Save only the pairwise comparisons within Source Communitys of Fuzzy Bean #
 fb_bulk_wpsf.res <- fb_bulk_wpsf.maas$results
@@ -7685,7 +7314,7 @@ fb_bulk_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,CNSo"), 
@@ -7710,7 +7339,7 @@ fb_rhiz_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,SPRh"), 
@@ -7734,7 +7363,7 @@ fb_rhiz_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,SNRh"), 
@@ -7758,7 +7387,7 @@ fb_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,SPRo"), 
@@ -7782,7 +7411,7 @@ fb_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,SNRo"), 
@@ -7807,7 +7436,7 @@ fb_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "LOG",
+                         transform = "NONE",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -7831,7 +7460,7 @@ fb_comm.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "LOG",
+                         transform = "NONE",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -7855,7 +7484,7 @@ fb_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "LOG",
+                         transform = "NONE",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -7881,7 +7510,7 @@ cc_bulk_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,CPSo"), 
@@ -7905,7 +7534,7 @@ cc_bulk_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,CNSo"), 
@@ -7930,7 +7559,7 @@ cc_rhiz_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,CPRh"), 
@@ -7954,7 +7583,7 @@ cc_rhiz_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,CNRh"), 
@@ -7978,7 +7607,7 @@ cc_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,CPRo"), 
@@ -8002,7 +7631,7 @@ cc_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,CNRo"), 
@@ -8027,7 +7656,7 @@ cc_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "LOG",
+                         transform = "NONE",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8051,7 +7680,7 @@ cc_comm.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "LOG",
+                         transform = "NONE",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8075,7 +7704,7 @@ cc_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "LOG",
+                         transform = "NONE",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8101,7 +7730,7 @@ ds_bulk_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,DPSo"), 
@@ -8125,7 +7754,7 @@ ds_bulk_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,DNSo"), 
@@ -8174,7 +7803,7 @@ ds_rhiz_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,DNRh"), 
@@ -8198,7 +7827,7 @@ ds_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,DPRo"), 
@@ -8222,7 +7851,7 @@ ds_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,DNRo"), 
@@ -8247,7 +7876,7 @@ ds_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "LOG",
+                         transform = "NONE",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8271,7 +7900,7 @@ ds_comm.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "LOG",
+                         transform = "NONE",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8295,7 +7924,7 @@ ds_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "LOG",
+                         transform = "NONE",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8321,7 +7950,7 @@ hp_bulk_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,APSo"), 
@@ -8345,7 +7974,7 @@ hp_bulk_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,DNSo"), 
@@ -8370,7 +7999,7 @@ hp_rhiz_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,APRh"), 
@@ -8394,7 +8023,7 @@ hp_rhiz_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,ANRh"), 
@@ -8418,7 +8047,7 @@ hp_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,APRo"), 
@@ -8442,7 +8071,7 @@ hp_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,ANRo"), 
@@ -8467,7 +8096,7 @@ hp_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "LOG",
+                         transform = "NONE",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8491,7 +8120,7 @@ hp_comm.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "LOG",
+                         transform = "NONE",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8515,7 +8144,7 @@ hp_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "LOG",
+                         transform = "NONE",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8541,7 +8170,7 @@ cl_bulk_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,TPSo"), 
@@ -8565,7 +8194,7 @@ cl_bulk_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,TNSo"), 
@@ -8590,7 +8219,7 @@ cl_rhiz_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,TPRh"), 
@@ -8614,7 +8243,7 @@ cl_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,TPRo"), 
@@ -8638,7 +8267,7 @@ cl_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,TNRo"), 
@@ -8663,7 +8292,7 @@ cl_comm.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "LOG",
+                         transform = "NONE",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8687,7 +8316,7 @@ cl_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "LOG",
+                         transform = "NONE",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8713,7 +8342,7 @@ md_bulk_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,MPSo"), 
@@ -8737,7 +8366,7 @@ md_bulk_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,TNSo"), 
@@ -8762,7 +8391,7 @@ md_rhiz_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,MPRh"), 
@@ -8786,7 +8415,7 @@ md_rhiz_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,MNRh"), 
@@ -8810,7 +8439,7 @@ md_root_wpsf.maas <- Maaslin2(input_data = root_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,MPRo"), 
@@ -8834,7 +8463,7 @@ md_root_npsf.maas <- Maaslin2(input_data = root_maas$otu,
                               fixed_effects = c("PSC"),
                               analysis_method = "LM",
                               normalization = "CSS",
-                              transform = "LOG",
+                              transform = "NONE",
                               correction = "BH",
                               max_significance = 0.05,
                               reference = c("PSC,MNRo"), 
@@ -8859,7 +8488,7 @@ md_npsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "LOG",
+                         transform = "NONE",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8883,7 +8512,7 @@ md_comm.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "LOG",
+                         transform = "NONE",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -8907,7 +8536,7 @@ md_wpsf.maas <- Maaslin2(input_data = soil_maas$otu,
                          fixed_effects = c("PSC"),
                          analysis_method = "LM",
                          normalization = "CSS",
-                         transform = "LOG",
+                         transform = "NONE",
                          min_prevalence = 0.05,
                          correction = "BH",
                          max_significance = 0.05,
@@ -10031,7 +9660,7 @@ ggplot(soil.radf, aes(x = i, y = index, group = ID, color = Group)) +
         axis.text = element_text(size = 18, color = 'black', face = 'bold', family = 'Liberation Sans'),
         legend.title = element_text(size = 22, color = 'black', face = 'bold', family = 'Liberation Sans'),
         legend.text = element_text(size = 18, color = 'black', face = 'bold.italic'))
-  
+
 # Perform the rarefaction using all root endosphere samples # 
 root.rare <- alpha_rare_all(otu = root$otu, map = root$met, method = "diversity_shannon", start = 0, step = 2500, group = "Plants", ps = root.ps)
 root.radf <- root.rare[[2]]
