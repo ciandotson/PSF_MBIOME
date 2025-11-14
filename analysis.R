@@ -6315,8 +6315,8 @@ rownames(root_nmds.pvca) <- rownames(root_nmds.vca); colnames(root_nmds.pvca) <-
 root_nmds.pvca
 
 # Perform PermANOVA using all samples #
-root.adon <- adonis2(root.wuni~Plants*Soils, root$met, permutations = 999)
-root.adon_by <- adonis2(root.wuni~Plants*Soils, root$met, permutations = 999, by = 'terms')
+root.adon <- adonis2(root.wuni~Plants*Soils, root_prop$met, permutations = 999)
+root.adon_by <- adonis2(root.wuni~Plants*Soils, root_prop$met, permutations = 999, by = 'terms')
 root.adon
 root.adon_by
 
@@ -8562,23 +8562,23 @@ fb_bulk_prop.ps <- transform_sample_counts(fb_bulk.ps, function(x) x/sum(x))
 decompose_ps(fb_bulk_prop.ps, "fb_bulk_prop")
 
 # Make a data frame of just the Source Community samples as well as the abundances of rhizobia of the PSF nodule #
-fb_bulk.meso <- cbind(fb_bulk_prop$met, t(fb_bulk_prop$otu["ASV9(Mesorhizobium)",]))
+fb_bulk.meso <- cbind(fb_bulk_prop$met, t(fb_bulk_prop$otu["sASV9(Mesorhizobium)",]))
 
 # Make soils a factor with the proper levels #
 fb_bulk.meso$Soils <- factor(fb_bulk.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 # Make annotations for significant differences #
-fb_bulk.pvsn <- "*"
+fb_bulk.pvsn <- "<em>p</em> = 0.0712"
 fb_bulk.pvsc <- "**"
 fb_bulk.nvsc <- "ns"
 
 # Plot the differential abundance #
-fb_bulk_meso.plot <- ggplot(fb_bulk.meso, aes(x = Comps, y = `ASV9(Mesorhizobium)`)) +
+fb_bulk_meso.plot <- ggplot(fb_bulk.meso, aes(x = Comps, y = `sASV9(Mesorhizobium)`)) +
   geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
   coord_cartesian(ylim = c(0, 0.01)) +
   scale_y_continuous(limits = c(0,0.01), breaks = seq(0,0.01, by = 0.002), sec.axis = dup_axis(name = "")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Source Community<br>ASV9(*Mesorhizobium*)") +
+  scale_x_discrete(labels = "Source Community<br>sASV9(*Mesorhizobium*)") +
   ylab('Relative Abundance') +
   xlab('') +
   theme_prism() +
