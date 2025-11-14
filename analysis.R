@@ -536,7 +536,7 @@ for(i in rownames(soil.tax$tax)){
 tax_table(soil.ps) <- as.matrix(fin_soil.tax)
 
 # Fix the ASVs such that they are numbered in order of abundance #
-fix_tax_names <- function(ps, label){
+fix_tax_names <- function(ps, label, lets){
   # function that fixes the names of taxa such that they represent their order of abundance #
   tax.list <- names(sort(taxa_sums(ps), decreasing = TRUE))
   tax.df <- as.data.frame(tax_table(ps))
@@ -544,14 +544,14 @@ fix_tax_names <- function(ps, label){
   for(i in 1:nrow(new_tax.df)){
     new_tax.df$Abundance_Rank[i] <- i
     new_tax.df$Lowest[i] <- sub(".*\\((.*)\\)", "\\1", rownames(new_tax.df)[i])
-    new_tax.df$ASV[i] <- paste0('ASV', as.character(new_tax.df$Abundance_Rank[i]), '(', new_tax.df$Lowest[i], ')')}
+    new_tax.df$ASV[i] <- paste0(lets, 'ASV', as.character(new_tax.df$Abundance_Rank[i]), '(', new_tax.df$Lowest[i], ')')}
   new_tax.df <- new_tax.df[taxa_names(ps),]
   tax_table(ps) <- as.matrix(new_tax.df)
   taxa_names(ps) <- new_tax.df$ASV
   assign(label, ps, envir = .GlobalEnv)
 }
 
-fix_tax_names(soil.ps, 'soil.ps')
+fix_tax_names(soil.ps, 'soil.ps', 's')
 
 # Save the soil and soil_nod phyloseq object in the abridged .RData file # 
 if(!requireNamespace('cgwtools')) install.packages('cgwtools')
@@ -807,7 +807,7 @@ for(i in rownames(root.tax$tax)){
 tax_table(root.ps) <- as.matrix(fin_root.tax)
 
 # Fix the ASVs such that they are numbered in order of abundance #
-fix_tax_names(root.ps, 'root.ps')
+fix_tax_names(root.ps, 'root.ps', 'r')
 
 # Save the root and root_nod phyloseq objects to psf_abridged.RData #
 resave(root.ps, file = './psf_abridged.RData')
