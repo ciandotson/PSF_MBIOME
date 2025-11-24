@@ -8556,7 +8556,7 @@ for(i in 1:nrow(md_wpsf.res)){
 
 #### Visualizing Differential Abundance ####
 ### Fuzzy Bean Source Community ###
-## Soil Nodule ASV: ASV9(Mesorhizobium) ##
+## Soil Nodule ASV: sASV9(Mesorhizobium) ##
 # Transform the abundance data using total sum scaling #
 fb_bulk_prop.ps <- transform_sample_counts(fb_bulk.ps, function(x) x/sum(x))
 decompose_ps(fb_bulk_prop.ps, "fb_bulk_prop")
@@ -8592,47 +8592,49 @@ fb_bulk_meso.plot <- ggplot(fb_bulk.meso, aes(x = Comps, y = `sASV9(Mesorhizobiu
         legend.title = element_blank(),
         legend.key.spacing.x = unit(2,'cm'),
         legend.position = 'none') +
-  geom_signif(annotation = fb_bulk.pvsn,
-              y_position = 0.0065, xmin = 1, xmax = 1.25,
+  geom_signif(annotation = "",
+              y_position = 0.0085, xmin = 1, xmax = 1.25,
               tip_length = c(0.01, 0.01),
               textsize = 20,
               vjust = 0.65) +
   geom_signif(annotation = fb_bulk.pvsc,
-              y_position = 0.007, xmin = 0.75, xmax = 1.25,
+              y_position = 0.01, xmin = 0.75, xmax = 1.25,
               tip_length = c(0.01, 0.01),
               textsize = 20,
               vjust = 0.65) +
   geom_signif(annotation = fb_bulk.nvsc,
-              y_position = 0.0025, xmin = 0.75, xmax = 1,
+              y_position = 0.003, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 12) +
+  annotate(geom = 'richtext', x = 1.125, y = 0.00875,
+           label = fb_bulk.pvsn,
+           size = 5, family = 'Liberation Sans', fontface = 'bold', fill = NA, label.color = NA) +
   labs(tag = "A.")
-fb_bulk_meso.plot
 
 ### Fuzzy Bean Rhizosphere ###
-## Soil Nodule ASV: ASV9(Mesorhizobium) ##
+## Soil Nodule ASV: sASV9(Mesorhizobium) ##
 # Transform the abundance data using total sum scaling #
 fb_rhiz_prop.ps <- transform_sample_counts(fb_rhiz.ps, function(x) x/sum(x))
 decompose_ps(fb_rhiz_prop.ps, "fb_rhiz_prop")
 
 # Make a data frame of just the rhizosphere samples as well as the abundances of rhizobia of the PSF nodule #
-fb_rhiz.meso <- cbind(fb_rhiz_prop$met, t(fb_rhiz_prop$otu["ASV9(Mesorhizobium)",]))
+fb_rhiz.meso <- cbind(fb_rhiz_prop$met, t(fb_rhiz_prop$otu["sASV9(Mesorhizobium)",]))
 
 # Make soils a factor with the proper levels #
 fb_rhiz.meso$Soils <- factor(fb_rhiz.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 # Make annotations for significant differences #
 fb_rhiz.pvsn <- "ns"
-fb_rhiz.pvsc <- "ns"
-fb_rhiz.nvsc <- "*"
+fb_rhiz.pvsc <- "<em>p</em> = 0.0618"
+fb_rhiz.nvsc <- "<em>p</em> = 0.0900"
 
 # Plot the differential abundance #
-fb_rhiz_meso.plot <- ggplot(fb_rhiz.meso, aes(x = Comps, y = `ASV9(Mesorhizobium)`)) +
+fb_rhiz_meso.plot <- ggplot(fb_rhiz.meso, aes(x = Comps, y = `sASV9(Mesorhizobium)`)) +
   geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
   coord_cartesian(ylim = c(0, 0.01)) +
   scale_y_continuous(limits = c(0,0.01), breaks = seq(0,0.01, by = 0.002), sec.axis = dup_axis(name = "")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Rhizosphere<br>ASV9(*Mesorhizobium*)") +
+  scale_x_discrete(labels = "Rhizosphere<br>sASV9(*Mesorhizobium*)") +
   ylab('') +
   xlab('') +
   theme_prism() +
@@ -8647,44 +8649,49 @@ fb_rhiz_meso.plot <- ggplot(fb_rhiz.meso, aes(x = Comps, y = `ASV9(Mesorhizobium
         legend.key.spacing.x = unit(2,'cm'),
         legend.position = 'bottom') +
   geom_signif(annotation = fb_rhiz.pvsn,
-              y_position = 0.0075, xmin = 1, xmax = 1.25,
+              y_position = 0.0085, xmin = 1, xmax = 1.25,
               tip_length = c(0.01, 0.01),
               textsize = 12) +
-  geom_signif(annotation = fb_rhiz.pvsc,
-              y_position = 0.0085, xmin = 0.75, xmax = 1.25,
+  geom_signif(annotation = "",
+              y_position = 0.0095, xmin = 0.75, xmax = 1.25,
               tip_length = c(0.01, 0.01),
               textsize = 12) +
-  geom_signif(annotation = fb_rhiz.nvsc,
-              y_position = 0.0055, xmin = 0.75, xmax = 1,
+  geom_signif(annotation = "",
+              y_position = 0.0065, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 20,
               vjust = 0.65) +
+  annotate(geom = 'richtext', x = 1, y = 0.00975,
+           label = fb_rhiz.pvsc,
+           size = 5, family = 'Liberation Sans', fontface = 'bold', fill = NA, label.color = NA) +
+  annotate(geom = 'richtext', x = 0.875, y = 0.00675,
+           label = fb_rhiz.nvsc,
+           size = 5, family = 'Liberation Sans', fontface = 'bold', fill = NA, label.color = NA) +
   labs(tag = "B.")
-fb_rhiz_meso.plot
 
 ### Fuzzy Bean Root Endosphere ###
-## Root Nodule ASV: ASV12(Mesorhizobium) ##
+## Root Nodule ASV: rASV9(Mesorhizobium) ##
 # Transform the abundance data using total sum scaling #
 fb_root_prop.ps <- transform_sample_counts(fb_root.ps, function(x) x/sum(x))
 decompose_ps(fb_root_prop.ps, "fb_root_prop")
 
 # Make a data frame of just the root endosphere samples as well as the abundances of rhizobia of the PSF nodule #
-fb_root.meso <- cbind(fb_root_prop$met, t(fb_root_prop$otu["ASV12(Mesorhizobium)",]))
+fb_root.meso <- cbind(fb_root_prop$met, t(fb_root_prop$otu["rASV9(Mesorhizobium)",]))
 
 # Make soils a factor with the proper levels #
 fb_root.meso$Soils <- factor(fb_root.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 # Make annotations for significant differences #
-fb_root.pvsn <- "**"
-fb_root.pvsc <- "**"
+fb_root.pvsn <- "***"
+fb_root.pvsc <- "***"
 fb_root.nvsc <- "ns"
 
 # Plot the differential abundance #
-fb_root_meso.plot <- ggplot(fb_root.meso, aes(x = Comps, y = `ASV12(Mesorhizobium)`)) +
+fb_root_meso.plot <- ggplot(fb_root.meso, aes(x = Comps, y = `rASV9(Mesorhizobium)`)) +
   geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
-  scale_y_continuous(limits = c(0,0.35), breaks = seq(0,0.35, by = 0.05), sec.axis = dup_axis(name = "S. helvola")) +
+  scale_y_continuous(limits = c(0,0.35), breaks = seq(0,0.35, by = 0.07), sec.axis = dup_axis(name = "S. helvola")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Root Endosphere<br>ASV12(*Mesorhizobium*)") +
+  scale_x_discrete(labels = "Root Endosphere<br>rASV9(*Mesorhizobium*)") +
   ylab('') +
   xlab('') +
   theme_prism() +
@@ -8699,12 +8706,12 @@ fb_root_meso.plot <- ggplot(fb_root.meso, aes(x = Comps, y = `ASV12(Mesorhizobiu
         legend.key.spacing.x = unit(2,'cm'),
         legend.position = 'none') +
   geom_signif(annotation = fb_root.pvsn,
-              y_position = 0.31, xmin = 1, xmax = 1.25,
+              y_position = 0.32, xmin = 1, xmax = 1.25,
               tip_length = c(0.01, 0.01),
               textsize = 20,
               vjust = 0.65) +
   geom_signif(annotation = fb_root.pvsc,
-              y_position = 0.33, xmin = 0.75, xmax = 1.25,
+              y_position = 0.34, xmin = 0.75, xmax = 1.25,
               tip_length = c(0.01, 0.01),
               textsize = 20,
               vjust = 0.65) +
@@ -8713,37 +8720,39 @@ fb_root_meso.plot <- ggplot(fb_root.meso, aes(x = Comps, y = `ASV12(Mesorhizobiu
               tip_length = c(0.01, 0.01),
               textsize = 12) +
   labs(tag = "C.")
-fb_root_meso.plot
 
 # Make a patchwork plot for all compartments #
-(fb_bulk_meso.plot | fb_rhiz_meso.plot | fb_root_meso.plot) &
+fb_meso.plot <- (fb_bulk_meso.plot | fb_rhiz_meso.plot | fb_root_meso.plot) &
   theme(plot.tag = element_text(size = 22, face = 'bold', family = "Liberation Sans"))
 
 
 ### Chamaecrista Source Community ###
 ## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
 # Transform the abundance data using total sum scaling #
+com_bulk.ps <- subset_samples(soil.ps, Compartment == "Source Community" & Soil_Treatment == "Common Soil")
+cc_com_bulk.ps <- subset_taxa(com_bulk.ps, taxa_names(com_bulk.ps) %in% taxa_names(cc_bulk.ps))
+cc_bulk.ps <- merge_phyloseq(cc_bulk.ps, cc_com_bulk.ps)
 cc_bulk_prop.ps <- transform_sample_counts(cc_bulk.ps, function(x) x/sum(x))
 decompose_ps(cc_bulk_prop.ps, "cc_bulk_prop")
 
 # Make a data frame of just the Source Community samples as well as the abundances of rhizobia of the PSF nodule #
-cc_bulk.meso <- cbind(cc_bulk_prop$met, t(cc_bulk_prop$otu["ASV1(Bradyrhizobium)",]))
+cc_bulk.meso <- cbind(cc_bulk_prop$met, t(cc_bulk_prop$otu["sASV1(Bradyrhizobium)",]))
 
 # Make soils a factor with the proper levels #
 cc_bulk.meso$Soils <- factor(cc_bulk.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 # Make annotations for significant differences #
-cc_bulk.pvsn <- "**"
-cc_bulk.pvsc <- "ns"
-cc_bulk.nvsc <- "**"
+cc_bulk.pvsn <- "***"
+cc_bulk.pvsc <- "***"
+cc_bulk.nvsc <- "***"
 
 # Plot the differential abundance #
-cc_bulk_meso.plot <- ggplot(cc_bulk.meso, aes(x = Comps, y = `ASV1(Bradyrhizobium)`)) +
+cc_bulk_meso.plot <- ggplot(cc_bulk.meso, aes(x = Comps, y = `sASV1(Bradyrhizobium)`)) +
   geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
-  coord_cartesian(ylim = c(0, 0.1)) +
-  scale_y_continuous(limits = c(0,0.11), breaks = seq(0,0.1, by = 0.02), sec.axis = dup_axis(name = "")) +
+  coord_cartesian(ylim = c(0, 0.15)) +
+  scale_y_continuous(limits = c(0,0.15), breaks = seq(0,0.15, by = 0.03), sec.axis = dup_axis(name = "")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Source Community<br>ASV1(*Bradyrhizobium*)") +
+  scale_x_discrete(labels = "Source Community<br>sASV1(*Bradyrhizobium*)") +
   ylab('Relative Abundance') +
   xlab('') +
   theme_prism() +
@@ -8758,46 +8767,46 @@ cc_bulk_meso.plot <- ggplot(cc_bulk.meso, aes(x = Comps, y = `ASV1(Bradyrhizobiu
         legend.key.spacing.x = unit(2,'cm'),
         legend.position = 'none') +
   geom_signif(annotation = cc_bulk.pvsn,
-              y_position = 0.09, xmin = 1, xmax = 1.25,
+              y_position = 0.125, xmin = 1, xmax = 1.25,
               tip_length = c(0.01, 0.01),
               textsize = 20,
               vjust = 0.65) +
   geom_signif(annotation = cc_bulk.pvsc,
-              y_position = 0.1, xmin = 0.75, xmax = 1.25,
+              y_position = 0.145, xmin = 0.75, xmax = 1.25,
               tip_length = c(0.01, 0.01),
-              textsize = 12) +
+              textsize = 20,
+              vjust = 0.65) +
   geom_signif(annotation = cc_bulk.nvsc,
-              y_position = 0.095, xmin = 0.75, xmax = 1,
+              y_position = 0.135, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 20,
               vjust = 0.65) +
   labs(tag = "A.")
-cc_bulk_meso.plot
 
 ### Chamaecrista Rhizosphere ###
-## Soil Nodule ASV: ASV9(Mesorhizobium) ##
+## Soil Nodule ASV: sASV1(Bradyrhizobium) ##
 # Transform the abundance data using total sum scaling #
 cc_rhiz_prop.ps <- transform_sample_counts(cc_rhiz.ps, function(x) x/sum(x))
 decompose_ps(cc_rhiz_prop.ps, "cc_rhiz_prop")
 
 # Make a data frame of just the rhizosphere samples as well as the abundances of rhizobia of the PSF nodule #
-cc_rhiz.meso <- cbind(cc_rhiz_prop$met, t(cc_rhiz_prop$otu["ASV1(Bradyrhizobium)",]))
+cc_rhiz.meso <- cbind(cc_rhiz_prop$met, t(cc_rhiz_prop$otu["sASV1(Bradyrhizobium)",]))
 
 # Make soils a factor with the proper levels #
 cc_rhiz.meso$Soils <- factor(cc_rhiz.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 # Make annotations for significant differences #
-cc_rhiz.pvsn <- "*"
-cc_rhiz.pvsc <- "ns"
-cc_rhiz.nvsc <- "**"
+cc_rhiz.pvsn <- "ns"
+cc_rhiz.pvsc <- "***"
+cc_rhiz.nvsc <- "***"
 
 # Plot the differential abundance #
-cc_rhiz_meso.plot <- ggplot(cc_rhiz.meso, aes(x = Comps, y = `ASV1(Bradyrhizobium)`)) +
+cc_rhiz_meso.plot <- ggplot(cc_rhiz.meso, aes(x = Comps, y = `sASV1(Bradyrhizobium)`)) +
   geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
   coord_cartesian(ylim = c(0, 0.8)) +
   scale_y_continuous(limits = c(0,0.8), breaks = seq(0,0.8, by = 0.1), sec.axis = dup_axis(name = "")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Rhizosphere<br>ASV1(*Bradyrhizobium*)") +
+  scale_x_discrete(labels = "Rhizosphere<br>sASV1(*Bradyrhizobium*)") +
   ylab('') +
   xlab('') +
   theme_prism() +
@@ -8814,43 +8823,42 @@ cc_rhiz_meso.plot <- ggplot(cc_rhiz.meso, aes(x = Comps, y = `ASV1(Bradyrhizobiu
   geom_signif(annotation = cc_rhiz.pvsn,
               y_position = 0.65, xmin = 1, xmax = 1.25,
               tip_length = c(0.01, 0.01),
-              textsize = 20,
-              vjust = 0.65) +
+              textsize = 12) +
   geom_signif(annotation = cc_rhiz.pvsc,
               y_position = 0.75, xmin = 0.75, xmax = 1.25,
               tip_length = c(0.01, 0.01),
-              textsize = 12) +
+              textsize = 20,
+              vjust = 0.65) +
   geom_signif(annotation = cc_rhiz.nvsc,
               y_position = 0.7, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 20,
               vjust = 0.65) +
   labs(tag = "B.")
-cc_rhiz_meso.plot
 
 ### Chamaecrista Root Endosphere ###
-## Root Nodule ASV: ASV3(Bradyrhizobium) ##
+## Root Nodule ASV: rASV3(Bradyrhizobium) ##
 # Transform the abundance data using total sum scaling #
 cc_root_prop.ps <- transform_sample_counts(cc_root.ps, function(x) x/sum(x))
 decompose_ps(cc_root_prop.ps, "cc_root_prop")
 
 # Make a data frame of just the root endosphere samples as well as the abundances of rhizobia of the PSF nodule #
-cc_root.meso <- cbind(cc_root_prop$met, t(cc_root_prop$otu[c("ASV3(Bradyrhizobium)", "ASV6(Bradyrhizobium)", "ASV14(Bradyrhizobium"),]))
+cc_root.meso <- cbind(cc_root_prop$met, t(cc_root_prop$otu[c("rASV3(Bradyrhizobium)", "rASV6(Bradyrhizobium)", "rASV10(Bradyrhizobium"),]))
 
 # Make soils a factor with the proper levels #
 cc_root.meso$Soils <- factor(cc_root.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 # Make annotations for significant differences #
-cc_root.pvsn <- "ns"
-cc_root.pvsc <- "**"
-cc_root.nvsc <- "**"
+cc_root.pvsn <- "***"
+cc_root.pvsc <- "ns"
+cc_root.nvsc <- "<em>p</em> = 0.0688"
 
 # Plot the differential abundance #
-cc_root_meso.plot <- ggplot(cc_root.meso, aes(x = Comps, y = `ASV3(Bradyrhizobium)`)) +
+cc_root_meso.plot <- ggplot(cc_root.meso, aes(x = Comps, y = `rASV6(Bradyrhizobium)`)) +
   geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
-  scale_y_continuous(limits = c(0,1), breaks = seq(0,1, by = 0.2), sec.axis = dup_axis(name = "C. fasciculata")) +
+  scale_y_continuous(limits = c(0,0.35), breaks = seq(0,0.35, by = 0.07), sec.axis = dup_axis(name = "C. fasciculata")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Root Endosphere<br>ASV3(*Bradyrhizobium*)") +
+  scale_x_discrete(labels = "Root Endosphere<br>rASV6(*Bradyrhizobium*)") +
   ylab('') +
   xlab('') +
   theme_prism() +
@@ -8865,125 +8873,54 @@ cc_root_meso.plot <- ggplot(cc_root.meso, aes(x = Comps, y = `ASV3(Bradyrhizobiu
         legend.key.spacing.x = unit(2,'cm'),
         legend.position = 'none') +
   geom_signif(annotation = cc_root.pvsn,
-              y_position = 0.85, xmin = 1, xmax = 1.25,
+              y_position = 0.33, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  geom_signif(annotation = cc_root.pvsc,
+              y_position = 0.35, xmin = 0.75, xmax = 1.25,
               tip_length = c(0.01, 0.01),
               textsize = 12) +
-  geom_signif(annotation = cc_root.pvsc,
-              y_position = 0.95, xmin = 0.75, xmax = 1.25,
+  geom_signif(annotation = "",
+              y_position = 0.315, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 20,
               vjust = 0.65) +
-  geom_signif(annotation = cc_root.nvsc,
-              y_position = 0.9, xmin = 0.75, xmax = 1,
-              tip_length = c(0.01, 0.01),
-              textsize = 20,
-              vjust = 0.65) +
+  annotate(geom = 'richtext', x = 0.875, y = 0.32,
+           label = cc_root.nvsc,
+           size = 5, family = 'Liberation Sans', fontface = 'bold', fill = NA, label.color = NA) +
   labs(tag = "C.")
-cc_root_meso.plot
 
 # Make a patchwork plot for all compartments #
-(cc_bulk_meso.plot | cc_rhiz_meso.plot | cc_root_meso.plot) &
+cc_brad.plot <- (cc_bulk_meso.plot | cc_rhiz_meso.plot | cc_root_meso.plot) &
   theme(plot.tag = element_text(size = 22, face = 'bold', family = "Liberation Sans"))
 
-## Bonus Plots for other noduel rhizobia in roots ##
-# Plot the differential abundance #
-cc_root_meso6.plot <- ggplot(cc_root.meso, aes(x = Comps, y = `ASV6(Bradyrhizobium)`)) +
-  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
-  scale_y_continuous(limits = c(0,0.4), breaks = seq(0,0.4, by = 0.05), sec.axis = dup_axis(name = "C. fasciculata")) +
-  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Root Endosphere<br>ASV6(*Bradyrhizobium*)") +
-  ylab('') +
-  xlab('') +
-  theme_prism() +
-  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
-        axis.text.y = element_text(size = 18, color = 'black'),
-        axis.title.y.left = element_text(size = 22),
-        axis.ticks.length.y.right = unit(0, 'cm'),
-        axis.text.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
-        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
-        legend.title = element_blank(),
-        legend.key.spacing.x = unit(2,'cm'),
-        legend.position = 'none') +
-  geom_signif(annotation = "**",
-              y_position = 0.325, xmin = 1, xmax = 1.25,
-              tip_length = c(0.01, 0.01),
-              textsize = 20,
-              vjust = 0.65) +
-  geom_signif(annotation = "ns",
-              y_position = 0.375, xmin = 0.75, xmax = 1.25,
-              tip_length = c(0.01, 0.01),
-              textsize = 12) +
-  geom_signif(annotation = "**",
-              y_position = 0.35, xmin = 0.75, xmax = 1,
-              tip_length = c(0.01, 0.01),
-              textsize = 20,
-              vjust = 0.65) +
-  labs(tag = "A.")
-cc_root_meso6.plot
-
-# Plot the differential abundance #
-cc_root_meso14.plot <- ggplot(cc_root.meso, aes(x = Comps, y = `ASV14(Bradyrhizobium)`)) +
-  geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
-  scale_y_continuous(limits = c(0,0.4), breaks = seq(0,0.4, by = 0.05), sec.axis = dup_axis(name = "C. fasciculata")) +
-  scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Root Endosphere<br>ASV14(*Bradyrhizobium*)") +
-  ylab('') +
-  xlab('') +
-  theme_prism() +
-  theme(axis.text.x = ggtext::element_markdown(color = 'black', size = 32),
-        axis.text.y = element_text(size = 18, color = 'black'),
-        axis.title.y.left = element_text(size = 22),
-        axis.ticks.length.y.right = unit(0, 'cm'),
-        axis.text.y.right = element_blank(),
-        axis.title.y.right = element_text(size = 24, angle = -90, face = "bold.italic"),
-        legend.text = ggtext::element_markdown(size = 28, family= 'Liberation Sans', face = 'bold'),
-        legend.title = element_blank(),
-        legend.key.spacing.x = unit(2,'cm'),
-        legend.position = 'none') +
-  geom_signif(annotation = "***",
-              y_position = 0.325, xmin = 1, xmax = 1.25,
-              tip_length = c(0.01, 0.01),
-              textsize = 20,
-              vjust = 0.65) +
-  geom_signif(annotation = "ns",
-              y_position = 0.375, xmin = 0.75, xmax = 1.25,
-              tip_length = c(0.01, 0.01),
-              textsize = 12) +
-  geom_signif(annotation = "***",
-              y_position = 0.35, xmin = 0.75, xmax = 1,
-              tip_length = c(0.01, 0.01),
-              textsize = 20,
-              vjust = 0.65) +
-  lab(tags = "B.")
-cc_root_meso14.plot
-
-(cc_root_meso.plot | cc_root_meso6.plot | cc_root_meso14.plot)
-
 ### Desmodium Source Community ###
-## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
+## Soil Nodule ASV: sASV1(Bradyrhizobium) ##
 # Transform the abundance data using total sum scaling #
+ds_com_bulk.ps <- subset_taxa(com_bulk.ps, taxa_names(com_bulk.ps) %in% taxa_names(ds_bulk.ps))
+ds_bulk.ps <- merge_phyloseq(ds_bulk.ps, ds_com_bulk.ps)
 ds_bulk_prop.ps <- transform_sample_counts(ds_bulk.ps, function(x) x/sum(x))
 decompose_ps(ds_bulk_prop.ps, "ds_bulk_prop")
 
 # Make a data frame of just the Source Community samples as well as the abundances of rhizobia of the PSF nodule #
-ds_bulk.meso <- cbind(ds_bulk_prop$met, t(ds_bulk_prop$otu["ASV1(Bradyrhizobium)",]))
+ds_bulk.meso <- cbind(ds_bulk_prop$met, t(ds_bulk_prop$otu["sASV1(Bradyrhizobium)",]))
 
 # Make soils a factor with the proper levels #
 ds_bulk.meso$Soils <- factor(ds_bulk.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 # Make annotations for significant differences #
-ds_bulk.pvsn <- "***"
+ds_bulk.pvsn <- "*"
 ds_bulk.pvsc <- "***"
-ds_bulk.nvsc <- "**"
+ds_bulk.nvsc <- "***"
 
 # Plot the differential abundance #
-ds_bulk_meso.plot <- ggplot(ds_bulk.meso, aes(x = Comps, y = `ASV1(Bradyrhizobium)`)) +
+ds_bulk_meso.plot <- ggplot(ds_bulk.meso, aes(x = Comps, y = `sASV1(Bradyrhizobium)`)) +
   geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
   coord_cartesian(ylim = c(0, 0.08)) +
-  scale_y_continuous(limits = c(0,0.08), breaks = seq(0,0.08, by = 0.01), sec.axis = dup_axis(name = "")) +
+  scale_y_continuous(limits = c(0,0.08), breaks = seq(0,0.08, by = 0.02), sec.axis = dup_axis(name = "")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Source Community<br>ASV1(*Bradyrhizobium*)") +
+  scale_x_discrete(labels = "Source Community<br>sASV1(*Bradyrhizobium*)") +
   ylab('Relative Abundance') +
   xlab('') +
   theme_prism() +
@@ -8998,31 +8935,30 @@ ds_bulk_meso.plot <- ggplot(ds_bulk.meso, aes(x = Comps, y = `ASV1(Bradyrhizobiu
         legend.key.spacing.x = unit(2,'cm'),
         legend.position = 'none') +
   geom_signif(annotation = ds_bulk.pvsn,
-              y_position = 0.065, xmin = 1, xmax = 1.25,
+              y_position = 0.075, xmin = 1, xmax = 1.25,
               tip_length = c(0.01, 0.01),
               textsize = 20,
               vjust = 0.65) +
   geom_signif(annotation = ds_bulk.pvsc,
-              y_position = 0.075, xmin = 0.75, xmax = 1.25,
+              y_position = 0.08, xmin = 0.75, xmax = 1.25,
               tip_length = c(0.01, 0.01),
               textsize = 20,
               vjust = 0.65) +
   geom_signif(annotation = ds_bulk.nvsc,
-              y_position = 0.07, xmin = 0.75, xmax = 1,
+              y_position = 0.05, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 20,
               vjust = 0.65) +
   labs(tag = "A.")
-ds_bulk_meso.plot
 
 ### Desmodium Rhizosphere ###
-## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
+## Soil Nodule ASV: sASV1(Bradyrhizobium) ##
 # Transform the abundance data using total sum scaling #
 ds_rhiz_prop.ps <- transform_sample_counts(ds_rhiz.ps, function(x) x/sum(x))
 decompose_ps(ds_rhiz_prop.ps, "ds_rhiz_prop")
 
 # Make a data frame of just the rhizosphere samples as well as the abundances of rhizobia of the PSF nodule #
-ds_rhiz.meso <- cbind(ds_rhiz_prop$met, t(ds_rhiz_prop$otu["ASV1(Bradyrhizobium)",]))
+ds_rhiz.meso <- cbind(ds_rhiz_prop$met, t(ds_rhiz_prop$otu["sASV1(Bradyrhizobium)",]))
 
 # Make soils a factor with the proper levels #
 ds_rhiz.meso$Soils <- factor(ds_rhiz.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
@@ -9033,12 +8969,12 @@ ds_rhiz.pvsc <- "***"
 ds_rhiz.nvsc <- "***"
 
 # Plot the differential abundance #
-ds_rhiz_meso.plot <- ggplot(ds_rhiz.meso, aes(x = Comps, y = `ASV1(Bradyrhizobium)`)) +
+ds_rhiz_meso.plot <- ggplot(ds_rhiz.meso, aes(x = Comps, y = `sASV1(Bradyrhizobium)`)) +
   geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
-  coord_cartesian(ylim = c(0, 0.1)) +
-  scale_y_continuous(limits = c(0,0.1), breaks = seq(0,0.1, by = 0.025), sec.axis = dup_axis(name = "")) +
+  coord_cartesian(ylim = c(0, 0.12)) +
+  scale_y_continuous(limits = c(0,0.12), breaks = seq(0,0.12, by = 0.03), sec.axis = dup_axis(name = "")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Rhizosphere<br>ASV1(*Bradyrhizobium*)") +
+  scale_x_discrete(labels = "Rhizosphere<br>sASV1(*Bradyrhizobium*)") +
   ylab('') +
   xlab('') +
   theme_prism() +
@@ -9053,45 +8989,44 @@ ds_rhiz_meso.plot <- ggplot(ds_rhiz.meso, aes(x = Comps, y = `ASV1(Bradyrhizobiu
         legend.key.spacing.x = unit(2,'cm'),
         legend.position = 'bottom') +
   geom_signif(annotation = ds_rhiz.pvsn,
-              y_position = 0.085, xmin = 1, xmax = 1.25,
+              y_position = 0.11, xmin = 1, xmax = 1.25,
               tip_length = c(0.01, 0.01),
               textsize = 12) +
   geom_signif(annotation = ds_rhiz.pvsc,
-              y_position = 0.095, xmin = 0.75, xmax = 1.25,
+              y_position = 0.12, xmin = 0.75, xmax = 1.25,
               tip_length = c(0.01, 0.01),
               textsize = 20,
               vjust = 0.65) +
   geom_signif(annotation = ds_rhiz.nvsc,
-              y_position = 0.09, xmin = 0.75, xmax = 1,
+              y_position = 0.113, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 20,
               vjust = 0.65) +
   labs(tag = "B.")
-ds_rhiz_meso.plot
 
 ### Desmodium Root Endosphere ###
-## Root Nodule ASV: ASV6(Bradyrhizobium) ##
+## Root Nodule ASV: rASV4(Bradyrhizobium) ##
 # Transform the abundance data using total sum scaling #
 ds_root_prop.ps <- transform_sample_counts(ds_root.ps, function(x) x/sum(x))
 decompose_ps(ds_root_prop.ps, "ds_root_prop")
 
 # Make a data frame of just the root endosphere samples as well as the abundances of rhizobia of the PSF nodule #
-ds_root.meso <- cbind(ds_root_prop$met, t(ds_root_prop$otu["ASV7(Bradyrhizobium)",]))
+ds_root.meso <- cbind(ds_root_prop$met, t(ds_root_prop$otu["rASV4(Bradyrhizobium)",]))
 
 # Make soils a factor with the proper levels #
 ds_root.meso$Soils <- factor(ds_root.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 # Make annotations for significant differences #
-ds_root.pvsn <- "ns"
-ds_root.pvsc <- "ns"
+ds_root.pvsn <- "***"
+ds_root.pvsc <- "***"
 ds_root.nvsc <- "ns"
 
 # Plot the differential abundance #
-ds_root_meso.plot <- ggplot(ds_root.meso, aes(x = Comps, y = `ASV7(Bradyrhizobium)`)) +
+ds_root_meso.plot <- ggplot(ds_root.meso, aes(x = Comps, y = `rASV4(Bradyrhizobium)`)) +
   geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
   scale_y_continuous(limits = c(0,0.4), breaks = seq(0,0.4, by = 0.1), sec.axis = dup_axis(name = "D. canadense")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Root Endosphere<br>ASV7(*Bradyrhizobium*)") +
+  scale_x_discrete(labels = "Root Endosphere<br>rASV4(*Bradyrhizobium*)") +
   ylab('') +
   xlab('') +
   theme_prism() +
@@ -9108,30 +9043,33 @@ ds_root_meso.plot <- ggplot(ds_root.meso, aes(x = Comps, y = `ASV7(Bradyrhizobiu
   geom_signif(annotation = ds_root.pvsn,
               y_position = 0.3, xmin = 1, xmax = 1.25,
               tip_length = c(0.01, 0.01),
-              textsize = 12) +
+              textsize = 20,
+              vjust = 0.65) +
   geom_signif(annotation = ds_root.pvsc,
               y_position = 0.36, xmin = 0.75, xmax = 1.25,
               tip_length = c(0.01, 0.01),
-              textsize = 12) +
+              textsize = 20,
+              vjust = 0.65) +
   geom_signif(annotation = ds_root.nvsc,
               y_position = 0.33, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 12) +
   labs(tag = "C.")
-ds_root_meso.plot
 
 # Make a patchwork plot for all compartments #
-(ds_bulk_meso.plot | ds_rhiz_meso.plot | ds_root_meso.plot) &
+ds_brad.plot <- (ds_bulk_meso.plot | ds_rhiz_meso.plot | ds_root_meso.plot) &
   theme(plot.tag = element_text(size = 22, face = 'bold', family = "Liberation Sans"))
 
 ### Hog Peanut Source Community ###
 ## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
 # Transform the abundance data using total sum scaling #
+hp_com_bulk.ps <- subset_taxa(com_bulk.ps, taxa_names(com_bulk.ps) %in% taxa_names(hp_bulk.ps))
+hp_bulk.ps <- merge_phyloseq(hp_bulk.ps, hp_com_bulk.ps)
 hp_bulk_prop.ps <- transform_sample_counts(hp_bulk.ps, function(x) x/sum(x))
 decompose_ps(hp_bulk_prop.ps, "hp_bulk_prop")
 
 # Make a data frame of just the Source Community samples as well as the abundances of rhizobia of the PSF nodule #
-hp_bulk.meso <- cbind(hp_bulk_prop$met, t(hp_bulk_prop$otu["ASV1(Bradyrhizobium)",]))
+hp_bulk.meso <- cbind(hp_bulk_prop$met, t(hp_bulk_prop$otu["sASV1(Bradyrhizobium)",]))
 
 # Make soils a factor with the proper levels #
 hp_bulk.meso$Soils <- factor(hp_bulk.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
@@ -9142,12 +9080,12 @@ hp_bulk.pvsc <- "ns"
 hp_bulk.nvsc <- "***"
 
 # Plot the differential abundance #
-hp_bulk_meso.plot <- ggplot(hp_bulk.meso, aes(x = Comps, y = `ASV1(Bradyrhizobium)`)) +
+hp_bulk_meso.plot <- ggplot(hp_bulk.meso, aes(x = Comps, y = `sASV1(Bradyrhizobium)`)) +
   geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
   coord_cartesian(ylim = c(0, 0.05)) +
   scale_y_continuous(limits = c(0,0.05), breaks = seq(0,0.05, by = 0.01), sec.axis = dup_axis(name = "")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Source Community<br>ASV1(*Bradyrhizobium*)") +
+  scale_x_discrete(labels = "Source Community<br>sASV1(*Bradyrhizobium*)") +
   ylab('Relative Abundance') +
   xlab('') +
   theme_prism() +
@@ -9162,16 +9100,16 @@ hp_bulk_meso.plot <- ggplot(hp_bulk.meso, aes(x = Comps, y = `ASV1(Bradyrhizobiu
         legend.key.spacing.x = unit(2,'cm'),
         legend.position = 'none') +
   geom_signif(annotation = hp_bulk.pvsn,
-              y_position = 0.038, xmin = 1, xmax = 1.25,
+              y_position = 0.045, xmin = 1, xmax = 1.25,
               tip_length = c(0.01, 0.01),
               textsize = 20,
               vjust = 0.65) +
   geom_signif(annotation = hp_bulk.pvsc,
-              y_position = 0.046, xmin = 0.75, xmax = 1.25,
+              y_position = 0.05, xmin = 0.75, xmax = 1.25,
               tip_length = c(0.01, 0.01),
               textsize = 12) +
   geom_signif(annotation = hp_bulk.nvsc,
-              y_position = 0.042, xmin = 0.75, xmax = 1,
+              y_position = 0.0475, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 20,
               vjust = 0.65) +
@@ -9179,29 +9117,29 @@ hp_bulk_meso.plot <- ggplot(hp_bulk.meso, aes(x = Comps, y = `ASV1(Bradyrhizobiu
 hp_bulk_meso.plot
 
 ### Hog Peanut Rhizosphere ###
-## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
+## Soil Nodule ASV: sASV1(Bradyrhizobium) ##
 # Transform the abundance data using total sum scaling #
 hp_rhiz_prop.ps <- transform_sample_counts(hp_rhiz.ps, function(x) x/sum(x))
 decompose_ps(hp_rhiz_prop.ps, "hp_rhiz_prop")
 
 # Make a data frame of just the rhizosphere samples as well as the abundances of rhizobia of the PSF nodule #
-hp_rhiz.meso <- cbind(hp_rhiz_prop$met, t(hp_rhiz_prop$otu["ASV1(Bradyrhizobium)",]))
+hp_rhiz.meso <- cbind(hp_rhiz_prop$met, t(hp_rhiz_prop$otu["sASV1(Bradyrhizobium)",]))
 
 # Make soils a factor with the proper levels #
 hp_rhiz.meso$Soils <- factor(hp_rhiz.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 # Make annotations for significant differences #
-hp_rhiz.pvsn <- "ns"
+hp_rhiz.pvsn <- "***"
 hp_rhiz.pvsc <- "ns"
-hp_rhiz.nvsc <- "ns"
+hp_rhiz.nvsc <- "***"
 
 # Plot the differential abundance #
-hp_rhiz_meso.plot <- ggplot(hp_rhiz.meso, aes(x = Comps, y = `ASV1(Bradyrhizobium)`)) +
+hp_rhiz_meso.plot <- ggplot(hp_rhiz.meso, aes(x = Comps, y = `sASV1(Bradyrhizobium)`)) +
   geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
-  coord_cartesian(ylim = c(0, 0.1)) +
-  scale_y_continuous(limits = c(0,0.1), breaks = seq(0,0.1, by = 0.025), sec.axis = dup_axis(name = "")) +
+  coord_cartesian(ylim = c(0, 0.12)) +
+  scale_y_continuous(limits = c(0,0.12), breaks = seq(0,0.12, by = 0.03), sec.axis = dup_axis(name = "")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Rhizosphere<br>ASV1(*Bradyrhizobium*)") +
+  scale_x_discrete(labels = "Rhizosphere<br>sASV1(*Bradyrhizobium*)") +
   ylab('') +
   xlab('') +
   theme_prism() +
@@ -9216,46 +9154,45 @@ hp_rhiz_meso.plot <- ggplot(hp_rhiz.meso, aes(x = Comps, y = `ASV1(Bradyrhizobiu
         legend.key.spacing.x = unit(2,'cm'),
         legend.position = 'bottom') +
   geom_signif(annotation = hp_rhiz.pvsn,
-              y_position = 0.085, xmin = 1, xmax = 1.25,
+              y_position = 0.105, xmin = 1, xmax = 1.25,
               tip_length = c(0.01, 0.01),
-              textsize = 12) +
+              textsize = 20,
+              vjust = 0.65) +
   geom_signif(annotation = hp_rhiz.pvsc,
-              y_position = 0.096, xmin = 0.75, xmax = 1.25,
+              y_position = 0.12, xmin = 0.75, xmax = 1.25,
               tip_length = c(0.01, 0.01),
               textsize = 12) +
   geom_signif(annotation = hp_rhiz.nvsc,
-              y_position = 0.09, xmin = 0.75, xmax = 1,
+              y_position = 0.11, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
-              textsize = 12) +
+              textsize = 20,
+              vjust = 0.65) +
   labs(tag = "B.")
-hp_rhiz_meso.plot
 
 ### Hog Peanut Root Endosphere ###
-## Root Nodule ASV: ASV6(Bradyrhizobium) ##
+## Root Nodule ASV: rASV4(Bradyrhizobium) ##
 # Transform the abundance data using total sum scaling #
 hp_root_prop.ps <- transform_sample_counts(hp_root.ps, function(x) x/sum(x))
 decompose_ps(hp_root_prop.ps, "hp_root_prop")
 
 # Make a data frame of just the root endosphere samples as well as the abundances of rhizobia of the PSF nodule #
-hp_root.meso <- cbind(hp_root_prop$met, t(hp_root_prop$otu["ASV7(Bradyrhizobium)",]))
+hp_root.meso <- cbind(hp_root_prop$met, t(hp_root_prop$otu[c("rASV4(Bradyrhizobium)", "rASV6(Bradyrhizobium"),]))
 
 # Make soils a factor with the proper levels #
 hp_root.meso$Soils <- factor(hp_root.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 # Make annotations for significant differences #
 hp_root.pvsn <- "ns"
-hp_root.pvsc <- "ns"
-hp_root.nvsc <- "ns"
-
-# Since ASV9 was not found in the root endosphere samples, just make a column of zeros #
-hp_root.meso$`ASV9(Bradyrhizobium)` <- 0
+hp_root.pvsc <- "<em>p</em> = 0.0924"
+hp_root.nvsc <- "***"
 
 # Plot the differential abundance #
-hp_root_meso.plot <- ggplot(hp_root.meso, aes(x = Comps, y = `ASV9(Bradyrhizobium)`)) +
+hp_root_meso.plot <- ggplot(hp_root.meso, aes(x = Comps, y = `rASV4(Bradyrhizobium)`)) +
   geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
+  coord_cartesian(ylim = c(0,0.8)) +
   scale_y_continuous(limits = c(0,0.8), breaks = seq(0,0.8, by = 0.2), sec.axis = dup_axis(name = "A. bracteata")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Root Endosphere<br>ASV9(*Bradyrhizobium*)") +
+  scale_x_discrete(labels = "Root Endosphere<br>rASV4(*Bradyrhizobium*)") +
   ylab('') +
   xlab('') +
   theme_prism() +
@@ -9269,21 +9206,39 @@ hp_root_meso.plot <- ggplot(hp_root.meso, aes(x = Comps, y = `ASV9(Bradyrhizobiu
         legend.title = element_blank(),
         legend.key.spacing.x = unit(2,'cm'),
         legend.position = 'none') +
+  geom_signif(annotation = hp_root.pvsn,
+              y_position = 0.725, xmin = 1, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = "",
+              y_position = 0.785, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
+  geom_signif(annotation = hp_root.nvsc,
+              y_position = 0.75, xmin = 0.75, xmax = 1,
+              tip_length = c(0.01, 0.01),
+              textsize = 20,
+              vjust = 0.65) +
+  annotate(geom = 'richtext', x = 1, y = 0.8,
+           label = hp_root.pvsc,
+           size = 5, family = 'Liberation Sans', fontface = 'bold', fill = NA, label.color = NA) +
   labs(tag = "C.")
 hp_root_meso.plot
 
 # Make a patchwork plot for all compartments #
-(hp_bulk_meso.plot | hp_rhiz_meso.plot | hp_root_meso.plot) &
+hp_brad.plot <- (hp_bulk_meso.plot | hp_rhiz_meso.plot | hp_root_meso.plot) &
   theme(plot.tag = element_text(size = 22, face = 'bold', family = "Liberation Sans"))
 
 ### Clover Source Community ###
-## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
+## Soil Nodule ASV: sASV2(Rhizobium) ##
 # Transform the abundance data using total sum scaling #
+cl_com_bulk.ps <- subset_taxa(com_bulk.ps, taxa_names(com_bulk.ps) %in% taxa_names(cl_bulk.ps))
+cl_bulk.ps <- merge_phyloseq(cl_bulk.ps, cl_com_bulk.ps)
 cl_bulk_prop.ps <- transform_sample_counts(cl_bulk.ps, function(x) x/sum(x))
 decompose_ps(cl_bulk_prop.ps, "cl_bulk_prop")
 
 # Make a data frame of just the Source Community samples as well as the abundances of rhizobia of the PSF nodule #
-cl_bulk.meso <- cbind(cl_bulk_prop$met, t(cl_bulk_prop$otu["ASV2(Agrobacterium)",]))
+cl_bulk.meso <- cbind(cl_bulk_prop$met, t(cl_bulk_prop$otu["sASV2(Rhizobium)",]))
 
 # Make soils a factor with the proper levels #
 cl_bulk.meso$Soils <- factor(cl_bulk.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
@@ -9294,12 +9249,12 @@ cl_bulk.pvsc <- "ns"
 cl_bulk.nvsc <- "ns"
 
 # Plot the differential abundance #
-cl_bulk_meso.plot <- ggplot(cl_bulk.meso, aes(x = Comps, y = `ASV2(Agrobacterium)`)) +
+cl_bulk_meso.plot <- ggplot(cl_bulk.meso, aes(x = Comps, y = `sASV2(Rhizobium)`)) +
   geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
   coord_cartesian(ylim = c(0, 0.01)) +
   scale_y_continuous(limits = c(0,0.01), breaks = seq(0,0.01, by = 0.002), sec.axis = dup_axis(name = "")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Source Community<br>ASV2(*Agrobacterium*)") +
+  scale_x_discrete(labels = "Source Community<br>sASV2(*Rhizobium*)") +
   ylab('Relative Abundance') +
   xlab('') +
   theme_prism() +
@@ -9314,46 +9269,43 @@ cl_bulk_meso.plot <- ggplot(cl_bulk.meso, aes(x = Comps, y = `ASV2(Agrobacterium
         legend.key.spacing.x = unit(2,'cm'),
         legend.position = 'bottom') +
   geom_signif(annotation = cl_bulk.pvsn,
-              y_position = 0.038, xmin = 1, xmax = 1.25,
-              tip_length = c(0.01, 0.01),
-              textsize = 20,
-              vjust = 0.65) +
+              y_position = 0.004, xmin = 1, xmax = 1.25,
+              tip_length = c(0.1, 0.1),
+              textsize = 12) +
   geom_signif(annotation = cl_bulk.pvsc,
-              y_position = 0.046, xmin = 0.75, xmax = 1.25,
-              tip_length = c(0.01, 0.01),
+              y_position = 0.008, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.1, 0.1),
               textsize = 12) +
   geom_signif(annotation = cl_bulk.nvsc,
-              y_position = 0.042, xmin = 0.75, xmax = 1,
-              tip_length = c(0.01, 0.01),
-              textsize = 20,
-              vjust = 0.65) +
+              y_position = 0.006, xmin = 0.75, xmax = 1,
+              tip_length = c(0.1, 0.1),
+              textsize = 12) +
   labs(tag = "A.")
 cl_bulk_meso.plot
 
 ### Clover Rhizosphere ###
-## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
+## Soil Nodule ASV: sASV2(Rhizobium) ##
 # Transform the abundance data using total sum scaling #
 cl_rhiz_prop.ps <- transform_sample_counts(cl_rhiz.ps, function(x) x/sum(x))
 decompose_ps(cl_rhiz_prop.ps, "cl_rhiz_prop")
 
 # Make a data frame of just the rhizosphere samples as well as the abundances of rhizobia of the PSF nodule #
-cl_rhiz.meso <- cbind(cl_rhiz_prop$met, t(cl_rhiz_prop$otu["ASV2(Agrobacterium)",]))
+cl_rhiz.meso <- cbind(cl_rhiz_prop$met, t(cl_rhiz_prop$otu["sASV2(Rhizobium)",]))
 
 # Make soils a factor with the proper levels #
 cl_rhiz.meso$Soils <- factor(cl_rhiz.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 # Make annotations for significant differences #
-cl_rhiz.pvsn <- "ns"
 cl_rhiz.pvsc <- "ns"
-cl_rhiz.nvsc <- "ns"
+
 
 # Plot the differential abundance #
-cl_rhiz_meso.plot <- ggplot(cl_rhiz.meso, aes(x = Comps, y = `ASV2(Agrobacterium)`)) +
+cl_rhiz_meso.plot <- ggplot(cl_rhiz.meso, aes(x = Comps, y = `sASV2(Rhizobium)`)) +
   geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
   coord_cartesian(ylim = c(0, 0.01)) +
   scale_y_continuous(limits = c(0,0.01), breaks = seq(0,0.01, by = 0.0025), sec.axis = dup_axis(name = "")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Rhizosphere<br>ASV2(*Agrobacterium*)") +
+  scale_x_discrete(labels = "Rhizosphere<br>sASV2(*Rhizobium*)") +
   ylab('') +
   xlab('') +
   theme_prism() +
@@ -9367,17 +9319,21 @@ cl_rhiz_meso.plot <- ggplot(cl_rhiz.meso, aes(x = Comps, y = `ASV2(Agrobacterium
         legend.title = element_blank(),
         legend.key.spacing.x = unit(2,'cm'),
         legend.position = 'none') +
+  geom_signif(annotation = cl_rhiz.pvsc,
+              y_position = 0.008, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.01, 0.01),
+              textsize = 12) +
   labs(tag = "B.")
 cl_rhiz_meso.plot
 
-### Hog Peanut Root Endosphere ###
-## Root Nodule ASV: ASV6(Bradyrhizobium) ##
+### Clover Root Endosphere ###
+## Root Nodule ASV: rASV1(Rhizobium) ##
 # Transform the abundance data using total sum scaling #
 cl_root_prop.ps <- transform_sample_counts(cl_root.ps, function(x) x/sum(x))
 decompose_ps(cl_root_prop.ps, "cl_root_prop")
 
 # Make a data frame of just the root endosphere samples as well as the abundances of rhizobia of the PSF nodule #
-cl_root.meso <- cbind(cl_root_prop$met, t(cl_root_prop$otu["ASV1(Rhizobium)",]))
+cl_root.meso <- cbind(cl_root_prop$met, t(cl_root_prop$otu["rASV1(Rhizobium)",]))
 
 # Make soils a factor with the proper levels #
 cl_root.meso$Soils <- factor(cl_root.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
@@ -9388,11 +9344,11 @@ cl_root.pvsc <- "ns"
 cl_root.nvsc <- "ns"
 
 # Plot the differential abundance #
-cl_root_meso.plot <- ggplot(cl_root.meso, aes(x = Comps, y = `ASV1(Rhizobium)`)) +
+cl_root_meso.plot <- ggplot(cl_root.meso, aes(x = Comps, y = `rASV1(Rhizobium)`)) +
   geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
   scale_y_continuous(limits = c(0,1), breaks = seq(0,1, by = 0.2), sec.axis = dup_axis(name = "T. repens")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Root Endosphere<br>ASV1(*Rhizobium*)") +
+  scale_x_discrete(labels = "Root Endosphere<br>rASV1(*Rhizobium*)") +
   ylab('') +
   xlab('') +
   theme_prism() +
@@ -9407,11 +9363,11 @@ cl_root_meso.plot <- ggplot(cl_root.meso, aes(x = Comps, y = `ASV1(Rhizobium)`))
         legend.key.spacing.x = unit(2,'cm'),
         legend.position = 'none') +
   geom_signif(annotation = cl_root.pvsn,
-              y_position = 0.85, xmin = 1, xmax = 1.25,
+              y_position = 0.86, xmin = 1, xmax = 1.25,
               tip_length = c(0.01, 0.01),
               textsize = 12) +
   geom_signif(annotation = cl_root.pvsc,
-              y_position = 0.96, xmin = 0.75, xmax = 1.25,
+              y_position = 0.95, xmin = 0.75, xmax = 1.25,
               tip_length = c(0.01, 0.01),
               textsize = 12) +
   geom_signif(annotation = cl_root.nvsc,
@@ -9422,18 +9378,19 @@ cl_root_meso.plot <- ggplot(cl_root.meso, aes(x = Comps, y = `ASV1(Rhizobium)`))
 cl_root_meso.plot
 
 # Make a patchwork plot for all compartments #
-(cl_bulk_meso.plot + plot_layout(guides = "keep") & theme(legend.position = "bottom", legend.justification = c(-0.85,0)) | cl_rhiz_meso.plot   | cl_root_meso.plot) &
+cl_rhzo.plot <- (cl_bulk_meso.plot + plot_layout(guides = "keep") & theme(legend.position = "bottom", legend.justification = c(-0.85,0)) | cl_rhiz_meso.plot   | cl_root_meso.plot) &
   theme(plot.tag = element_text(size = 22, face = 'bold', family = "Liberation Sans"))
 
-
 ### Medicago Source Community ###
-## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
+## Soil Nodule ASV: sASV2(Rhiozbium) ##
 # Transform the abundance data using total sum scaling #
+md_com_bulk.ps <- subset_taxa(com_bulk.ps, taxa_names(com_bulk.ps) %in% taxa_names(md_bulk.ps))
+md_bulk.ps <- merge_phyloseq(md_bulk.ps, md_com_bulk.ps)
 md_bulk_prop.ps <- transform_sample_counts(md_bulk.ps, function(x) x/sum(x))
 decompose_ps(md_bulk_prop.ps, "md_bulk_prop")
 
 # Make a data frame of just the Source Community samples as well as the abundances of rhizobia of the PSF nodule #
-md_bulk.meso <- cbind(md_bulk_prop$met, t(md_bulk_prop$otu["ASV2(Agrobacterium)",]))
+md_bulk.meso <- cbind(md_bulk_prop$met, t(md_bulk_prop$otu["sASV2(Rhizobium)",]))
 
 # Make soils a factor with the proper levels #
 md_bulk.meso$Soils <- factor(md_bulk.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
@@ -9444,12 +9401,12 @@ md_bulk.pvsc <- "ns"
 md_bulk.nvsc <- "ns"
 
 # Plot the differential abundance #
-md_bulk_meso.plot <- ggplot(md_bulk.meso, aes(x = Comps, y = `ASV2(Agrobacterium)`)) +
+md_bulk_meso.plot <- ggplot(md_bulk.meso, aes(x = Comps, y = `sASV2(Rhizobium)`)) +
   geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
   coord_cartesian(ylim = c(0, 0.01)) +
   scale_y_continuous(limits = c(0,0.01), breaks = seq(0,0.01, by = 0.0025), sec.axis = dup_axis(name = "")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Source Community<br>ASV2(*Agrobacterium*)") +
+  scale_x_discrete(labels = "Source Community<br>sASV2(*Rhiozbium*)") +
   ylab('Relative Abundance') +
   xlab('') +
   theme_prism() +
@@ -9464,46 +9421,44 @@ md_bulk_meso.plot <- ggplot(md_bulk.meso, aes(x = Comps, y = `ASV2(Agrobacterium
         legend.key.spacing.x = unit(2,'cm'),
         legend.position = 'none') +
   geom_signif(annotation = md_bulk.pvsn,
-              y_position = 0.038, xmin = 1, xmax = 1.25,
-              tip_length = c(0.01, 0.01),
-              textsize = 20,
-              vjust = 0.65) +
+              y_position = 0.0025, xmin = 1, xmax = 1.25,
+              tip_length = c(0.1, 0.1),
+              textsize = 12) +
   geom_signif(annotation = md_bulk.pvsc,
-              y_position = 0.046, xmin = 0.75, xmax = 1.25,
-              tip_length = c(0.01, 0.01),
+              y_position = 0.0075, xmin = 0.75, xmax = 1.25,
+              tip_length = c(0.1, 0.1),
               textsize = 12) +
   geom_signif(annotation = md_bulk.nvsc,
-              y_position = 0.042, xmin = 0.75, xmax = 1,
-              tip_length = c(0.01, 0.01),
-              textsize = 20,
-              vjust = 0.65) +
+              y_position = 0.005, xmin = 0.75, xmax = 1,
+              tip_length = c(0.1, 0.1),
+              textsize = 12) +
   labs(tag = "A.")
 md_bulk_meso.plot
 
 ### Medicago Rhizosphere ###
-## Soil Nodule ASV: ASV1(Bradyrhizobium) ##
+## Soil Nodule ASV: sASV2(Rhizobium) ##
 # Transform the abundance data using total sum scaling #
 md_rhiz_prop.ps <- transform_sample_counts(md_rhiz.ps, function(x) x/sum(x))
 decompose_ps(md_rhiz_prop.ps, "md_rhiz_prop")
 
 # Make a data frame of just the rhizosphere samples as well as the abundances of rhizobia of the PSF nodule #
-md_rhiz.meso <- cbind(md_rhiz_prop$met, t(md_rhiz_prop$otu["ASV2(Agrobacterium)",]))
+md_rhiz.meso <- cbind(md_rhiz_prop$met, t(md_rhiz_prop$otu["sASV2(Rhizobium)",]))
 
 # Make soils a factor with the proper levels #
 md_rhiz.meso$Soils <- factor(md_rhiz.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 # Make annotations for significant differences #
-md_rhiz.pvsn <- "ns"
+md_rhiz.pvsn <- "<em>p</em> = 0.0866"
 md_rhiz.pvsc <- "ns"
 md_rhiz.nvsc <- "ns"
 
 # Plot the differential abundance #
-md_rhiz_meso.plot <- ggplot(md_rhiz.meso, aes(x = Comps, y = `ASV2(Agrobacterium)`)) +
+md_rhiz_meso.plot <- ggplot(md_rhiz.meso, aes(x = Comps, y = `sASV2(Rhizobium)`)) +
   geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
   coord_cartesian(ylim = c(0, 0.01)) +
   scale_y_continuous(limits = c(0,0.01), breaks = seq(0,0.01, by = 0.0025), sec.axis = dup_axis(name = "")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Rhizosphere<br>ASV2(*Agrobacterium*)") +
+  scale_x_discrete(labels = "Rhizosphere<br>sASV2(*Rhizobium*)") +
   ylab('') +
   xlab('') +
   theme_prism() +
@@ -9517,45 +9472,48 @@ md_rhiz_meso.plot <- ggplot(md_rhiz.meso, aes(x = Comps, y = `ASV2(Agrobacterium
         legend.title = element_blank(),
         legend.key.spacing.x = unit(2,'cm'),
         legend.position = 'bottom') +
-  geom_signif(annotation = md_rhiz.pvsn,
-              y_position = 0.085, xmin = 1, xmax = 1.25,
+  geom_signif(annotation = "",
+              y_position = 0.005, xmin = 1, xmax = 1.25,
               tip_length = c(0.01, 0.01),
               textsize = 12) +
   geom_signif(annotation = md_rhiz.pvsc,
-              y_position = 0.096, xmin = 0.75, xmax = 1.25,
+              y_position = 0.0075, xmin = 0.75, xmax = 1.25,
               tip_length = c(0.01, 0.01),
               textsize = 12) +
   geom_signif(annotation = md_rhiz.nvsc,
-              y_position = 0.09, xmin = 0.75, xmax = 1,
+              y_position = 0.00625, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
               textsize = 12) +
+  annotate(geom = 'richtext', x = 1.125, y = 0.00525,
+           label = md_rhiz.pvsn,
+           size = 5, family = 'Liberation Sans', fontface = 'bold', fill = NA, label.color = NA) +
   labs(tag = "B.")
 md_rhiz_meso.plot
 
 ### Medicago Root Endosphere ###
-## Root Nodule ASV: ASV6(Bradyrhizobium) ##
+## Root Nodule ASV: rASV5(Sinorhizobium) ##
 # Transform the abundance data using total sum scaling #
 md_root_prop.ps <- transform_sample_counts(md_root.ps, function(x) x/sum(x))
 decompose_ps(md_root_prop.ps, "md_root_prop")
 
 # Make a data frame of just the root endosphere samples as well as the abundances of rhizobia of the PSF nodule #
-md_root.meso <- cbind(md_root_prop$met, t(md_root_prop$otu[c("ASV4(Sinorhizobium)", "ASV2(Sinorhizobium)"),]))
+md_root.meso <- cbind(md_root_prop$met, t(md_root_prop$otu[c("rASV5(Sinorhizobium)", "rASV2(Sinorhizobium)"),]))
 
 # Make soils a factor with the proper levels #
 md_root.meso$Soils <- factor(md_root.meso$Soil_Treatment, levels = c("Common Soil", "Non-PSF Soil", "PSF Soil"))
 
 # Make annotations for significant differences #
-md_root.pvsn <- "***"
-md_root.pvsc <- "***"
+md_root.pvsn <- "ns"
+md_root.pvsc <- "ns"
 md_root.nvsc <- "ns"
 
 # Plot the differential abundance #
-md_root_meso.plot <- ggplot(md_root.meso, aes(x = Comps, y = `ASV4(Sinorhizobium)`)) +
+md_root_meso.plot <- ggplot(md_root.meso, aes(x = Comps, y = `rASV5(Sinorhizobium)`)) +
   geom_boxplot(position = 'dodge', aes(fill = `Soils`)) +
   coord_cartesian(ylim = c(0,0.65)) +
   scale_y_continuous(limits = c(0,0.6), breaks = seq(0,0.6, by = 0.15), sec.axis = dup_axis(name = "M. truncatula")) +
   scale_fill_manual(name = "PSF History", values = c("Common Soil" = "white", "Non-PSF Soil" = "gray", "PSF Soil" = "#4D4D4D")) +
-  scale_x_discrete(labels = "Root Endosphere<br>ASV4(*Sinorhizobium*)") +
+  scale_x_discrete(labels = "Root Endosphere<br>rASV5(*Sinorhizobium*)") +
   ylab('') +
   xlab('') +
   theme_prism() +
@@ -9572,13 +9530,11 @@ md_root_meso.plot <- ggplot(md_root.meso, aes(x = Comps, y = `ASV4(Sinorhizobium
   geom_signif(annotation = md_root.pvsn,
               y_position = 0.50, xmin = 1, xmax = 1.25,
               tip_length = c(0.01, 0.01),
-              textsize = 20,
-              vjust = 0.65) +
+              textsize = 12) +
   geom_signif(annotation = md_root.pvsc,
               y_position = 0.6, xmin = 0.75, xmax = 1.25,
               tip_length = c(0.01, 0.01),
-              textsize = 20,
-              vjust = 0.65) +
+              textsize = 12) +
   geom_signif(annotation = md_root.nvsc,
               y_position = 0.55, xmin = 0.75, xmax = 1,
               tip_length = c(0.01, 0.01),
@@ -9587,7 +9543,7 @@ md_root_meso.plot <- ggplot(md_root.meso, aes(x = Comps, y = `ASV4(Sinorhizobium
 md_root_meso.plot
 
 # Make a patchwork plot for all compartments #
-(md_bulk_meso.plot | md_rhiz_meso.plot | md_root_meso.plot) &
+md_sino.plot <- (md_bulk_meso.plot | md_rhiz_meso.plot | md_root_meso.plot) &
   theme(plot.tag = element_text(size = 22, face = 'bold', family = "Liberation Sans"))
 
 # Plot the differential abundance #
