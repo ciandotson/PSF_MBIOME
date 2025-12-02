@@ -9588,11 +9588,12 @@ md_root_meso2.plot
   theme(legend.position = "bottom")
 
 #### Alpha Rarefaction Curve ####
+if(!requireNamespace('amplicon')) devtools::install_github('microbiota/amplicon', force = TRUE)
 library(amplicon); packageVersion('amplicon')
 
 # Perform the rarefaction using all soil samples # 
 soild <- alpha_rare_all(otu = soil$otu, map = soil$met, method = "diversity_shannon", start = 0, step = 2500, group = "Plants", ps = soil.ps)
-soil.radf <- soil.rare[[2]]
+soil.radf <- soild[[2]]
 
 # Join the metadata to the rarefaction dataframe joined based on ID of the sample #
 soil.rfdf <- c()
