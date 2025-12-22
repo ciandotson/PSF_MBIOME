@@ -4221,29 +4221,29 @@ for(i in 1:nrow(all.rich)){
 if(!requireNamespace("car")) install.packages("car")
 library(car); packageVersion("car")
 all_cha.lm <- lm(Chao1~Soils*Plants*Comps, all.rich)
-Anova(all_cha.lm)
+Anova(all_cha.lm, type = 'II')
 all_evn.lm <- lm(ShaEvn~Soils*Plants*Comps, all.rich)
-Anova(all_evn.lm)
+Anova(all_evn.lm, type = 'II')
 all_sha.lm <- lm(Shannon~Soils*Plants*Comps, all.rich)
-Anova(all_sha.lm)
+Anova(all_sha.lm, type = 'II')
 
 # Do the same except for just the Source Community and rhizosphere data #
 soil.rich <- filter(all.rich, Compartment != "Root Endosphere") 
 soil_cha.lm <- lm(Chao1~Soils*Plants*Comps, soil.rich)
-Anova(soil_cha.lm)
+Anova(soil_cha.lm, type = 'II')
 soil_evn.lm <- lm(ShaEvn~Soils*Plants*Comps, soil.rich)
-Anova(soil_evn.lm)
+Anova(soil_evn.lm, type = 'II')
 soil_sha.lm <- lm(Shannon~Soils*Plants*Comps, soil.rich)
-Anova(soil_sha.lm)
+Anova(soil_sha.lm, type = 'II')
 
 # Now do the same for the roots #
 root.rich <- filter(all.rich, Compartment == "Root Endosphere")
 root_cha.lm <- lm(Chao1~Soils*Plants, root.rich)
 Anova(root_cha.lm, type = "II")
 root_evn.lm <- lm(ShaEvn~Soils*Plants, root.rich)
-Anova(root_evn.lm)
+Anova(root_evn.lm, type = 'II')
 root_sha.lm <- lm(Shannon~Soils*Plants, root.rich)
-Anova(root_sha.lm)
+Anova(root_sha.lm, type = 'II')
 
 # Find the mean and standard error for each unique tripartite grouping
 all_rich.mnsd <- all.rich %>%
@@ -4461,7 +4461,8 @@ evn_rhiz.plot <- ggplot(rhiz.rich, aes(x = `Plant Species`, y = evn.mean, fill =
         axis.ticks.y.right = element_blank(),
         legend.key.width = unit(1, 'cm'),
         legend.key.height = unit(1, 'cm'),
-        legend.key.spacing.x = unit(6, 'cm')) +
+        legend.key.spacing.x = unit(6, 'cm'),
+        axis.title.y.right = element_text(size = 24)) +
   labs(tag = "B.")
 
 # Chao1 Observed ASVs #
@@ -4550,7 +4551,7 @@ cha_rhiz.plot <- ggplot(rhiz.rich, aes(x = `Plant Species`, y = cha.mean, fill =
   theme_prism() +
   scale_fill_manual(labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(labels = c("Common Soil", "Non-PSF Soil", "PSF Soil"), values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,350),expand = expansion(mult = c(0, 0.05)), breaks = seq(0,350,70), sec.axis = sec_axis(~ .)) +
+  scale_y_continuous(limits = c(0,375),expand = expansion(mult = c(0, 0.05)), breaks = seq(0,350,70), sec.axis = sec_axis(~ .)) +
   theme(legend.position = 'none',
         legend.text = element_text(size = 24),
         axis.text.x = element_blank(),
@@ -4694,7 +4695,7 @@ sha_bulk.plot <- ggplot(bulk.rich, aes(x = `Plant Species`, y = sha.mean, fill =
   theme_prism() +
   scale_fill_manual(labels = c("Common Soil", "Non-PSF Soil","PSF Soil"), values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(labels = c("Common Soil", "Non-PSF Soil","PSF Soil"), values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,5.2), breaks = seq(0,5, by = 1), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ .)) +
+  scale_y_continuous(limits = c(0,6.25), breaks = seq(0,6.25, by = 1.25), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ .)) +
   theme(legend.position = 'bottom',
         legend.text = element_text(size = 24, face = 'bold', family = "Liberation Sans"),
         axis.text.x = element_text(size = 24, face = 'bold.italic', family = "Liberation Sans"),
@@ -4796,7 +4797,8 @@ evn_bulk.plot <- ggplot(bulk.rich, aes(x = `Plant Species`, y = evn.mean, fill =
         axis.text.y.right = element_blank(),
         legend.key.width = unit(1, 'cm'),
         legend.key.height = unit(1, 'cm'),
-        legend.key.spacing.x = unit(6, 'cm')) +
+        legend.key.spacing.x = unit(6, 'cm'),
+        axis.title.y.right = element_text(size = 24)) +
   labs(tag = "B.")
 
 # Chao1 Observed ASVs #
@@ -4879,7 +4881,7 @@ cha_bulk.plot <- ggplot(bulk.rich, aes(x = `Plant Species`, y = cha.mean, fill =
   theme_prism() +
   scale_fill_manual(values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,250), breaks = seq(0,250, by = 50), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ .)) +
+  scale_y_continuous(limits = c(0,350), breaks = seq(0,350, by = 70), expand = expansion(mult = c(0, 0.05)), sec.axis = sec_axis(~ .)) +
   theme(legend.position = 'none',
         legend.text = element_text(size = 24),
         axis.text.x = element_blank(),
@@ -5098,7 +5100,8 @@ evn_root.plot <- ggplot(root.rich, aes(x = `Plant Species`, y = evn.mean, fill =
         axis.text.y.right = element_blank(),
         legend.key.width = unit(1, 'cm'),
         legend.key.height = unit(1, 'cm'),
-        legend.key.spacing.x = unit(6, 'cm')) +
+        legend.key.spacing.x = unit(6, 'cm'),
+        axis.title.y.right = element_text(size = 24)) +
   labs(tag = 'B.')
 
 # Chao1 Observed ASVs #
@@ -5187,7 +5190,7 @@ cha_root.plot <- ggplot(root.rich, aes(x = `Plant Species`, y = cha.mean, fill =
   theme_prism() +
   scale_fill_manual(values = c('white', "gray", '#4D4D4D')) +
   scale_color_manual(values = c('black', 'black', 'black')) +
-  scale_y_continuous(limits = c(0,100), expand = expansion(mult = c(0, 0.05)), breaks = seq(0,100,20), sec.axis = sec_axis(~ .)) +
+  scale_y_continuous(limits = c(0,120), expand = expansion(mult = c(0, 0.05)), breaks = seq(0,120,24), sec.axis = sec_axis(~ .)) +
   theme(legend.position = 'none',
         legend.text = element_text(size = 24),
         axis.text.x = element_blank(),
