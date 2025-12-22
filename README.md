@@ -6,7 +6,7 @@ In terms of what is required of the user, most of the work is in the frontend. I
 - Initialize the Conda Environment
 - Run the Pipeline.
 
-Once the user performs these tasks, the R script `ksp_amf.R` will perform the whole analysis and output the reproduced results with the associated publication pertaining to the whole AMF community data. Below, the user may find a step-by-step guide to reproducing these results.
+Once the user performs these tasks, the R script `analysis.R` will perform the whole analysis and output the reproduced results with the associated publication pertaining to the whole AMF community data. Below, the user may find a step-by-step guide to reproducing these results.
 
 # 1. Cloning the Repository
 Aside from the raw reads, which is explained in step 2, all of the data and scripts necessary to run this pipeline is found in this repository. To clone this repository, open your terminal and run the following commands:
@@ -57,9 +57,9 @@ To use the downloaded tools and data, all you have to do is run the following co
 Rscript analysis.R --raw_soil ~/PSF_MBIOME/reads/SOIL_dir_name --raw_root ~/PSF_MBIOME/reads/ROOT_dir_name
 ```
 
-If you had not previously moved the files to this repository, change `~/ksp_amf/reads/dir_name` to where the raw forward reads are located in your local environment.
+If you had not previously moved the files to this repository, change `~/PSF_MBIOME/reads/dir_name` to where the raw forward reads are located in your local environment.
 
-This command calls the main R script `ksp_amf.R` to take as input the file paths of the raw reads and output a series of files that pertain to the results of the initial publication, including:
+This command calls the main R script `analysis.R` to take as input the file paths of the raw reads and output a series of files that pertain to the results of the initial publication, including:
 - `./reads`: a directory that contains all of the read data, including reads with adapter sequences removed, reads processed by `dada2`, and alignment and tree files.
 - `./PSF.RData`: an R environment that contains the saved image of the entire working environment of the pipeline.
 - `./abridged.RData`: an R environment that is a subset of `PSF.RData`, which saves the most important objects such as `phyloseq` objects, `ggplot2` plots, and outputs from major statistical tests. This is done because the entire R environment is too large for most laptops to process, so if the user wants to rerun portions of the code without HPC, this environment can be used.
