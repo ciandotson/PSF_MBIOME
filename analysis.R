@@ -5616,7 +5616,7 @@ bulk_nmds.plot <- ggplot(bulk_nmds.load, aes(NMDS1, NMDS2, color = Plants, shape
 
 ## Fuzzy Bean ##
 # Create a phyloseq object that has all samples of the specific plant species and compartment #
-fb_bulk.ps <- subset_samples(bulk.ps, Plant == "S. helvola" | Plant == "Common Soil" | Plant == "C. fasciculata" & Soil_Treatment == "Non-PSF Soil")
+fb_bulk.ps <- subset_samples(bulk.ps, Plant == "S. helvola" | Soil_Treatment == "Common Soil" | Plant == "C. fasciculata" & Soil_Treatment == "Non-PSF Soil")
 fb_bulk.ps <- subset_taxa(fb_bulk.ps, taxa_sums(fb_bulk.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -5631,7 +5631,7 @@ anova(fb_bulk.bdis)
 TukeyHSD(fb_bulk.bdis)
 
 # Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
-fb_bulk.met <- filter(bulk_nmds.load, Plant == "S. helvola" | Plant == "Common Soil" | Plant == "C. fasciculata" & Soil_Treatment == "Non-PSF Soil")
+fb_bulk.met <- filter(bulk_nmds.load, Plant == "S. helvola" | Soil_Treatment == "Common Soil" | Plant == "C. fasciculata" & Soil_Treatment == "Non-PSF Soil")
 
 # Perform MANOVA on all samples #
 fb_bulk.man <- manova(cbind(NMDS1,NMDS2)~Soils, fb_bulk.met)
@@ -5655,7 +5655,7 @@ summary(fb_bulk_nvsc.man)
 
 ## Chamaecrista ##
 # Create a phyloseq object that has all samples of the specific plant species and compartment #
-cc_bulk.ps <- subset_samples(bulk.ps, Plant == "C. fasciculata" | Plant == "Common Soil")
+cc_bulk.ps <- subset_samples(bulk.ps, Plant == "C. fasciculata" | Soil_Treatment == "Common Soil")
 cc_bulk.ps <- subset_taxa(cc_bulk.ps, taxa_sums(cc_bulk.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -5670,7 +5670,7 @@ anova(cc_bulk.bdis)
 TukeyHSD(cc_bulk.bdis)
 
 # Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
-cc_bulk.met <- filter(bulk_nmds.load,  Plant == "C. fasciculata" | Plant == "Common Soil")
+cc_bulk.met <- filter(bulk_nmds.load,  Plant == "C. fasciculata" | Soil_Treatment == "Common Soil")
 
 # Perform MANOVA on all samples #
 cc_bulk.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_bulk.met)
@@ -5693,7 +5693,7 @@ cc_bulk_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, cc_bulk_nvsc.met)
 summary(cc_bulk_nvsc.man)
 
 ## Desmodium ##
-ds_bulk.ps <- subset_samples(bulk.ps, Plant == "D. canadense" | Plant == "Common Soil")
+ds_bulk.ps <- subset_samples(bulk.ps, Plant == "D. canadense" | Soil_Treatment == "Common Soil")
 ds_bulk.ps <- subset_taxa(ds_bulk.ps, taxa_sums(ds_bulk.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -5708,7 +5708,7 @@ anova(ds_bulk.bdis)
 TukeyHSD(ds_bulk.bdis)
 
 # Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
-ds_bulk.met <- filter(bulk_nmds.load,  Plant == "D. canadense" | Plant == "Common Soil")
+ds_bulk.met <- filter(bulk_nmds.load,  Plant == "D. canadense" | Soil_Treatment == "Common Soil")
 
 # Perform MANOVA on all samples #
 ds_bulk.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_bulk.met)
@@ -5731,7 +5731,7 @@ ds_bulk_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, ds_bulk_nvsc.met)
 summary(ds_bulk_nvsc.man)
 
 ## Hog Peanut ##
-hp_bulk.ps <- subset_samples(bulk.ps, Plant == "A. bracteata" | Plant == "Common Soil" | Plant == "D. canadense" & Soil_Treatment == "Non-PSF Soil")
+hp_bulk.ps <- subset_samples(bulk.ps, Plant == "A. bracteata" | Soil_Treatment == "Common Soil" | Plant == "D. canadense" & Soil_Treatment == "Non-PSF Soil")
 hp_bulk.ps <- subset_taxa(hp_bulk.ps, taxa_sums(hp_bulk.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -5746,7 +5746,7 @@ anova(hp_bulk.bdis)
 TukeyHSD(hp_bulk.bdis)
 
 # Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
-hp_bulk.met <- filter(bulk_nmds.load, Plant == "A. bracteata" | Plant == "Common Soil" | Plant == "D. canadense" & Soil_Treatment == "Non-PSF Soil")
+hp_bulk.met <- filter(bulk_nmds.load, Plant == "A. bracteata" | Soil_Treatment == "Common Soil" | Plant == "D. canadense" & Soil_Treatment == "Non-PSF Soil")
 
 # Perform MANOVA on all samples #
 hp_bulk.man <- manova(cbind(NMDS1,NMDS2)~Soils, hp_bulk.met)
@@ -5769,7 +5769,7 @@ hp_bulk_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, hp_bulk_nvsc.met)
 summary(hp_bulk_nvsc.man)
 
 ## Clover ##
-cl_bulk.ps <- subset_samples(bulk.ps, Plant == "T. repens" | Plant == "Common Soil")
+cl_bulk.ps <- subset_samples(bulk.ps, Plant == "T. repens" | Soil_Treatment == "Common Soil")
 cl_bulk.ps <- subset_taxa(cl_bulk.ps, taxa_sums(cl_bulk.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -5807,7 +5807,7 @@ cl_bulk_nvsc.man <- manova(cbind(NMDS1,NMDS2)~Soils, cl_bulk_nvsc.met)
 summary(cl_bulk_nvsc.man)
 
 ## Medicago ##
-md_bulk.ps <- subset_samples(bulk.ps, Plant == "M. truncatula" | Plant == "Common Soil" | Plant == "T. repens" & Soil_Treatment == "Non-PSF Soil")
+md_bulk.ps <- subset_samples(bulk.ps, Plant == "M. truncatula" | Soil_Treatment == "Common Soil" | Plant == "T. repens" & Soil_Treatment == "Non-PSF Soil")
 md_bulk.ps <- subset_taxa(md_bulk.ps, taxa_sums(md_bulk.ps) > 0)
 
 # Construct a distance matrix based on weighted unifrac distances for the samples of the given plant species and compartment #
@@ -5822,7 +5822,7 @@ anova(md_bulk.bdis)
 TukeyHSD(md_bulk.bdis)
 
 # Subset the NMDS plot metadata and scores to only include samples of the specified compartment and plant species #
-md_bulk.met <- filter(bulk_nmds.load, Plant == "M. truncatula" | Plant == "Common Soil" | Plant == "T. repens" & Soil_Treatment == "Non-PSF Soil")
+md_bulk.met <- filter(bulk_nmds.load, Plant == "M. truncatula" | Soil_Treatment == "Common Soil" | Plant == "T. repens" & Soil_Treatment == "Non-PSF Soil")
 
 # Perform MANOVA on all samples #
 md_bulk.man <- manova(cbind(NMDS1,NMDS2)~Soils, md_bulk.met)
